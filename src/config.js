@@ -7,6 +7,8 @@ var config = {
     /**
      * here are some default values.
      */
+
+    // URL to SharePoint Online
     spoUrl: "https://sites.sharepoint.com",
     username: 'someone@outlook.com',
     password: 'somepassword'

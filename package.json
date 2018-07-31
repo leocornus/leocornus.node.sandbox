@@ -20,5 +20,6 @@
   "bugs": {
     "url": "https://github.com/leocornus/leocornus-node-sandbox/issues"
   },
-  "homepage": "https://github.com/leocornus/leocornus-node-sandbox#readme"
+  "homepage": "https://github.com/leocornus/leocornus-node-sandbox#readme",
+  "dependencies": {}
 }
