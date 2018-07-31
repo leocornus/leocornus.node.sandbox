@@ -1,2 +1,4 @@
 // we will set the export default statements here.
-console.log("Hello World");
+var hello = require('./src/hello');
+
+hello.say("Hello require!");
