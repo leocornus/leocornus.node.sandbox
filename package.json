@@ -1,0 +1,24 @@
+{
+  "name": "leocornus-node-sandbox",
+  "version": "1.0.0",
+  "description": "sandbox for Node.js standalone application.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leocornus/leocornus-node-sandbox.git"
+  },
+  "keywords": [
+    "node",
+    "sandbox",
+    "standalone"
+  ],
+  "author": "Sean Chen <sean.chen@leocorn.com>",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/leocornus/leocornus-node-sandbox/issues"
+  },
+  "homepage": "https://github.com/leocornus/leocornus-node-sandbox#readme"
+}
