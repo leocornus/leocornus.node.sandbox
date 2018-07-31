@@ -62,3 +62,6 @@ typings/
 
 # ignore vim swp files.
 *.swp
+
+# local config file.
+**/local.js
