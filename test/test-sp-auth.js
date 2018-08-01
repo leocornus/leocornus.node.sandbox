@@ -2,7 +2,7 @@
  * quick test to use node-sp-auth to connect to SPO
  * 
  * STATUS:
- * It is failed! always get the 404 error.
+ * passed test...
  */
 
 // we have to use the ./ as current foler.
