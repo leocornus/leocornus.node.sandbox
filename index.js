@@ -1,6 +1,7 @@
 // we will set the export default statements here.
 const config = require('./src/config');
 const spo = require('node-sp-auth');
+const request = require('request');
 
 console.log(JSON.stringify(config, null, 2));
 
@@ -11,4 +12,22 @@ spo.getAuth(config.spoUrl, {username: config.username,
     // it only contains a cookie which will have the
     // access token.
     console.dir(options);
+
+    // perform request with any http-enabled library 
+    // (request-promise in a sample below):
+    let headers = options.headers;
+    //headers['Accept'] = 'application/json;odata=verbose';
+    headers['Accept'] = 'application/json';
+    filePath = config.samplePathes[0];
+    let theUrl = config.spoUrl + config.spoSite + filePath;
+    console.log(theUrl);
+
+    request.get({
+        requestContentType: 'JSON',
+        url: `${theUrl}`,
+        headers: headers
+    }, function(error, response, body) {
+        //process data
+        console.dir(response);
+    });
 });
