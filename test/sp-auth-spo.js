@@ -6,13 +6,10 @@
  * passed test...
  */
 
+const spoAuth = require('node-sp-auth');
 // we have to use the ./ as current foler.
 const config = require('./../src/config');
-// the 
-const spoAuth = require('node-sp-auth');
-const axios = require('axios');
-
-console.log(JSON.stringify(config, null, 2));
+const spo = require('./../src/spo');
 
 spoAuth.getAuth(config.spoUrl, 
             {username: config.username, password: config.password})
@@ -28,19 +25,11 @@ spoAuth.getAuth(config.spoUrl,
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
 
-    let filePath = config.samplePathes[0];
-    let theUrl = config.spoUrl + config.spoSite + filePath;
+    let siteUrl = config.spoUrl + config.spoSite;
     //console.log(theUrl);
 
-    // prepare the request config.
-    let reqConfig = {
-      url: theUrl,
-      method: "get",
-      headers: headers,
-    };
-    // call the API to get response.
-    axios.request(reqConfig).then(function(response) {
-        // process data
-        console.dir(response);
+    Promise(spo.processFolder(siteUrl, config.startFolder[0], headers))
+    .then(function() {
+        console.log(spo.folderCount);
     });
 });
