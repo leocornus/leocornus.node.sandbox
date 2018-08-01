@@ -9,6 +9,7 @@
 const config = require('./../src/config');
 const spo = require('node-sp-auth');
 const request = require('request');
+//const request = require('request-promise');
 
 console.log(JSON.stringify(config, null, 2));
 
@@ -33,7 +34,10 @@ spo.getAuth(config.spoUrl, {username: config.username,
         requestContentType: 'JSON',
         url: `${theUrl}`,
         headers: headers
+    // the way for request.
     }, function(error, response, body) {
+    // the way for request promise.
+    //}).then(function(error, response, body) {
         //process data
         console.dir(response);
     });

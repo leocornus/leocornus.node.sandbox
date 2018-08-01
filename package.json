@@ -23,6 +23,7 @@
   "homepage": "https://github.com/leocornus/leocornus-node-sandbox#readme",
   "dependencies": {
     "node-sp-auth": "^2.5.4",
-    "request": "^2.87.0"
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
   }
 }
