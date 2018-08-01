@@ -10,8 +10,13 @@ var config = {
 
     // URL to SharePoint Online
     spoUrl: "https://sites.sharepoint.com",
+    spoSite: "/sites/dev",
     username: 'someone@outlook.com',
-    password: 'somepassword'
+    password: 'somepassword',
+
+    samplePathes: [
+        "/folderone/two/fileone.pdf"
+    ]
 
 };
 
