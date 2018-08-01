@@ -39,6 +39,8 @@ spo.getAuth(config.spoUrl, {username: config.username,
     // the way for request promise.
     //}).then(function(error, response, body) {
         //process data
-        console.dir(response);
+        //console.dir(response);
+        console.dir(body);
+        //console.dir(JSON.parse(body));
     });
 });
