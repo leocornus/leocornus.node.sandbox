@@ -36,15 +36,18 @@ var spo = {
       // process sub folders.
       axios.get(theUrl + "/Folders", reqConfig).then(function(response) {
           //console.log(response);
-          response.data.value.forEach(function(folder) {
+          response.data.value.forEach(function(folder, index) {
               //console.log(folder);
               var subFolderName = folder.Name;
-              vm.processFolder(siteUrl, folderName + "/" + subFolderName, 
-                               headers);
+              // set timeout for each subfolder.
+              setTimeout(function() {
+                  vm.processFolder(siteUrl, folderName + "/" + subFolderName,
+                                   headers);
+              }, 50 * index);
           });
       }).catch(function(error) {
           vm.errorCount ++;
-          console.log(`${vm.errorCount}: ${error.message}: ${folderName},${theUrl}`);
+          console.log(`Error-${vm.errorCount}: ${error.message}: ${folderName},${theUrl}`);
       });
     }
 };
