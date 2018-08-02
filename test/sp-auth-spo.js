@@ -28,8 +28,5 @@ spoAuth.getAuth(config.spoUrl,
     let siteUrl = config.spoUrl + config.spoSite;
     //console.log(theUrl);
 
-    Promise(spo.processFolder(siteUrl, config.startFolder[0], headers))
-    .then(function() {
-        console.log(spo.folderCount);
-    });
+    spo.processFolder(siteUrl, config.startFolder[0], headers);
 });

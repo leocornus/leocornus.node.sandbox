@@ -44,7 +44,7 @@ var spo = {
           });
       }).catch(function(error) {
           vm.errorCount ++;
-          console.log(vm.errorCount + " : " + error.message);
+          console.log(`${vm.errorCount}: ${error.message}: ${folderName},${theUrl}`);
       });
     }
 };
