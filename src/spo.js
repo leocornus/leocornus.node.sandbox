@@ -7,9 +7,10 @@ var spo = {
 
     // count the folder.
     folderCount: 0,
-
     // keep all pathes:
     pathes: [],
+    // error count.
+    errorCount: 0,
 
     /**
      * try to interate into a folder.
@@ -25,7 +26,7 @@ var spo = {
                    "/_api/web/GetFolderByServerRelativeUrl('" +
                    //encodeURIComponent(folderName) + "')";
                    folderName + "')";
-      console.log(`${folderName},${theUrl}`);
+      console.log(`${vm.folderCount} : ${folderName},${theUrl}`);
       var reqConfig = {
           headers: headers
       };
@@ -42,7 +43,8 @@ var spo = {
                                headers);
           });
       }).catch(function(error) {
-          console.log(error);
+          vm.errorCount ++;
+          console.log(vm.errorCount + " : " + error.message);
       });
     }
 };
