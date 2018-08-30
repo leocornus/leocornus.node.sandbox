@@ -3,6 +3,10 @@
  * 
  * STATUS:
  * passed test...
+ *
+ * execute the test by using the following command:
+ *
+ *  nvm run node test/test-sp-auth.js
  */
 
 // we have to use the ./ as current foler.
@@ -26,7 +30,9 @@ spo.getAuth(config.spoUrl, {username: config.username,
     let headers = options.headers;
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
+
     filePath = config.samplePathes[0];
+    // construct the URL.
     let theUrl = config.spoUrl + config.spoSite + filePath;
     console.log(theUrl);
 

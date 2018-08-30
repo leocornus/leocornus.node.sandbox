@@ -28,19 +28,23 @@ spoAuth.getAuth(config.spoUrl,
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
 
-    let filePath = config.samplePathes[0];
+    // try to get properties for a file.
+    let filePath = config.samplePathes[1];
     let theUrl = config.spoUrl + config.spoSite + filePath;
     //console.log(theUrl);
 
-    // prepare the request config.
+    // prepare the axios request config.
     let reqConfig = {
       url: theUrl,
       method: "get",
       headers: headers,
     };
+
     // call the API to get response.
     axios.request(reqConfig).then(function(response) {
-        // process data
+        // dir will show up proper indention for a JSON
+        // object
         console.dir(response);
+        // TODO: process data
     });
 });
