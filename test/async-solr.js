@@ -21,6 +21,52 @@ axios.get(solrEndpoint, totalQuery)
 
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
+
+    // start from 0
+    copyOver(4000, amount, function(start, reportDone) {
+
+        axios.get(solrEndpoint, {
+          params: {
+            q: "*:*",
+            sort: "id desc",
+            rows: 50,
+            start: start
+          }
+        })
+        .then(function(response) {
+            // handle response here.
+            //console.log("Got Response:");
+        
+            //console.dir(response.data.response.docs.length);
+        
+            let payload = response.data.response.docs.map(function(doc) {
+                // set the _version_ to 0, which will overwrite existing docs.
+                // This will avoid version conflict error.
+                doc["_version_"] = 0;
+                return doc;
+            });
+        
+            var endPoint =
+                config.solr.targetBaseUrl + "update/json/docs?commit=true";
+            axios.post(endPoint, payload
+            ).then(function(postRes) {
+                //console.log("Post Success!");
+                reportDone(payload.length);
+                //console.dir(postRes);
+            }).catch(function(postError) {
+                console.log("Post Failed!");
+                console.dir(postError);
+            });
+        })
+        .catch(function(error) {
+            // handle errors here.
+            console.log("ERROR!");
+            console.dir(error);
+        });
+
+    }, function() {
+        console.log("All Done");
+    });
 })
 .catch(function(totalError) {
     console.log("Total Query Error!");
@@ -36,58 +82,30 @@ axios.get(solrEndpoint, totalQuery)
 //    }
 //};
 //
-///**
-// * try to copy every 1000,
-// */
-//function copyOver(start, oneCopy, callback) {
+/**
+ * try to copy every 1000,
+ */
+function copyOver(begin, total, oneCopy, callback) {
+
+    var doneCount = 0;
+
+    function reportDone(subTotal) {
+
+        doneCount = doneCount + subTotal;
+        console.log("Copied: " + doneCount);
+
+        if(doneCount === total) {
+            callback();
+        } 
+        // this is not working!
+        //else if((doneCount % 1000) === 0) {
+        //    copyOver(doneCount, total, oneCopy, callback);
+        //}
+    }
+
+    for(var i = begin; (i < begin + 1000) || (i < total - 50); 
+        i = i + 50) {
+        oneCopy(i, reportDone);
+    }
+}
 //
-//    var doneCount = 0;
-//
-//    function reportDone() {
-//
-//        doneCount = doneCount + 100;
-//
-//        if(donwCount === 1000) {
-//            // iterate to next 1000
-//            copyOver(start + 1000, oneCopy);
-//        }
-//    }
-//
-//    function reportFinish() {
-//    }
-//
-//    for(var i = 0; i < 1000; i = i + 100) {
-//        oneCopy(start + i, reportDone, reportFinish);
-//    }
-//}
-//
-//axios.get(solrEndpoint, solrQuery)
-//.then(function(response) {
-//    // handle response here.
-//    console.log("Got Response:");
-//
-//    console.dir(response.data.response.docs.length);
-//
-//    let payload = response.data.response.docs.map(function(doc) {
-//        // set the _version_ to 0, which will overwrite existing docs.
-//        // This will avoid version conflict error.
-//        doc["_version_"] = 0;
-//        return doc;
-//    });
-//
-//    var endPoint =
-//        config.solr.targetBaseUrl + "update/json/docs?commit=true";
-//    axios.post(endPoint, payload
-//    ).then(function(postRes) {
-//        console.log("Post Success!");
-//        //console.dir(postRes);
-//    }).catch(function(postError) {
-//        console.log("Post Failed!");
-//        //console.dir(postError.response.data.error);
-//    });
-//})
-//.catch(function(error) {
-//    // handle errors here.
-//    console.log("ERROR!");
-//    console.dir(error);
-//});
