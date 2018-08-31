@@ -82,13 +82,15 @@ axios.get(solrEndpoint, totalQuery)
 //      //fl: "id,c4c_type,file_content,file_hash,file_content_hash,file_size"
 //    }
 //};
-//
+
 /**
  * try to copy every 1000,
  */
 function waterfallOver(total, oneCopy, callback) {
 
-    var doneCount = 24950;
+    var doneCount = 0;
+    // get started...
+    oneCopy(downCount, reportDone);
 
     function reportDone(subTotal) {
 
@@ -101,6 +103,36 @@ function waterfallOver(total, oneCopy, callback) {
             oneCopy(doneCount, reportDone);
         }
     }
+}
 
-    oneCopy(24950, reportDone);
+/**
+ * =================================================================
+ * Solution Three - Correct Asynchronous read
+ * 
+ */
+function iterateOver(docs, iterator, callback) {
+
+    // this is the function that will start all the jobs
+    // list is the collections of item we want to iterate over
+    // iterator is a function representing the job when want done on each item
+    // callback is the function we want to call when all iterations are over
+
+    var doneCount = 0;  // here we'll keep track of how many reports we've got
+
+    function report() {
+        // this function resembles the phone number in the analogy above
+        // given to each call of the iterator so it can report its completion
+
+        doneCount++;
+
+        // if doneCount equals the number of items in list, then we're done
+        if(doneCount === docs.length)
+            callback();
+    }
+
+    // here we give each iteration its job
+    for(var i = 0; i < docs.length; i++) {
+        // iterator takes 2 arguments, an item to work on and report function
+        iterator(list[i], report)
+    }
 }
