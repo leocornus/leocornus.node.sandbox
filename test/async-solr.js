@@ -8,8 +8,9 @@ const axios = require('axios');
 let solrQuery = {
     params: {
       q: "*:*",
-      rows: 100,
-      fl: "id,c4c_type,file_content,file_hash,file_content_hash,file_size"
+      fq: "version_schema:1.0",
+      rows: 100
+      //fl: "id,c4c_type,file_content,file_hash,file_content_hash,file_size"
     }
 };
 
@@ -23,13 +24,22 @@ axios.get(solrEndpoint, solrQuery)
 
     console.dir(response.data.response.docs.length);
 
+    let payload = response.data.response.docs.map(function(doc) {
+        // set the _version_ to 0, which will overwrite existing docs.
+        // This will avoid version conflict error.
+        doc["_version_"] = 0;
+        return doc;
+    });
+
     var endPoint =
         config.solr.targetBaseUrl + "update/json/docs?commit=true";
-    axios.post(endPoint, response.data.response.docs 
+    axios.post(endPoint, payload
     ).then(function(postRes) {
-        console.dir(postRes);
+        console.log("Post Success!");
+        //console.dir(postRes);
     }).catch(function(postError) {
-        console.log(postError);
+        console.log("Post Failed!");
+        //console.dir(postError.response.data.error);
     });
 })
 .catch(function(error) {
