@@ -4,6 +4,8 @@
 const config = require('./../src/config');
 const axios = require('axios');
 
+const now = () => new Date().toUTCString()
+
 // solr endpoint.
 let solrEndpoint = config.solr.baseUrl + "select";
 
@@ -48,14 +50,21 @@ axios.get(solrEndpoint, totalQuery)
         
             var endPoint =
                 config.solr.targetBaseUrl + "update/json/docs?commit=true";
-            axios.post(endPoint, payload
-            ).then(function(postRes) {
-                //console.log("Post Success!");
-                reportDone(payload.length);
-                //console.dir(postRes);
-            }).catch(function(postError) {
-                console.log("Post Failed!");
-                //console.dir(postError.data.response.error);
+
+            // async call
+            iterateOver(payload, function(doc, report) {
+                axios.post(endPoint, doc
+                ).then(function(postRes) {
+                    //console.log("Post Success!");
+                    report();
+                    //console.dir(postRes);
+                }).catch(function(postError) {
+                    console.log("Post Failed!");
+                    //console.dir(postError.data.response.error);
+                    reportDone(payload.length);
+                });
+            }, function() {
+                console.log(now() + " Async post done!");
                 reportDone(payload.length);
             });
         })
@@ -66,11 +75,12 @@ axios.get(solrEndpoint, totalQuery)
         });
 
     }, function() {
-        console.log("All Done");
+        console.log(now() + " All Done");
     });
 })
 .catch(function(totalError) {
     console.log("Total Query Error!");
+    console.dir(totalError);
 });
 
 //// preparing the solr query.
@@ -90,12 +100,12 @@ function waterfallOver(total, oneCopy, callback) {
 
     var doneCount = 0;
     // get started...
-    oneCopy(downCount, reportDone);
+    oneCopy(doneCount, reportDone);
 
     function reportDone(subTotal) {
 
         doneCount = doneCount + subTotal;
-        console.log("Copied: " + doneCount);
+        console.log(now() + " Copied: " + doneCount);
 
         if(doneCount === total) {
             callback();
@@ -133,6 +143,6 @@ function iterateOver(docs, iterator, callback) {
     // here we give each iteration its job
     for(var i = 0; i < docs.length; i++) {
         // iterator takes 2 arguments, an item to work on and report function
-        iterator(list[i], report)
+        iterator(docs[i], report)
     }
 }
