@@ -31,7 +31,7 @@ axios.get(solrEndpoint, totalQuery)
           params: {
             q: "*:*",
             sort: "id desc",
-            rows: 50,
+            rows: 25,
             start: start
           }
         })
@@ -98,7 +98,7 @@ axios.get(solrEndpoint, totalQuery)
  */
 function waterfallOver(total, oneCopy, callback) {
 
-    var doneCount = 0;
+    var doneCount = 1100;
     // get started...
     oneCopy(doneCount, reportDone);
 
