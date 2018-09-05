@@ -25,14 +25,13 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // start from 0
-    waterfallOver(30, function(start, reportDone) {
+    waterfallOver(5, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
             q: "*:*",
             sort: "id desc",
-            fl: "id,file_content,version_extract",
-            rows: 25,
+            rows: 5,
             start: start
           }
         })
@@ -45,21 +44,21 @@ axios.get(solrEndpoint, totalQuery)
             // using map to process each document.
             let payload = response.data.response.docs.map(function(doc) {
 
-                var newDoc = {};
-                newDoc["id"] = doc.id;
                 // TODO: compare extract version! 
                 // we might skip this doc based on the version.
-                newDoc["version_extract"] = {"set":0.1};
+                doc["version_extract"] = 0.1;
                 // TODO extract the model from file content.
-                newDoc["product_models"] = {"set":["model 1", "model 2"]};
-                return newDoc;
+                doc["product_models"] = ["model 1", "model 2"];
+                    // extractProductModels(doc["file_content"]);
+                doc["_version_"] = 0;
+                return doc;
             });
         
             var endPoint =
                 config.solr.baseUrl + "update/json/docs?commit=true";
             //    config.solr.targetBaseUrl + "update/json/docs?commit=true";
 
-            // async call
+            // async call tod execute post for each doc.
             iterateOver(payload, function(doc, report) {
                 axios.post(endPoint, doc
                 ).then(function(postRes) {
