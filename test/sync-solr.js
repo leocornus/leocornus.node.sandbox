@@ -29,7 +29,7 @@ axios.get(solrEndpoint, totalQuery)
 
         axios.get(solrEndpoint, {
           params: {
-            q: "*:*",
+            q: "c4c_type:certificate",
             sort: "id desc",
             rows: 25,
             start: start

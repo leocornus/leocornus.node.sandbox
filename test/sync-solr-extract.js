@@ -29,7 +29,7 @@ axios.get(solrEndpoint, totalQuery)
 
         axios.get(solrEndpoint, {
           params: {
-            q: "*:*",
+            q: "c4c_type:certificate",
             sort: "id desc",
             rows: 5,
             start: start
@@ -48,12 +48,14 @@ axios.get(solrEndpoint, totalQuery)
                 // we might skip this doc based on the version.
                 doc["version_extract"] = 0.1;
                 // TODO extract the model from file content.
-                doc["product_models"] = ["model 1", "model 2"];
-                    // extractProductModels(doc["file_content"]);
+                doc["product_models"] =
+                    extractProductModels(doc["file_content"]);
                 doc["_version_"] = 0;
                 return doc;
             });
-        
+
+            //reportDone(payload.length);
+
             var endPoint =
                 config.solr.baseUrl + "update/json/docs?commit=true";
             //    config.solr.targetBaseUrl + "update/json/docs?commit=true";
@@ -68,7 +70,7 @@ axios.get(solrEndpoint, totalQuery)
                 }).catch(function(postError) {
                     console.log("Post Failed!");
                     //console.dir(postError.data.response.error);
-                    reportDone(payload.length);
+                    report();
                 });
             }, function() {
                 console.log(now() + " Async post done!");
@@ -152,4 +154,21 @@ function iterateOver(docs, iterator, callback) {
         // iterator takes 2 arguments, an item to work on and report function
         iterator(docs[i], report)
     }
+}
+
+/**
+ * extract product models from the parsing string.
+ */
+function extractProductModels(fileContent) {
+
+    // analyse the file content.
+    //console.log(fileContent);
+    let pattern = /[A-Z]+-[0-9]+/g;
+    // new Set will make the match value unique.
+    // basically remove all duplicated values.
+    let matches = Array.from(new Set(fileContent.match(pattern)));
+
+    console.log(matches);
+
+    return matches;
 }
