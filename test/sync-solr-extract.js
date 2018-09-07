@@ -25,7 +25,7 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // start from 0
-    waterfallOver(5, function(start, reportDone) {
+    waterfallOver(250, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
@@ -48,8 +48,10 @@ axios.get(solrEndpoint, totalQuery)
                 // we might skip this doc based on the version.
                 doc["version_extract"] = 0.1;
                 // TODO extract the model from file content.
-                doc["product_models"] =
-                    extractProductModels(doc["file_content"]);
+                if(doc.hasOwnProperty('file_content')) {
+                    doc["product_models"] =
+                        extractProductModels(doc["file_content"]);
+                }
                 doc["_version_"] = 0;
                 return doc;
             });
@@ -163,12 +165,17 @@ function extractProductModels(fileContent) {
 
     // analyse the file content.
     //console.log(fileContent);
-    let pattern = /[A-Z]+-[0-9]+/g;
+    let patterns = [/[A-Z]+-[0-9]+/g,
+        // using " " for whitespace, \s will take line break as 
+        // white space too.
+        /[A-Z]{3} [0-9]{3} [0-9]{2} {0,1}[A-Z]{2}/g, // LTL 040 40 EF
+    ];
     // new Set will make the match value unique.
     // basically remove all duplicated values.
-    let matches = Array.from(new Set(fileContent.match(pattern)));
+    let matches = Array.from(new Set(fileContent.match(patterns[0])));
+    let matches_1 = Array.from(new Set(fileContent.match(patterns[1])));
 
-    console.log(matches);
+    console.log(matches_1);
 
-    return matches;
+    return matches.concat(matches_1);
 }
