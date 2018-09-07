@@ -25,7 +25,7 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // start from 0
-    waterfallOver(250, function(start, reportDone) {
+    waterfallOver(1000, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
@@ -61,7 +61,7 @@ axios.get(solrEndpoint, totalQuery)
                 }).catch(function(postError) {
                     console.log("Post Failed!");
                     console.dir(postError.data);
-                    reportDone(payload.length);
+                    report();
                 });
             }, function() {
                 console.log(now() + " Async post done!");
@@ -98,7 +98,7 @@ axios.get(solrEndpoint, totalQuery)
  */
 function waterfallOver(total, oneCopy, callback) {
 
-    var doneCount = 0;
+    var doneCount = 250;
 
     function reportDone(subTotal) {
 
