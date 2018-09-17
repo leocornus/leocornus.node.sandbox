@@ -8,6 +8,9 @@ const now = () => new Date().toUTCString()
 
 // solr endpoint.
 let solrEndpoint = config.solr.baseUrl + "select";
+let targetEndPoint = config.solr.targetBaseUrl + "update/json/docs?commit=true";
+console.log("From: " + solrEndpoint);
+console.log("To: " + targetEndPoint);
 
 // simple query to get total number:
 let totalQuery = {
@@ -24,12 +27,11 @@ axios.get(solrEndpoint, totalQuery)
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
 
-    // start from 0
-    waterfallOver(1000, function(start, reportDone) {
+    waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
-            q: "c4c_type:certificate",
+	    q: "*:*",
             sort: "id desc",
             rows: 25,
             start: start
@@ -38,22 +40,17 @@ axios.get(solrEndpoint, totalQuery)
         .then(function(response) {
             // handle response here.
             //console.log("Got Response:");
-        
             //console.dir(response.data.response.docs.length);
-        
             let payload = response.data.response.docs.map(function(doc) {
                 // set the _version_ to 0, which will overwrite existing docs.
                 // This will avoid version conflict error.
                 doc["_version_"] = 0;
                 return doc;
             });
-        
-            var endPoint =
-                config.solr.targetBaseUrl + "update/json/docs?commit=true";
 
             // async call
             iterateOver(payload, function(doc, report) {
-                axios.post(endPoint, doc
+                axios.post(targetEndPoint, doc
                 ).then(function(postRes) {
                     //console.log("Post Success!");
                     report();
@@ -61,6 +58,7 @@ axios.get(solrEndpoint, totalQuery)
                 }).catch(function(postError) {
                     console.log("Post Failed!");
                     console.dir(postError.data);
+                    // log the erorr and then report the copy is done!
                     report();
                 });
             }, function() {
@@ -98,7 +96,7 @@ axios.get(solrEndpoint, totalQuery)
  */
 function waterfallOver(total, oneCopy, callback) {
 
-    var doneCount = 250;
+    var doneCount = 0;
 
     function reportDone(subTotal) {
 
