@@ -6,6 +6,10 @@
  *
  * STATUS:
  * - has been used for production.
+ *
+ * NOTES:
+ * - be aware of the size of each doc!
+ *   Some big size doc might disturb the copy process...
  */
 
 const config = require('./../src/config');
