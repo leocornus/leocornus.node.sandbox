@@ -1,4 +1,8 @@
 /**
+ * Quick test to copy docs from Solr to Solr using asynchronous algorithm.
+ *
+ * STATUS:
+ *  - just for testing, NOT ready for real work.
  */
 
 const config = require('./../src/config');
@@ -23,12 +27,13 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // start from 0
-    copyOver(4000, amount, function(start, reportDone) {
+    copyOver(0, amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
             q: "*:*",
             sort: "id desc",
+            // copy 50 docs for each time.
             rows: 50,
             start: start
           }
