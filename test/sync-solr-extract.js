@@ -25,11 +25,11 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // start from 0
-    waterfallOver(250, function(start, reportDone) {
+    waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
-            q: "c4c_type:certificate",
+              q: "*:*",
             sort: "id desc",
             rows: 5,
             start: start

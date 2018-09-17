@@ -14,10 +14,13 @@ const axios = require('axios');
 const now = () => new Date().toUTCString()
 
 // solr endpoint.
-let solrEndpoint = config.solr.baseUrl + "select";
-let targetEndPoint = config.solr.targetBaseUrl + "update/json/docs?commit=true";
+const solrEndpoint = config.solr.baseUrl + "select";
+const targetEndPoint = config.solr.targetBaseUrl + "update/json/docs?commit=true";
+// set batch size.
+const batchSize = config.solr.copyBatchSize;
 console.log("From: " + solrEndpoint);
 console.log("To: " + targetEndPoint);
+console.log("Copy " + batchSize + " docs each time!");
 
 // simple query to get total number:
 let totalQuery = {
@@ -34,13 +37,17 @@ axios.get(solrEndpoint, totalQuery)
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
 
+    // sync interation to get docs from source 
+    // batch by batch...
     waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
 	    q: "*:*",
+            // sort to make sure we are in the same sequence 
+            // for each batch load.
             sort: "id desc",
-            rows: 25,
+            rows: batchSize,
             start: start
           }
         })
