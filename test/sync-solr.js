@@ -1,4 +1,11 @@
 /**
+ * This is to copy docs from Solr to Solr.
+ * It has two major steps:
+ * - sync copy docs in batch, 25 rows a time, from source Solr.
+ * - async post each doc in the batch, to the target Solr.
+ *
+ * STATUS:
+ * - has been used for production.
  */
 
 const config = require('./../src/config');
