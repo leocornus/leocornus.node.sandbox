@@ -68,18 +68,27 @@ axios.get(solrEndpoint, totalQuery)
                 }
             });
 
-            // post all docs at one time.
-            // payload is small enough.
-            axios.post(solrTarget, payload
-            ).then(function(postRes) {
-                //console.log("Post Success!");
-                reportDone(payload.length);
-                //console.dir(postRes);
-            }).catch(function(postError) {
-                console.log("Post Failed!");
-                //console.dir(postError.data.response.error);
-                reportDone(payload.length);
+            var newPayload = payload.filter(function(doc) {
+                return doc.hasOwnProperty("query_status");
             });
+
+            console.log(now() + ": Fount " + newPayload.length + " Matches");
+            if(newPayload.length <= 0) {
+                reportDone(payload.length);
+            } else {
+                // post all docs at one time.
+                // payload is small enough.
+                axios.post(solrTarget, newPayload
+                ).then(function(postRes) {
+                    //console.log("Post Success!");
+                    reportDone(payload.length);
+                    //console.dir(postRes);
+                }).catch(function(postError) {
+                    console.log("Post Failed!");
+                    //console.dir(postError.data.response.error);
+                    reportDone(payload.length);
+                });
+            }
 
             // async call to execute post for each doc.
             //iterateOver(payload, function(doc, report) {
