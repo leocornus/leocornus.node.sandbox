@@ -29,7 +29,7 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // we could set amount here for debug:
-    amount = 10;
+    //amount = 10;
     waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
@@ -52,13 +52,14 @@ axios.get(solrEndpoint, totalQuery)
                 // TODO: compare extract version! 
                 // we might skip this doc based on the version.
                 doc["version_extract"] = config.solr.versionExtract;
+                doc["_version_"] = 0;
                 // TODO extract the model from file content.
                 var fieldName = config.solr.messageFieldName;
                 if(doc.hasOwnProperty(fieldName)) {
                     // process the logging message.
-                    extractLoggingMessage(doc[fieldName]);
+                    fields = extractLoggingMessage(doc[fieldName]);
+                    doc = Object.assign(doc, fields);
                 }
-                doc["_version_"] = 0;
                 return doc;
             });
 
@@ -152,25 +153,60 @@ function iterateOver(docs, iterator, callback) {
 
 /**
  * extract product models from the parsing string.
+ *
+ * Here are the log fomat for SolrCloud
+ * log4j.appender.file.layout.ConversionPattern
+ * %d{yyyy-MM-dd HH:mm:ss.SSS} %-5p (%t) [%X{collection} %X{shard} %X{replica} %X{core}] %c{1.} %m%n
  */
 function extractLoggingMessage(message) {
 
     // analyse the file content.
     console.log(now() + ": " + message);
     let patterns = [
-        /[A-Z]+-[0-9]+/g,
+        /\((.*)\) \[c:(\w+) s:(\w+) r:(\w+) x:(\w+)\] .* webapp=(.*) path=(.*) params=(.*) status=(\d) QTime=(\d)/g,
         // using " " for whitespace, \s will take line break as 
         // white space too.
         ///[A-Z]{3} [0-9]{3} [0-9]{2} {0,1}[A-Z]{2}/g, // LTL 040 40 EF
     ];
     // new Set will make the match value unique.
     // basically remove all duplicated values.
-    let matches = Array.from(new Set(message[0].match(patterns[0])));
+    //let matches = Array.from(new Set(message[0].match(patterns[0])));
+    var results = patterns[0].exec(message[0]);
     //let matches_1 = Array.from(new Set(message.match(patterns[1])));
 
-    console.log(now() + ": " + matches);
+    //[ '(qtp1929600551-13009) [c:polaris s:shard1 r:core_node4 x:polaris_shard1_replica_n2] o.a.s.c.S.Request [polaris_shard1_replica_n2]  webapp=/solr path=/suggest params={suggest.q=C22&suggest=true&suggest.dictionary=CSASuggester&wt=json} status=0 QTime=0',
+    //      'qtp1929600551-13009',
+    //      'polaris',
+    //      'shard1',
+    //      'core_node4',
+    //      'polaris_shard1_replica_n2',
+    //      '/solr',
+    //      '/suggest',
+    //      '{suggest.q=C22&suggest=true&suggest.dictionary=CSASuggester&wt=json}',
+    //      '0',
+    //      '0',
+    //      index: 30,
+    //      input: '2018-06-19 13:07:21.394 INFO  (qtp1929600551-13009) [c:polaris s:shard1 r:core_node4 x:polaris_shard1_replica_n2] o.a.s.c.S.Request [polaris_shard1_replica_n2]  webapp=/solr path=/suggest params={suggest.q=C22&suggest=true&suggest.dictionary=CSASuggester&wt=json} status=0 QTime=0',
+    //      groups: undefined ]
 
-    return matches;
+    //console.log(now() + ": " + matches);
+    console.dir(results);
+    if(results === null) {
+        return {};
+    } else {
+        return {
+            thread_id: results[1],
+            collection: results[2],
+            shard: results[3],
+            core: results[4],
+            replica: results[5],
+            query_webapp: results[6],
+            query_path: results[7],
+            query_params: results[8],
+            query_status: results[9],
+            query_qtime: results[10],
+        };
+    }
 }
 
 /**
