@@ -58,7 +58,7 @@ axios.get(solrEndpoint, totalQuery)
                 if(doc.hasOwnProperty(fieldName)) {
                     // process the logging message.
                     fields = extractLoggingMessage(doc[fieldName]);
-                    if(Object.id(fields, {}) {
+                    if(Object.is(fields, {})) {
                         // skip this doc.
                         return null;
                     } else {
@@ -68,24 +68,35 @@ axios.get(solrEndpoint, totalQuery)
                 }
             });
 
-            //reportDone(payload.length);
-
-            // async call tod execute post for each doc.
-            iterateOver(payload, function(doc, report) {
-                axios.post(solrTarget, doc
-                ).then(function(postRes) {
-                    //console.log("Post Success!");
-                    report();
-                    //console.dir(postRes);
-                }).catch(function(postError) {
-                    console.log("Post Failed!");
-                    //console.dir(postError.data.response.error);
-                    report();
-                });
-            }, function() {
-                console.log(now() + " Async post done!");
+            // post all docs at one time.
+            // payload is small enough.
+            axios.post(solrTarget, payload
+            ).then(function(postRes) {
+                //console.log("Post Success!");
+                reportDone(payload.length);
+                //console.dir(postRes);
+            }).catch(function(postError) {
+                console.log("Post Failed!");
+                //console.dir(postError.data.response.error);
                 reportDone(payload.length);
             });
+
+            // async call to execute post for each doc.
+            //iterateOver(payload, function(doc, report) {
+            //    axios.post(solrTarget, doc
+            //    ).then(function(postRes) {
+            //        //console.log("Post Success!");
+            //        report();
+            //        //console.dir(postRes);
+            //    }).catch(function(postError) {
+            //        console.log("Post Failed!");
+            //        //console.dir(postError.data.response.error);
+            //        report();
+            //    });
+            //}, function() {
+            //    console.log(now() + " Async post done!");
+            //    reportDone(payload.length);
+            //});
         })
         .catch(function(error) {
             // handle errors here.
