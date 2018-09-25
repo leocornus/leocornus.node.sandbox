@@ -13,6 +13,7 @@ const solrEndpoint = config.solr.baseUrl + "select";
 const solrTarget = config.solr.baseUrl + "update/json/docs?commit=true";
 //config.solr.targetBaseUrl + "update/json/docs?commit=true";
 
+const startTime = new Date();
 // simple query to get total number:
 let totalQuery = {
     params: {
@@ -29,7 +30,7 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // we could set amount here for debug:
-    //amount = 10;
+    //amount = 100;
     waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
@@ -115,6 +116,10 @@ axios.get(solrEndpoint, totalQuery)
 
     }, function() {
         console.log(now() + " All Done");
+        // summary message:
+        let endTime = new Date();
+        let totalTime = endTime - startTime;
+        console.log("Running time: " + totalTime);
     });
 })
 .catch(function(totalError) {
