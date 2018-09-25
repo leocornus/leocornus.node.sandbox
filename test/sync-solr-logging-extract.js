@@ -16,7 +16,7 @@ const solrTarget = config.solr.baseUrl + "update/json/docs?commit=true";
 // simple query to get total number:
 let totalQuery = {
     params: {
-        q: "*:*",
+        q: config.solr.selectQuery,
         rows: 1,
         fl: "id"
     }
@@ -35,7 +35,7 @@ axios.get(solrEndpoint, totalQuery)
         axios.get(solrEndpoint, {
           params: {
               q: config.solr.selectQuery,
-            sort: "id desc",
+            sort: config.solr.selectSort,
             rows: config.solr.selectRows,
             start: start
           }
