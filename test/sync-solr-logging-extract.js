@@ -58,9 +58,14 @@ axios.get(solrEndpoint, totalQuery)
                 if(doc.hasOwnProperty(fieldName)) {
                     // process the logging message.
                     fields = extractLoggingMessage(doc[fieldName]);
-                    doc = Object.assign(doc, fields);
+                    if(Object.id(fields, {}) {
+                        // skip this doc.
+                        return null;
+                    } else {
+                        doc = Object.assign(doc, fields);
+                        return doc;
+                    }
                 }
-                return doc;
             });
 
             //reportDone(payload.length);
@@ -161,7 +166,7 @@ function iterateOver(docs, iterator, callback) {
 function extractLoggingMessage(message) {
 
     // analyse the file content.
-    console.log(now() + ": " + message);
+    //console.log(now() + ": " + message);
     let patterns = [
         /\((.*)\) \[c:(\w+) s:(\w+) r:(\w+) x:(\w+)\] .* webapp=(.*) path=(.*) params=(.*) status=(\d) QTime=(\d)/g,
         // using " " for whitespace, \s will take line break as 
@@ -190,7 +195,7 @@ function extractLoggingMessage(message) {
     //      groups: undefined ]
 
     //console.log(now() + ": " + matches);
-    console.dir(results);
+    //console.dir(results);
     if(results === null) {
         return {};
     } else {
