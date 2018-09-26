@@ -244,29 +244,38 @@ function extractLoggingMessage(message) {
  *
  * we will try the async approach first.
  */
-function matchOver(fileContent, patterns, extractor, callback) {
+function matchOver(message, patterns, extractor, callback) {
+
     // set the count
     var doneCount = 0;
-    var matches = [];
+    var fields = {};
+
+    for(var i = 0; i < patterns.length; i++) {
+        // go through each pattern.
+        extractor(message, patterns[i], reportMatch);
+    }
 
     // get ready the reportMatches function.
-    function reportMatches(theMatches) {
+    // the match will have format:
+    // - ["field_name", "field_value"]
+    function reportMatch(theMatch) {
+
         // increase the counting...
         doneCount ++;
 
         // keep the matches.
-        matches.push(theMatches);
-        console.log("find " + theMatches.length + " Matches");
-
-        // check if it donw.
-        if(doneCount === patterns.length) {
-            // pass the full matches to callback.
-            callback(matches);
+        if(theMatch === null) {
+            // do nothing here!
+        } else {
+            // keep the field and value.
+            fields[theMatch[0]] = theMatch[1];
         }
-    }
 
-    for(var i = 0; i < patterns.length; i++) {
-        // go through each pattern.
-        extractor(fileContent, patterns[i], reportMatches);
+        // check if it done.
+        if(doneCount === patterns.length) {
+
+            // pass the full matches to callback.
+            callback(fields);
+        }
     }
 }
