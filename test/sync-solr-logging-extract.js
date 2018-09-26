@@ -10,7 +10,7 @@ const now = () => new Date().toUTCString()
 
 // solr endpoints.
 const solrEndpoint = config.solr.baseUrl + "select";
-const solrTarget = config.solr.baseUrl + "update/json/docs?commit=true";
+const solrTarget = config.solr.targetBaseUrl + "update/json/docs?commit=true";
 //config.solr.targetBaseUrl + "update/json/docs?commit=true";
 
 const startTime = new Date();
@@ -30,7 +30,7 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // we could set amount here for debug:
-    //amount = 10;
+    //amount = 2;
     waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
@@ -97,7 +97,8 @@ axios.get(solrEndpoint, totalQuery)
                 return doc.hasOwnProperty("query_path");
             });
 
-            console.log(now() + ": Fount " + newPayload.length + " Matches");
+            console.log(now() + ": Found " + newPayload.length + " Matches");
+            //console.dir(newPayload);
             if(newPayload.length <= 0) {
                 reportDone(payload.length);
             } else {
@@ -299,7 +300,7 @@ function matchOver(message, patterns, extractor, callback) {
         if(doneCount === patterns.length) {
 
             // pass the full matches to callback.
-            console.log(fields);
+            //console.log(fields);
             callback(fields);
         }
     }
