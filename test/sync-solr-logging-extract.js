@@ -85,8 +85,11 @@ axios.get(solrEndpoint, totalQuery)
                 // process the query parameters.
                 if(doc.hasOwnProperty("query_params")) {
                     // URL decode
+                    var params = decodeURI(doc["query_params"]);
                     // split by &
+                    doc["query_params"] = params.split("&");
                 }
+
                 return doc;
             });
 
