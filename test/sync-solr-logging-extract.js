@@ -4,6 +4,7 @@
  */
 const config = require('./../src/config');
 const axios = require('axios');
+const prettyMs = require('pretty-ms');
 
 // timestamp for logging message.
 const now = () => new Date().toUTCString()
@@ -143,8 +144,9 @@ axios.get(solrEndpoint, totalQuery)
         console.log(now() + " All Done");
         // summary message:
         let endTime = new Date();
+        // the differenc will be in ms
         let totalTime = endTime - startTime;
-        console.log("Running time: " + totalTime);
+        console.log("Running time: " + prettyMs(totalTime));
     });
 })
 .catch(function(totalError) {
