@@ -30,7 +30,7 @@ axios.get(solrEndpoint, totalQuery)
     console.log("Total Docs: " + amount);
 
     // we could set amount here for debug:
-    //amount = 100;
+    //amount = 10;
     waterfallOver(amount, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
@@ -54,23 +54,44 @@ axios.get(solrEndpoint, totalQuery)
                 // we might skip this doc based on the version.
                 doc["version_extract"] = config.solr.versionExtract;
                 doc["_version_"] = 0;
-                // TODO extract the model from file content.
+                // process the main message.
                 var fieldName = config.solr.messageFieldName;
                 if(doc.hasOwnProperty(fieldName)) {
                     // process the logging message.
-                    fields = extractLoggingMessage(doc[fieldName]);
-                    if(Object.is(fields, {})) {
-                        // skip this doc.
-                        return null;
-                    } else {
-                        doc = Object.assign(doc, fields);
-                        return doc;
-                    }
+                    // REMOVE: === The legacy way.
+                    //fields = extractLoggingMessage(doc[fieldName]);
+                    //if(Object.is(fields, {})) {
+                    //    // skip this doc.
+                    //    return null;
+                    //} else {
+                    //    doc = Object.assign(doc, fields);
+                    //    return doc;
+                    //}
+                    let message = doc[fieldName][0];
+                    matchOver(message, config.solr.loggingPatterns,
+                        // the extractor function.
+                        extractFields,
+                        // the call back function when it is done.
+                        function(fields) {
+                            if(Object.is(fields, {})) {
+                                // skip this doc.
+                            } else {
+                                // add fields to each doc.
+                                doc = Object.assign(doc, fields);
+                            }
+                        });
                 }
+
+                // process the query parameters.
+                if(doc.hasOwnProperty("query_params")) {
+                    // URL decode
+                    // split by &
+                }
+                return doc;
             });
 
             var newPayload = payload.filter(function(doc) {
-                return doc.hasOwnProperty("query_status");
+                return doc.hasOwnProperty("query_path");
             });
 
             console.log(now() + ": Fount " + newPayload.length + " Matches");
@@ -275,7 +296,23 @@ function matchOver(message, patterns, extractor, callback) {
         if(doneCount === patterns.length) {
 
             // pass the full matches to callback.
+            console.log(fields);
             callback(fields);
         }
+    }
+}
+
+/**
+ * the extractor function for matchOver.
+ */
+function extractFields(theMessage, pattern, reportMatch) {
+
+    let matches = theMessage.match(pattern[1]);
+    if(matches === null) {
+        // no match found!
+        reportMatch(null);
+    } else {
+        // find some match. else case.
+        reportMatch([pattern[0], matches[1]]);
     }
 }
