@@ -100,6 +100,11 @@ axios.get(solrEndpoint, totalQuery)
                 delete doc.match;
                 delete doc.level;
 
+                // attached the project metadata.
+                if(config.solr.hasOwnProperty("projectMetadata")) {
+                    doc = Object.assign(doc, config.solr.projectMetadata);
+                }
+
                 return doc;
             });
 
