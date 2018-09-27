@@ -91,6 +91,15 @@ axios.get(solrEndpoint, totalQuery)
                     doc["query_params"] = params.split("&");
                 }
 
+                doc["log_level"] = doc['level'];
+                // remove some properties:
+                delete doc.replica;
+                delete doc.core;
+                delete doc.collection;
+                delete doc.shard;
+                delete doc.match;
+                delete doc.level;
+
                 return doc;
             });
 
