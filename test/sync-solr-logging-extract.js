@@ -55,6 +55,10 @@ axios.get(solrEndpoint, totalQuery)
                 // we might skip this doc based on the version.
                 doc["version_extract"] = config.solr.versionExtract;
                 doc["_version_"] = 0;
+
+                // kill / clean some of the legacy fields.
+                delete doc.query_select;
+
                 // process the main message.
                 var fieldName = config.solr.messageFieldName;
                 if(doc.hasOwnProperty(fieldName)) {
@@ -89,6 +93,26 @@ axios.get(solrEndpoint, totalQuery)
                     var params = decodeURI(doc["query_params"]);
                     // split by &
                     doc["query_params"] = params.split("&");
+                }
+
+                // process the query_select to extract field name.
+                if(doc.hasOwnProperty("query_select")) {
+                    // split by +OR+ to get pattern fieldName:queryString
+                    //console.log(doc["query_select"]);
+                    var fqs = doc["query_select"].split("+OR+");
+                    //console.log(fqs);
+                    // for each of the fq, we will get fieldName
+                    // and queryString and add them to each doc.
+                    // We will need to handle the case of multiple values.
+                    for(var i = 0; i < fqs.length; i++) {
+                        var pair = fqs[i].split(":");
+                        var solrFieldName = "f_" + pair[0];
+                        if(!doc.hasOwnProperty(solrFieldName)) {
+                            doc[solrFieldName] = [];
+                        }
+                        doc[solrFieldName].push(pair[1]);
+                        //console.log(doc[solrFieldName]);
+                    }
                 }
 
                 doc["log_level"] = doc['level'];
