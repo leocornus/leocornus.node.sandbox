@@ -21,7 +21,7 @@ const now = () => new Date().toUTCString()
 const solrEndpoint = config.solr.baseUrl + "select";
 const targetEndPoint = config.solr.targetBaseUrl + "update/json/docs?commit=true";
 // set batch size.
-const batchSize = config.solr.copyBatchSize;
+const batchSize = config.solr.selectRows;
 console.log("From: " + solrEndpoint);
 console.log("To: " + targetEndPoint);
 console.log("Copy " + batchSize + " docs each time!");
@@ -29,7 +29,7 @@ console.log("Copy " + batchSize + " docs each time!");
 // simple query to get total number:
 let totalQuery = {
     params: {
-        q: "*:*",
+        q: config.solr.selectQuery,
         rows: 1,
         fl: "id"
     }
@@ -47,7 +47,7 @@ axios.get(solrEndpoint, totalQuery)
 
         axios.get(solrEndpoint, {
           params: {
-	    q: "*:*",
+	    q: config.solr.selectQuery,
             // sort to make sure we are in the same sequence 
             // for each batch load.
             sort: "id desc",
