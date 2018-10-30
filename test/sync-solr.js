@@ -50,7 +50,7 @@ axios.get(solrEndpoint, totalQuery)
 	    q: config.solr.selectQuery,
             // sort to make sure we are in the same sequence 
             // for each batch load.
-            sort: "id desc",
+            sort: config.solr.selectSort,
             rows: batchSize,
             start: start
           }
