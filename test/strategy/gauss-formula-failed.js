@@ -1,20 +1,32 @@
 /**
  * the WRONG way to implement Gauss formula
+ * using the write to and read from file system to demostrate
+ * async behavior of JavaScript.
  *
  * TODO NOTICE:
- * NOT READY YET!
  * we need some async resource to simulate the behavor!
  * such as read from file system or 
  * read from network resources.
  */
 
+const fs = require('fs');
+
 const now = () => new Date().toUTCString()
 
 // get ready numbers.
 var numbers = [];
-for(var i = 0; i < 20; i ++) {
+for(var i = 0; i < 100; i ++) {
     numbers.push(i + 1);
 }
+
+// get ready file to read.
+numbers.forEach(function(number) {
+
+    fs.writeFile(number + ".txt", number, 'utf8', (err) => {
+        // logging...
+        console.log(now() + ' write file: ' + number + ".txt");
+    });
+});
 
 // here is the sum of those numbers.
 var theSum = 0;
@@ -22,17 +34,21 @@ var theSum = 0;
 for(var i = 0; i < numbers.length; i ++) {
 
     //console.log(now() + " adding number: " + numbers[i]);
-    theSum = theSum + numbers[i];
+    fs.readFile(numbers[i] + ".txt", 'utf8',
+        (err, data) => {
+
+            console.log(now() + " read number: " + data);
+            var num = parseInt(data);
+            theSum = theSum + num;
+            // remove the file:
+            fs.unlink(data + ".txt",
+                (err) =>{
+                    console.log(now() + " remove file: " +
+                                (err ? err : ''));
+                }
+            );
+        }
+    );
 };
 
 console.log(now() + " Total is: " + theSum);
-
-theSum = 0;
-
-numbers.forEach(function(number) {
-
-    console.log(now() + " adding number: " + number);
-    theSum = theSum + number;
-});
-
-console.log(now() + " WRONG total is: " + theSum);
