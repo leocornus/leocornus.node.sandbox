@@ -22,6 +22,8 @@ for(var i = 0; i < 100; i ++) {
 // get ready file to read.
 numbers.forEach(function(number) {
 
+    // by default fs will write to current folder,
+    // where we execute the js file.
     fs.writeFile(number + ".txt", number, 'utf8', (err) => {
         // logging...
         console.log(now() + ' write file: ' + number + ".txt");
@@ -34,6 +36,8 @@ var theSum = 0;
 for(var i = 0; i < numbers.length; i ++) {
 
     //console.log(now() + " adding number: " + numbers[i]);
+    // by default fs will ready from current folder,
+    // where we execute the js file.
     fs.readFile(numbers[i] + ".txt", 'utf8',
         (err, data) => {
 
