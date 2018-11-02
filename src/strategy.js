@@ -37,6 +37,36 @@ var strategy = {
                 iterator(doneCount, reportDone);
             }
         }
+    },
+
+    /**
+     * Asynchronous iterate over a set of items.
+     *
+     * items is the collections of item we want to iterate over
+     * iterator is a function representing the job when want done on each item
+     * callback is the function we want to call when all iterations are over
+     *
+     */
+    iterateOver: function(items, iterator, callback) {
+
+        // here we'll keep track of how many reports we've got
+        var doneCount = 0;
+
+        // here we give each iteration its job
+        for(var i = 0; i < items.length; i++) {
+            // iterator takes 2 arguments, an item to work on and report function
+            iterator(items[i], report)
+        }
+
+        function report() {
+            // this function resembles the phone number in the analogy above
+            // given to each call of the iterator so it can report its completion
+            doneCount++;
+
+            // if doneCount equals the number of items in list, then we're done
+            if(doneCount === items.length)
+                callback();
+        }
     }
 }; 
 
