@@ -7,22 +7,15 @@ const strategy = require('./../../src/strategy');
 const now = () => new Date().toUTCString()
 
 // get ready the end point. using the simple search api.
-var endPoint = config.report.endPoint;
+var endPoint = config.nrReport.endPoint;
 
-var allNeighborsQuery = config.report.selectQuery;
+var allNeighborsQuery = config.nrReport.selectQuery;
 
 axios.post(endPoint, allNeighborsQuery)
 .then(function(response) {
     // get facet bucket.
     var buckets = response.data.facets[0].buckets;
-    // agents by neighbourhood, it will have the following format:
-    // { "neighbourhood one" : [
-    //     {agentid, agentname, agentphone},
-    //     {agentid, agentname, agentphone}
-    //   ],
-    //   "neighbourhood two" : [
-    //   ],
-    // }
+
     var agents = {};
     // iterate over buckets.
     strategy.iterateOver(buckets,
@@ -31,7 +24,7 @@ axios.post(endPoint, allNeighborsQuery)
          * the signature is defined in strategy.iterateOver.
          */
         function(bucket, report){
-            var allAgentsQuery = config.report.detailQuery(bucket.value);
+            var allAgentsQuery = config.nrReport.detailQuery(bucket.value);
             //console.log(allAgentsQuery);
             axios.post(endPoint, allAgentsQuery)
             .then(function(response) {
