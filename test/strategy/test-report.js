@@ -1,21 +1,15 @@
 const axios = require('axios');
 const prettyMs = require('pretty-ms');
 
+const config = require('./../../src/config');
 const strategy = require('./../../src/strategy');
 
 const now = () => new Date().toUTCString()
 
 // get ready the end point. using the simple search api.
-var endPoint = "https://dev-acis-attivio.sites.leocorn.com/rest/searchApi/search";
+var endPoint = config.report.endPoint;
 
-var allNeighborsQuery = {
-    // TODO: all more cities.
-    //"query": "AND(table:xmldata,OR(city:toronto,city:markham))",
-    "query": "OR(city:toronto,city:markham)",
-    "queryLanguage":"advanced",
-    "workflow": "search",
-    "facets":["neighbourhoodname(maxBuckets=-1)"]
-};
+var allNeighborsQuery = config.report.selectQuery;
 
 axios.post(endPoint, allNeighborsQuery)
 .then(function(response) {
@@ -37,12 +31,7 @@ axios.post(endPoint, allNeighborsQuery)
          * the signature is defined in strategy.iterateOver.
          */
         function(bucket, report){
-            var allAgentsQuery = {
-                "query": "neighbourhoodname:\"" + bucket.value + "\"",
-                "queryLanguage": "advanced",
-                "workflow": "search",
-                "rows": 100
-            };
+            var allAgentsQuery = config.report.detailQuery(bucket.value);
             //console.log(allAgentsQuery);
             axios.post(endPoint, allAgentsQuery)
             .then(function(response) {
