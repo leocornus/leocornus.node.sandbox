@@ -40,6 +40,7 @@ axios.get(solrEndpoint, totalQuery)
 
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
+    amount = 50000;
 
     // sync interation to get docs from source 
     // batch by batch...
@@ -74,8 +75,8 @@ axios.get(solrEndpoint, totalQuery)
                     report();
                     //console.dir(postRes);
                 }).catch(function(postError) {
-                    console.log("Post Failed!");
-                    console.dir(postError.data);
+                    console.log("Post Failed! - " + doc.sku);
+                    //console.dir(postError.data);
                     // log the erorr and then report the copy is done!
                     report();
                 });
@@ -114,7 +115,7 @@ axios.get(solrEndpoint, totalQuery)
  */
 function waterfallOver(total, oneCopy, callback) {
 
-    var doneCount = 0;
+    var doneCount = 32250;
 
     function reportDone(subTotal) {
 
