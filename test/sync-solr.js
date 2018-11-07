@@ -14,9 +14,11 @@
 
 const config = require('./../src/config');
 const axios = require('axios');
+const prettyMs = require('pretty-ms');
 
 const now = () => new Date().toUTCString()
 
+const startTime = new Date();
 // solr endpoint.
 const solrEndpoint = config.solr.baseUrl + "select";
 const targetEndPoint = config.solr.targetBaseUrl + "update/json/docs?commit=true";
@@ -40,7 +42,7 @@ axios.get(solrEndpoint, totalQuery)
 
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
-    amount = 50000;
+    amount = 70000;
 
     // sync interation to get docs from source 
     // batch by batch...
@@ -93,6 +95,11 @@ axios.get(solrEndpoint, totalQuery)
 
     }, function() {
         console.log(now() + " All Done");
+        // summary message:
+        let endTime = new Date();
+        // the differenc will be in ms
+        let totalTime = endTime - startTime;
+        console.log("Running time: " + prettyMs(totalTime));
     });
 })
 .catch(function(totalError) {
@@ -115,7 +122,7 @@ axios.get(solrEndpoint, totalQuery)
  */
 function waterfallOver(total, oneCopy, callback) {
 
-    var doneCount = 32250;
+    var doneCount = 60000;
 
     function reportDone(subTotal) {
 
