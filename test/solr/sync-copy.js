@@ -44,15 +44,18 @@ axios.get(solrEndpoint, totalQuery)
 
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
-    amount = 5000;
+    let bulk = Math.min(config.solr.endIndex, amount);
+    console.log("Working on items from", config.solr.startIndex,
+                "to", bulk);
 
     // sync interation to get docs from source 
     // batch by batch...
-    strategy.waterfallOver(amount, function(start, reportDone) {
+    strategy.waterfallOver(config.solr.startIndex,
+                           bulk, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
-	    q: config.solr.selectQuery,
+            q: config.solr.selectQuery,
             // sort to make sure we are in the same sequence 
             // for each batch load.
             sort: config.solr.selectSort,
