@@ -26,7 +26,7 @@ var startTime = new Date();
 
 // count 100 times and each time take half second.
 // we should complete in 50 seconds.
-strategy.waterfallOver(100, halfSecond,
+strategy.waterfallOver(0, 100, halfSecond,
 
     function() {
         // the complete callback funtion.

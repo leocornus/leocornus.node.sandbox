@@ -1,21 +1,26 @@
 /**
  * some strategy to manipulate large volume of data.
  */
+
+const now = () => new Date().toUTCString()
+
 var strategy = {
 
     /**
-     * iterate over the total items one after another.
+     * iterate over from start to end items one after another.
      * The waterfall way or synchronize way.
      * It could be one by one or one group by one group.
      * One group could be any number of items, 10, 100, 1000, etc.
      *
      * For example, group by group sync way will help controll
      * the consumption of some resources such as network connections.
+	 * 
+	 * start is included and end is not included.
      */
-    waterfallOver: function(total, iterator, callback) {
+    waterfallOver: function(start, end, iterator, callback) {
 
         // get started with the done counter with 0.
-        var doneCount = 0;
+        var doneCount = start;
         // the iterator will do the actural work
         // It will reportDone when it completed the work.
         iterator(doneCount, reportDone);
@@ -30,7 +35,7 @@ var strategy = {
             doneCount = doneCount + subTotal;
             console.log(now() + " Copied: " + doneCount);
 
-            if(doneCount === total) {
+            if(doneCount >= end) {
                 // we have completed the iteration.
                 callback();
             } else {
