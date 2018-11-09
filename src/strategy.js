@@ -28,6 +28,7 @@ var strategy = {
 
             // keep tracking how many items are done work.
             doneCount = doneCount + subTotal;
+            console.log(now() + " Copied: " + doneCount);
 
             if(doneCount === total) {
                 // we have completed the iteration.
