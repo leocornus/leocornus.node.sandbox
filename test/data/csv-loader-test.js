@@ -29,7 +29,8 @@ d3.csv(config.csvLoader.csvFile,
           return newRow;
         }
 ).then(function(data) {
-    console.log(data);
+    console.log(`total rows: ${data.length}`);
+    console.log(`columns: ${data.columns}`);
     //self.inputText = JSON.stringify(data[100],null, 2);
     //self.postPayload(data[100]);
     while(data.length > 0) {
