@@ -24,6 +24,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "azure-storage": "^2.10.2",
+    "d3": "^5.7.0",
     "node-sp-auth": "^2.5.4",
     "pretty-ms": "^4.0.0",
     "request": "^2.87.0",
