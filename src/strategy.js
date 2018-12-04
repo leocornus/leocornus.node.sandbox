@@ -14,8 +14,8 @@ var strategy = {
      *
      * For example, group by group sync way will help controll
      * the consumption of some resources such as network connections.
-	 * 
-	 * start is included and end is not included.
+     *
+     * start is included and end is not included.
      */
     waterfallOver: function(start, end, iterator, callback) {
 
@@ -33,7 +33,7 @@ var strategy = {
 
             // keep tracking how many items are done work.
             doneCount = doneCount + subTotal;
-            console.log(now() + " Copied: " + doneCount);
+            console.log(now() + " Processed: " + doneCount);
 
             if(doneCount >= end) {
                 // we have completed the iteration.
