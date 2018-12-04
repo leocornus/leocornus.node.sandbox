@@ -4,12 +4,24 @@
 
 const config = require('./../../src/config');
 const d3 = require("d3");
+const strategy = require('./../../src/strategy');
+const prettyMs = require('pretty-ms');
+const axios = require('axios');
+
+// logging message timestamp.
+const now = () => new Date().toUTCString()
+const startTime = new Date();
 
 // polyfill for Fetch API,
 // as explained in issue: https://github.com/d3/d3-fetch/issues/19
 if (typeof fetch !== 'function') {
     global.fetch = require('node-fetch-polyfill');
 }
+
+var csvData = [];
+
+// update end point.
+const solrEndPoint = config.csvLoader.solrUpdateBase + "update/json/docs?commit=true";
 
 d3.csv(config.csvLoader.csvFile,
        // the first parameter is a row,
@@ -30,16 +42,52 @@ d3.csv(config.csvLoader.csvFile,
         }
 ).then(function(data) {
     console.log(`total rows: ${data.length}`);
-    console.log(data[0]);
-    console.log(`columns: ${data.columns}`);
+    //console.log(data[0]);
+    //console.log(`columns: ${data.columns}`);
     //self.inputText = JSON.stringify(data[100],null, 2);
     //self.postPayload(data[100]);
-    while(data.length > 0) {
-      var rows = [];
-      // the method splice will remove records and return them as
-      // a new array
-      rows = data.splice(0, 500);
-      //console.log(rows);
-      //self.postPayload(rows);
-    }
+    csvData = data;
+
+    let total = Math.min(config.csvLoader.endIndex, data.length);
+    // waterfall over
+    strategy.waterfallOver(config.csvLoader.startIndex,
+                           total, processOneLoad, function () {
+
+        console.log(now() + " All Done");
+        // summary message:
+        let endTime = new Date();
+        // the differenc will be in ms
+        let totalTime = endTime - startTime;
+        console.log("Running time: " + prettyMs(totalTime));
+    });
 });
+
+/**
+ * process one group
+ */
+function processOneLoad(start, reportDone) {
+
+    var rows = [];
+    // the method slice will return the subset of data and
+    // not change the original array.
+    // a new array
+    rows = csvData.slice(start, start + config.csvLoader.solrUpdateBatch);
+
+    strategy.iterateOver(rows, function(doc, report) {
+
+        axios.post(solrEndPoint, doc
+        ).then(function(postRes) {
+            //console.log("Post Success!");
+            report();
+            //console.dir(postRes);
+        }).catch(function(postError) {
+            console.log("Post Failed! - " + doc.sku);
+            //console.dir(postError);
+            // log the erorr and then report the copy is done!
+            report();
+        });
+    }, function() {
+        console.log(now() + " Async post done!");
+        reportDone(config.csvLoader.solrUpdateBatch);
+    });
+}
