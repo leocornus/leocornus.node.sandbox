@@ -81,7 +81,7 @@ function processOneLoad(start, reportDone) {
             report();
             //console.dir(postRes);
         }).catch(function(postError) {
-            console.log("Post Failed! - " + doc.sku);
+            console.log("Post Failed! - " + doc[config.csvLoader.idField]);
             //console.dir(postError);
             // log the erorr and then report the copy is done!
             report();
