@@ -72,10 +72,9 @@ axios.get(solrEndpoint, totalQuery)
             //console.log("Got Response:");
             //console.dir(response.data.response.docs.length);
             let payload = response.data.response.docs.map(function(doc) {
-                // set the _version_ to 0, which will overwrite existing docs.
-                // This will avoid version conflict error.
-                doc["_version_"] = 0;
-                return doc;
+
+                // final touch for each doc.
+                return localConfig.tweakDoc(doc);
             });
 
             // async call
