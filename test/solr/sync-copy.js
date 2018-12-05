@@ -18,14 +18,18 @@ const prettyMs = require('pretty-ms');
 const config = require('./../../src/config');
 const strategy = require('./../../src/strategy');
 
+// timestamp for logging message.
 const now = () => new Date().toUTCString()
-
 const startTime = new Date();
+
+const localConfig = config.solrCopy;
+
 // solr endpoint.
-const solrEndpoint = config.solr.baseUrl + "select";
-const targetEndPoint = config.solr.targetBaseUrl + "update/json/docs?commit=true";
+const solrEndpoint = localConfig.baseUrl + "select";
+const targetEndPoint = localConfig.targetBaseUrl + "update/json/docs?commit=true";
+
 // set batch size.
-const batchSize = config.solr.selectRows;
+const batchSize = localConfig.selectRows;
 console.log("From: " + solrEndpoint);
 console.log("To: " + targetEndPoint);
 console.log("Copy " + batchSize + " docs each time!");
@@ -33,7 +37,7 @@ console.log("Copy " + batchSize + " docs each time!");
 // simple query to get total number:
 let totalQuery = {
     params: {
-        q: config.solr.selectQuery,
+        q: localConfig.selectQuery,
         rows: 1,
         fl: "id"
     }
@@ -44,21 +48,21 @@ axios.get(solrEndpoint, totalQuery)
 
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
-    let bulk = Math.min(config.solr.endIndex, amount);
-    console.log("Working on items from", config.solr.startIndex,
+    let bulk = Math.min(localConfig.endIndex, amount);
+    console.log("Working on items from", localConfig.startIndex,
                 "to", bulk);
 
     // sync interation to get docs from source 
     // batch by batch...
-    strategy.waterfallOver(config.solr.startIndex,
+    strategy.waterfallOver(localConfig.startIndex,
                            bulk, function(start, reportDone) {
 
         axios.get(solrEndpoint, {
           params: {
-            q: config.solr.selectQuery,
+            q: localConfig.selectQuery,
             // sort to make sure we are in the same sequence 
             // for each batch load.
-            sort: config.solr.selectSort,
+            sort: localConfig.selectSort,
             rows: batchSize,
             start: start
           }
@@ -82,7 +86,7 @@ axios.get(solrEndpoint, totalQuery)
                     report();
                     //console.dir(postRes);
                 }).catch(function(postError) {
-                    console.log("Post Failed! - " + doc.sku);
+                    console.log("Post Failed! - " + doc[localConfig.idField]);
                     //console.dir(postError.data);
                     // log the erorr and then report the copy is done!
                     report();
