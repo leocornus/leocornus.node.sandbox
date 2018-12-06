@@ -18,12 +18,14 @@ if (typeof fetch !== 'function') {
     global.fetch = require('node-fetch-polyfill');
 }
 
+const localConfig = config.csvLoader;
+
 var csvData = [];
 
 // update end point.
-const solrEndPoint = config.csvLoader.solrUpdateBase + "update/json/docs?commit=true";
+const solrEndPoint = localConfig.solrUpdateBase + "update/json/docs?commit=true";
 
-d3.csv(config.csvLoader.csvFile,
+d3.csv(localConfig.csvFile,
        // the first parameter is a row,
        // the second parameter is the index, starts from 0
        function(d, index) {
@@ -32,7 +34,7 @@ d3.csv(config.csvLoader.csvFile,
           // we will process row by row.
           //console.log("index = " + index);
           //return d;
-          var newRow = config.csvLoader.updateRow(d);
+          var newRow = localConfig.updateRow(d);
 
           // send payload to Solr for every row is very costy!
           // the better way is group a set of rows (for example 1000) to
@@ -48,9 +50,9 @@ d3.csv(config.csvLoader.csvFile,
     //self.postPayload(data[100]);
     csvData = data;
 
-    let total = Math.min(config.csvLoader.endIndex, data.length);
+    let total = Math.min(localConfig.endIndex, data.length);
     // waterfall over
-    strategy.waterfallOver(config.csvLoader.startIndex,
+    strategy.waterfallOver(localConfig.startIndex,
                            total, processOneLoad, function () {
 
         console.log(now() + " All Done");
@@ -71,7 +73,7 @@ function processOneLoad(start, reportDone) {
     // the method slice will return the subset of data and
     // not change the original array.
     // a new array
-    rows = csvData.slice(start, start + config.csvLoader.solrUpdateBatch);
+    rows = csvData.slice(start, start + localConfig.solrUpdateBatch);
 
     strategy.iterateOver(rows, function(doc, report) {
 
@@ -81,13 +83,13 @@ function processOneLoad(start, reportDone) {
             report();
             //console.dir(postRes);
         }).catch(function(postError) {
-            console.log("Post Failed! - " + doc[config.csvLoader.idField]);
+            console.log("Post Failed! - " + doc[localConfig.idField]);
             //console.dir(postError);
             // log the erorr and then report the copy is done!
             report();
         });
     }, function() {
         console.log(now() + " Async post done!");
-        reportDone(config.csvLoader.solrUpdateBatch);
+        reportDone(localConfig.solrUpdateBatch);
     });
 }
