@@ -9,4 +9,7 @@ module.exports = function(app) {
 
         res.send('<h1>Hello Express World</h1>');
     });
+
+    // stream apis.
+    require("./stream.js")(app);
 };
