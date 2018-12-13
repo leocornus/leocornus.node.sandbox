@@ -20,10 +20,11 @@ module.exports = function(app) {
             let path = req.query.path;
             let folder = path.substring(0, path.lastIndexOf("/"));
             let filename = path.substring(path.lastIndexOf("/") + 1);
-            console.info(`stream file ${folder}/${filename}`);
+            let localFile = path.substring(1).replace(/\//g, '-');
+            console.info(`stream file ${folder}/${filename} to local /tmp/${localFile}`);
 
             fileService.getFileToStream(config.azure.storageFileShare, folder, filename,
-                                        fs.createWriteStream('/tmp/output.pdf'),
+                                        fs.createWriteStream(`/tmp/${localFile}`),
                                         function(error, result, response) {
                 if (!error) {
                     // if result = true, share was created.
