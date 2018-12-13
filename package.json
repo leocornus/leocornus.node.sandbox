@@ -24,7 +24,9 @@
   "dependencies": {
     "axios": "^0.18.0",
     "azure-storage": "^2.10.2",
+    "chalk": "^2.4.1",
     "d3": "^5.7.0",
+    "express": "^4.16.4",
     "node-fetch-polyfill": "^2.0.6",
     "node-sp-auth": "^2.5.4",
     "pretty-ms": "^4.0.0",
