@@ -4,12 +4,12 @@ let config = require("../config");
 let fs = require('fs');
 
 let azure = require('azure-storage');
-let fileService = azure.createFileService(config.azure.storageAccount, 
+let fileService = azure.createFileService(config.azure.storageAccount,
                                           config.azure.storageAccessKey);
 
 module.exports = function(app) {
 
-    // stream file. 
+    // stream file.
     app.get("/stream/file", function(req, res) {
 
         // check the path exist or not.
@@ -17,7 +17,12 @@ module.exports = function(app) {
 
             //res.send(`File: ${req.query.path}`);
             // get file to stream.
-            fileService.getFileToStream(config.azure.storageFileShare, 'csa', '2410984.pdf',
+            let path = req.query.path;
+            let folder = path.substring(0, path.lastIndexOf("/"));
+            let filename = path.substring(path.lastIndexOf("/") + 1);
+            console.info(`stream file ${folder}/${filename}`);
+
+            fileService.getFileToStream(config.azure.storageFileShare, folder, filename,
                                         fs.createWriteStream('/tmp/output.pdf'),
                                         function(error, result, response) {
                 if (!error) {
@@ -25,6 +30,9 @@ module.exports = function(app) {
                     // if result = false, share already existed.
                     console.log("getFile----------------");
                     res.send(response);
+                } else {
+                    console.log("Error: ");
+                    res.send(error);
                 }
             });
         } else {
