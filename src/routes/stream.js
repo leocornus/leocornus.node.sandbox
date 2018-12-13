@@ -30,7 +30,10 @@ module.exports = function(app) {
                     // if result = true, share was created.
                     // if result = false, share already existed.
                     console.log("getFile----------------");
-                    res.send(response);
+                    //res.send(response);
+                    // Express download helper is magic.
+                    // details: http://expressjs.com/en/api.html#res.download
+                    res.download(`/tmp/${localFile}`);
                 } else {
                     console.log("Error: ");
                     res.send(error);
