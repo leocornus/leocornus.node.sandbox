@@ -89,6 +89,15 @@ function listMessages(auth) {
                                 console.log(`${header.name} = ${header.value}`);
                             }
                         });
+                        r.data.payload.parts.forEach((part) => {
+                            //console.dir(part);
+                            console.log(Buffer.from(part.body.data, 'base64').toString('ascii'));
+                        });
+
+                        // The entire email message in an RFC 2822 formatted
+                        // and base64url encoded string
+                        // {userId: 'me', id: msg.id, format: 'RAW'}
+                        //console.dir(r.data.raw);
                     }
                 );
             });
