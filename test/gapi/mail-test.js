@@ -79,7 +79,16 @@ function listMessages(auth) {
                 // get the id.
                 gmail.users.messages.get({userId: 'me', id: msg.id},
                     (e, r) => {
-                        console.dir(r.data);
+                        //console.dir(r.data);
+                        console.log(`===================${r.data.id}=====================`);
+                        // list of all headers.
+                        // headers are defined the RFC 2822
+                        r.data.payload.headers.forEach((header) => {
+                            //console.log(`${header.name} = ${header.value}`);
+                            if(['From', 'Subject', 'Date'].includes(header.name)) {
+                                console.log(`${header.name} = ${header.value}`);
+                            }
+                        });
                     }
                 );
             });
