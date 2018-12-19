@@ -11,7 +11,8 @@ const config = require('./../../src/config');
 
 // Load client secrets from the config file.
 // Authorize a client with credentials, then call the Gmail API.
-authorize(config.googleapis.credentials, listLabels);
+//authorize(config.googleapis.credentials, listLabels);
+authorize(config.googleapis.credentials, listMessages);
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -45,6 +46,8 @@ function listLabels(auth) {
     // list labels
     gmail.users.labels.list({
         // TODO: Why me?
+	// userId is user's email address. The special value 'me'
+	// can be used to indicate the authenticated user
         userId: 'me',
     }, (err, res) => {
         if (err) return console.log('The API returned an error: ' + err);
@@ -59,4 +62,27 @@ function listLabels(auth) {
           console.log('No labels found.');
         }
     });
+}
+
+function listMessages(auth) {
+
+    const gmail = google.gmail({version: 'v1', auth});
+
+    gmail.users.messages.list(
+        {userId: 'me', q: 'is:unread'},
+        (err, res) => {
+
+            //console.dir(res);
+            const msgs = res.data.messages;
+            msgs.forEach((msg) => {
+                //console.dir(msg);
+                // get the id.
+                gmail.users.messages.get({userId: 'me', id: msg.id},
+                    (e, r) => {
+                        console.dir(r.data);
+                    }
+                );
+            });
+        }
+    );
 }
