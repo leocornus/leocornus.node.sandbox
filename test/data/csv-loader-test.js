@@ -45,7 +45,7 @@ d3.csv(localConfig.csvFile,
 ).then(function(data) {
     console.log(`total rows: ${data.length}`);
     //console.log(data[0]);
-    //console.log(`columns: ${data.columns}`);
+    console.log(`columns: ${data.columns}`);
     //self.inputText = JSON.stringify(data[100],null, 2);
     //self.postPayload(data[100]);
     csvData = data;
