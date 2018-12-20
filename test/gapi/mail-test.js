@@ -91,6 +91,7 @@ function listMessages(auth) {
                         });
                         r.data.payload.parts.forEach((part) => {
                             //console.dir(part);
+                            // Buffer class is for encode and decode, such as base64
                             console.log(Buffer.from(part.body.data, 'base64').toString('ascii'));
                         });
 
@@ -104,3 +105,12 @@ function listMessages(auth) {
         }
     );
 }
+
+/**
+ * TODO: find all unread message with attachments.
+ * Actions:
+ *  - download attachments
+ *  - read email message and parse to extract content for fields.
+ *  - set the email to read.
+ *  - upload attachements to media wiki.
+ */
