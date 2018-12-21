@@ -11,6 +11,26 @@
  *    calculate the squre
  */
 
+const fs = require('fs');
+const now = () => new Date().toUTCString();
+
+async function calSqure(number) {
+
+    let promise = new Promise((resolve, reject) => {
+        fs.readFile(number + ".txt", 'utf8',
+            (err, data) => {
+               console.log(now() + " read number: " + data);
+               var num = parseInt(data);
+               // resolve will result the result.
+               resolve(number * num);
+            }
+        );
+    });
+
+    // await the promise to resolve
+    return await promise;
+}
+
 // preparing the numbers array.
 let numbers = [];
 for(var i = 0; i < 10; i ++) {
@@ -18,10 +38,21 @@ for(var i = 0; i < 10; i ++) {
 }
 console.log(numbers);
 
+// get ready file to read.
+numbers.forEach(function(number) {
+
+    // by default fs will write to current folder,
+    // where we execute the js file.
+    fs.writeFile(number + ".txt", number, 'utf8', (err) => {
+        // logging...
+        console.log(now() + ' write file: ' + number + ".txt");
+    });
+});
+
 // calculate the square for each number.
-//let newNums = numbers.map((number) => number * number);
-//console.log(newNums);
+let newNums = numbers.map(calSqure);
+console.log(newNums);
 
 // using Promise.all
-let promises = numbers.map((number) => number * number);
+let promises = numbers.map(calSqure);
 Promise.all(promises).then((results) => console.log(results));
