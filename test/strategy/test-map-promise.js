@@ -19,6 +19,9 @@ for(var i = 0; i < 10; i ++) {
 console.log(numbers);
 
 // calculate the square for each number.
-let newNums = numbers.map((number) => number * number);
-console.log(newNums);
+//let newNums = numbers.map((number) => number * number);
+//console.log(newNums);
 
+// using Promise.all
+let promises = numbers.map((number) => number * number);
+Promise.all(promises).then((results) => console.log(results));
