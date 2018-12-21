@@ -84,7 +84,8 @@ axios.get(solrEndpoint, totalQuery)
                     q: `${localConfig.idField}:${doc[localConfig.idField]}`
                   }
                 };
-                console.log(query);
+                // inspect query.
+                //console.log(query);
                 // query the matched doc.
                 axios.get(localConfig.targetBaseUrl + "select", query)
                 .then(function(res) {
