@@ -50,9 +50,22 @@ numbers.forEach(function(number) {
 });
 
 // calculate the square for each number.
+// NOTE: we will not get result!
 let newNums = numbers.map(calSqure);
 console.log(newNums);
 
 // using Promise.all
 let promises = numbers.map(calSqure);
-Promise.all(promises).then((results) => console.log(results));
+Promise.all(promises).then((results) => {
+
+    console.log(results)
+
+    // remove all temp files.
+    numbers.forEach(function(number) {
+
+        fs.unlink(number + ".txt",(err) => {
+            // logging...
+            console.log(now() + ' remove file: ' + number + ".txt");
+        });
+    });
+});
