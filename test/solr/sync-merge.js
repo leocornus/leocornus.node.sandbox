@@ -94,6 +94,12 @@ axios.get(solrEndpoint, totalQuery)
                     let theDoc = localConfig.mergeDoc(res.data.response.docs[0], 
                                                       doc);
                     //console.dir(theDoc);
+                    if(theDoc === null) {
+                        // target has the source content!
+                        // skip it!
+                        console.log(`File exist! Skip - ${doc[localConfig.idField]}`);
+                        report();
+                    }
                     // post to target.
                     axios.post(targetEndPoint, theDoc
                     ).then(function(postRes) {
@@ -109,6 +115,7 @@ axios.get(solrEndpoint, totalQuery)
                 })
                 .catch(function(err) {
                     console.log("Query Failed! - " + doc[localConfig.idField]);
+                    //console.dir(err);
                     report();
                 });
             }, function() {
