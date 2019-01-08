@@ -73,6 +73,19 @@ axios.request(reqConf).then(function(response) {
     axios.request(reqConf).then(function(res) {
 
         console.log(res.data);
+        /**
+         * Step 3: get all versions for a document.
+         *         /api/2.0/Version?documentId=
+         *         we will get many things from here:
+         *         - DocCode
+         *         - WebViewUrl
+         *         - DownloadUrl
+         *         - ProtectionPassword
+         *         - Unique version id
+         *
+         * Step 4: Download file.
+         *         /api/2.0/Version/File/[UNIQUE VERSION ID]
+         */
     }).catch(function(err) {
 
         console.log(err);
