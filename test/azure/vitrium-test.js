@@ -44,35 +44,37 @@ let reqConf = {
 // challenge to get ServerNonce.
 axios.request(reqConf).then(function(response) {
 
+    // collect server Nonce
+    //console.dir(response.data);
+    let serverNonce = response.data.ServerNonce;
+
     /**
      * Step 2: get the login response.
      */
-    console.dir(response.data);
-    let serverNonce = response.data.ServerNonce;
-
     // get ready the client Hash:
     let message = clientNonce + serverNonce + config.vitrium.password;
-    console.dir(message);
+    //console.dir(message);
     let clientHash = hmacsha1(message, config.vitrium.password);
-    console.dir(clientHash);
-    console.dir(clientHash.toString());
-    //console.dir(clientHash.words.join(""));
+    //console.dir(clientHash);
+    //console.dir(clientHash.toString());
 
     // get ready the login response request.
     reqConf['url'] = config.vitrium.docApiBaseUrl + '/Login/Response';
     // the payload.
     reqConf['data'] = {
       'ClientNonce': clientNonce,
+      // Vitrium requires Upper Case for client hash
       'ClientHash': clientHash.toString().toUpperCase(),
       'UserName': config.vitrium.userName,
       'ApplicationId': 'test'
     };
-    console.dir(reqConf);
+    //console.dir(reqConf);
 
     axios.request(reqConf).then(function(res) {
 
         console.log(res.data);
     }).catch(function(err) {
+
         console.log(err);
     });
 
