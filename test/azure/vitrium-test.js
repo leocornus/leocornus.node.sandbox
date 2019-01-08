@@ -12,6 +12,8 @@
 const axios = require('axios');
 // using the UUID v4.
 const uuidv4 = require('uuid/v4');
+// hmac-sha1 crypto
+const hmacsha1 = require('crypto-js/hmac-sha1');
 // we should have separate local.js file for vitrium.
 const config = require('./../../src/config');
 
@@ -49,7 +51,31 @@ axios.request(reqConf).then(function(response) {
     let serverNonce = response.data.ServerNonce;
 
     // get ready the client Hash:
-    //let clientHash = gen
+    let message = clientNonce + serverNonce + config.vitrium.password;
+    console.dir(message);
+    let clientHash = hmacsha1(message, config.vitrium.password);
+    console.dir(clientHash);
+    console.dir(clientHash.toString());
+    //console.dir(clientHash.words.join(""));
+
+    // get ready the login response request.
+    reqConf['url'] = config.vitrium.docApiBaseUrl + '/Login/Response';
+    // the payload.
+    reqConf['data'] = {
+      'ClientNonce': clientNonce,
+      'ClientHash': clientHash.toString().toUpperCase(),
+      'UserName': config.vitrium.userName,
+      'ApplicationId': 'test'
+    };
+    console.dir(reqConf);
+
+    axios.request(reqConf).then(function(res) {
+
+        console.log(res.data);
+    }).catch(function(err) {
+        console.log(err);
+    });
+
 }).catch(function(error) {
 
     console.dir(error);
