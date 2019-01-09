@@ -19,119 +19,51 @@ const config = require('./../../src/config');
 
 // set up the request header.
 let headers = {};
-headers['X-VITR-ACCOUNT-TOKEN'] = config.vitrium.accountToken;
-headers["X-VITR-SESSION-TOKEN"] = config.vitrium.sessionToken;
-
-// set the client nonce
-let clientNonce = uuidv4();
-
-// set the payload
-let payload = {
-  "ClientNonce": clientNonce
-}
+// update headers with new tokens.
+// TODO: check to make sure the reponse has new tokens
+headers['X-VITR-ACCOUNT-TOKEN'] = config.vitrium.oAccountToken;
+headers["X-VITR-SESSION-TOKEN"] = config.vitrium.oSessionToken;
 
 /**
- * Step 1: get challenge server to get a ServerNonce.
+ * Step 3: get all versions for a document.
+ *         /api/2.0/Version?documentId=
+ *         we will get many things from here:
+ *         - DocCode
+ *         - WebViewUrl
+ *         - DownloadUrl
+ *         - ProtectionPassword
+ *         - Unique version id
  */
-// get ready the axios request config
-let reqConf = {
-  url: config.vitrium.docApiBaseUrl + '/Login/Challenge',
-  method: 'post',
-  headers: headers,
-  data: payload
-}
-
-// challenge to get ServerNonce.
-axios.request(reqConf).then(function(response) {
-
-    // collect server Nonce
-    //console.dir(response.data);
-    let serverNonce = response.data.ServerNonce;
+// get read the request.
+let getVersions = {
+    url: config.vitrium.docApiBaseUrl + '/Version',
+    method: 'get',
+    headers: headers,
+    params: {
+        documentId: config.vitrium.testData.docIds[0]
+    }
+};
+axios.request(getVersions).then(function(versionsRes) {
+    console.log(versionsRes.config);
+    console.log(versionsRes.data);
 
     /**
-     * Step 2: get the login response.
-     * - use client nonce, server nonce and password to
-     *   generate the client hash
-     * - collect new account token and session token for all other actions.
-     * - the updated tokens will be expired in one hour
+     *
+     * Step 4: Download file.
+     *         /api/2.0/Version/File/[UNIQUE VERSION ID]
      */
-    // get ready the client Hash:
-    let message = clientNonce + serverNonce + config.vitrium.password;
-    //console.dir(message);
-    let clientHash = hmacsha1(message, config.vitrium.password);
-    //console.dir(clientHash);
-    //console.dir(clientHash.toString());
-
-    // get ready the login response request.
-    reqConf['url'] = config.vitrium.docApiBaseUrl + '/Login/Response';
-    // the payload.
-    reqConf['data'] = {
-      'ClientNonce': clientNonce,
-      // Vitrium requires Upper Case for client hash
-      'ClientHash': clientHash.toString().toUpperCase(),
-      'UserName': config.vitrium.userName,
-      'ApplicationId': 'test'
+    let download = {
+        url: versionsRes.data.Results[0].DownloadUrl,
+        method: 'get',
+        headers: headers,
     };
-    //console.dir(reqConf);
-
-    axios.request(reqConf).then(function(res) {
-
-        console.log(res.data);
-        // update headers with new tokens.
-        // TODO: check to make sure the reponse has new tokens
-        headers['X-VITR-ACCOUNT-TOKEN'] = res.data.Accounts[0].Id;
-        headers["X-VITR-SESSION-TOKEN"] = res.data.ApiSession.Token;
-
-        /**
-         * Step 3: get all versions for a document.
-         *         /api/2.0/Version?documentId=
-         *         we will get many things from here:
-         *         - DocCode
-         *         - WebViewUrl
-         *         - DownloadUrl
-         *         - ProtectionPassword
-         *         - Unique version id
-         */
-        // get read the request.
-        let getVersions = {
-            url: config.vitrium.docApiBaseUrl + '/Version',
-            method: 'get',
-            headers: headers,
-            params: {
-                documentId: config.vitrium.testData.docIds[0]
-            }
-        };
-        axios.request(getVersions).then(function(versionsRes) {
-            console.log(versionsRes.config);
-            console.log(versionsRes.data);
-
-            /**
-             *
-             * Step 4: Download file.
-             *         /api/2.0/Version/File/[UNIQUE VERSION ID]
-             */
-            let download = {
-                url: versionsRes.data.Results[0].DownloadUrl,
-                method: 'get',
-                headers: headers,
-            };
-            axios.request(download).then(function(downloadRes) {
-                //
-                console.log(downloadRes.data);
-            }).catch(function(downloadErr) {
-                console.log(downloadErr.config);
-                console.log(downloadErr.response.data);
-            });
-        }).catch(function(versionsErr) {
-            console.log(versionsErr);
-        });
-
-    }).catch(function(err) {
-
-        console.log(err);
+    axios.request(download).then(function(downloadRes) {
+        //
+        console.dir(downloadRes.data);
+    }).catch(function(downloadErr) {
+        console.log(downloadErr.config);
+        console.log(downloadErr.response.data);
     });
-
-}).catch(function(error) {
-
-    console.dir(error);
+}).catch(function(versionsErr) {
+    console.log(versionsErr);
 });
