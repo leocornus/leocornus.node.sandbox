@@ -58,11 +58,49 @@ axios.request(getVersions).then(function(versionsRes) {
         headers: headers,
     };
     axios.request(download).then(function(downloadRes) {
-        //
-        console.dir(downloadRes.data);
+        // the data will be the binary of the file.
+        console.log("file Size: " + downloadRes.data.length);
     }).catch(function(downloadErr) {
         console.log(downloadErr.config);
         console.log(downloadErr.response.data);
+    });
+
+    /**
+     * /Verison/Unique.
+     *
+     * thie call need set up policy and access policy
+     *
+     */
+    let unique = {
+        url: config.vitrium.docApiBaseUrl + '/Version/Unique',
+        method: 'post',
+        headers: headers,
+        data: {
+            DocCode: versionsRes.data.Results[0].DocCode,
+            UniqueDocCopyId: uuidv4(),
+            UserName: 'test',
+            DocPolicyOverride: {
+                AcroJsGosBehaviorType: 'PromptAndCloseDocument',
+                AcroJsGosUnlimitedBehaviourType: 'PromptAndCloseDocument',
+                AllowBuildInLoginTemplate: true,
+                AllowCopy: true,
+                PrintType: 'HighResolution'
+            },
+            AccessPolicyOverride: {
+                ComputersMax: 2,
+                OfflineDurationinDays: 7,
+                DocumentLimit: 1,
+                ExpiryInMins: 5256000
+            }
+        }
+    };
+    //console.log(unique);
+    axios.request(unique).then(function(uniqueRes) {
+        // the data will be the binary of the file.
+        console.log("Unique file Size: " + uniqueRes.data.length);
+    }).catch(function(uniqueErr) {
+        console.log(uniqueErr.config);
+        console.log(uniqueErr.response.data);
     });
 }).catch(function(versionsErr) {
     console.log(versionsErr);
