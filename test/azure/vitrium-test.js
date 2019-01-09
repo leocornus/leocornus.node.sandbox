@@ -18,7 +18,7 @@ const hmacsha1 = require('crypto-js/hmac-sha1');
 const config = require('./../../src/config');
 
 // set up the request header.
-let headers = [];
+let headers = {};
 headers['X-VITR-ACCOUNT-TOKEN'] = config.vitrium.accountToken;
 headers["X-VITR-SESSION-TOKEN"] = config.vitrium.sessionToken;
 
@@ -37,7 +37,7 @@ let payload = {
 let reqConf = {
   url: config.vitrium.docApiBaseUrl + '/Login/Challenge',
   method: 'post',
-  header: headers,
+  headers: headers,
   data: payload
 }
 
@@ -50,6 +50,10 @@ axios.request(reqConf).then(function(response) {
 
     /**
      * Step 2: get the login response.
+     * - use client nonce, server nonce and password to
+     *   generate the client hash
+     * - collect new account token and session token for all other actions.
+     * - the updated tokens will be expired in one hour
      */
     // get ready the client Hash:
     let message = clientNonce + serverNonce + config.vitrium.password;
@@ -73,6 +77,11 @@ axios.request(reqConf).then(function(response) {
     axios.request(reqConf).then(function(res) {
 
         console.log(res.data);
+        // update headers with new tokens.
+        // TODO: check to make sure the reponse has new tokens
+        headers['X-VITR-ACCOUNT-TOKEN'] = res.data.Accounts[0].Id;
+        headers["X-VITR-SESSION-TOKEN"] = res.data.ApiSession.Token;
+
         /**
          * Step 3: get all versions for a document.
          *         /api/2.0/Version?documentId=
@@ -82,6 +91,23 @@ axios.request(reqConf).then(function(response) {
          *         - DownloadUrl
          *         - ProtectionPassword
          *         - Unique version id
+         */
+        // get read the request.
+        let getVersions = {
+            url: config.vitrium.docApiBaseUrl + '/Version',
+            method: 'get',
+            headers: headers,
+            params: {
+                documentId: config.vitrium.testData.docIds[0]
+            }
+        };
+        axios.request(getVersions).then(function(versionsRes) {
+            console.log(versionsRes.data);
+        }).catch(function(versionsErr) {
+            console.log(versionsErr);
+        });
+
+        /**
          *
          * Step 4: Download file.
          *         /api/2.0/Version/File/[UNIQUE VERSION ID]
