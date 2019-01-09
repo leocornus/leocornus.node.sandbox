@@ -102,16 +102,30 @@ axios.request(reqConf).then(function(response) {
             }
         };
         axios.request(getVersions).then(function(versionsRes) {
+            console.log(versionsRes.config);
             console.log(versionsRes.data);
+
+            /**
+             *
+             * Step 4: Download file.
+             *         /api/2.0/Version/File/[UNIQUE VERSION ID]
+             */
+            let download = {
+                url: versionsRes.data.Results[0].DownloadUrl,
+                method: 'get',
+                headers: headers,
+            };
+            axios.request(download).then(function(downloadRes) {
+                //
+                console.log(downloadRes.data);
+            }).catch(function(downloadErr) {
+                console.log(downloadErr.config);
+                console.log(downloadErr.response.data);
+            });
         }).catch(function(versionsErr) {
             console.log(versionsErr);
         });
 
-        /**
-         *
-         * Step 4: Download file.
-         *         /api/2.0/Version/File/[UNIQUE VERSION ID]
-         */
     }).catch(function(err) {
 
         console.log(err);
