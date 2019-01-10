@@ -96,6 +96,37 @@ let vitrium = {
         
             console.dir(error);
         });
+    },
+
+    /**
+     * quick method to get policy.
+     *
+     */
+    getPolicies(account, session, callback) {
+
+        // get ready the request.
+        let policyReq = {
+            url: this.docApiBaseUrl + 'Policy',
+            method: 'get',
+            headers: {
+              'X-VITR-ACCOUNT-TOKEN': account,
+              'X-VITR-SESSION-TOKEN': session
+            }
+        };
+        console.log(policyReq);
+
+        axios.request(policyReq).then(function(policyRes) {
+
+            // 
+            console.log(policyRes);
+            console.log(policyRes.config);
+            console.log(policyRes.data);
+            callback(policyRes);
+        }).catch(function(policyErr) {
+
+            console.log(policyErr.data);
+            callback(null, policyErr);
+        });
     }
 };
 
