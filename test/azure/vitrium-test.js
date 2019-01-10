@@ -14,6 +14,8 @@ const axios = require('axios');
 const uuidv4 = require('uuid/v4');
 // hmac-sha1 crypto
 const hmacsha1 = require('crypto-js/hmac-sha1');
+const fs = require('fs');
+
 // we should have separate local.js file for vitrium.
 const config = require('./../../src/config');
 
@@ -36,7 +38,7 @@ headers["X-VITR-SESSION-TOKEN"] = config.vitrium.oSessionToken;
  */
 // get read the request.
 let getVersions = {
-    url: config.vitrium.docApiBaseUrl + '/Version',
+    url: config.vitrium.docApiBaseUrl + 'Version',
     method: 'get',
     headers: headers,
     params: {
@@ -45,7 +47,7 @@ let getVersions = {
 };
 axios.request(getVersions).then(function(versionsRes) {
     console.log(versionsRes.config);
-    console.log(versionsRes.data);
+    console.dir(versionsRes.data);
 
     /**
      *
@@ -58,6 +60,7 @@ axios.request(getVersions).then(function(versionsRes) {
         headers: headers,
     };
     axios.request(download).then(function(downloadRes) {
+        console.log(downloadRes.config);
         // the data will be the binary of the file.
         console.log("file Size: " + downloadRes.data.length);
     }).catch(function(downloadErr) {
@@ -72,7 +75,7 @@ axios.request(getVersions).then(function(versionsRes) {
      *
      */
     let unique = {
-        url: config.vitrium.docApiBaseUrl + '/Version/Unique',
+        url: config.vitrium.docApiBaseUrl + 'Version/Unique',
         method: 'post',
         headers: headers,
         data: {
@@ -87,17 +90,23 @@ axios.request(getVersions).then(function(versionsRes) {
                 PrintType: 'HighResolution'
             },
             AccessPolicyOverride: {
-                ComputersMax: 2,
-                OfflineDurationinDays: 7,
-                DocumentLimit: 1,
-                ExpiryInMins: 5256000
+                ComputersMax: 200,
+                OfflineDurationinDays: 700,
+                DocumentLimit: 100,
+                ExpiryInMins: 52560000
             }
         }
     };
     //console.log(unique);
     axios.request(unique).then(function(uniqueRes) {
+        console.log(uniqueRes.config);
         // the data will be the binary of the file.
         console.log("Unique file Size: " + uniqueRes.data.length);
+
+        // save to local
+        fs.writeFile('unique.pdf', uniqueRes.data, (wErr) => {
+            console.log(wErr);
+        });
     }).catch(function(uniqueErr) {
         console.log(uniqueErr.config);
         console.log(uniqueErr.response.data);
