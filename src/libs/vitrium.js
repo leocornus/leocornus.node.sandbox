@@ -143,6 +143,28 @@ let vitrium = {
     },
 
     /**
+     * get one reader by user name.
+     */
+    getReader(account, session, username, callback) {
+    
+        // build the request.
+        let readerReq = {
+            // security APIs.
+            url: this.securityApiBaseUrl + 'Reader/Username',
+            method: 'get',
+            headers: {
+              'X-VITR-ACCOUNT-TOKEN': account,
+              'X-VITR-SESSION-TOKEN': session
+            },
+            params: {
+              "Username": username
+            }
+        };
+
+        this.generalApiCall(readerReq, callback);
+    },
+
+    /**
      * General api calls.
      * The callback will have 2 params: res, err.
      */
