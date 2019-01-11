@@ -130,6 +130,12 @@ let vitrium = {
             headers: {
               'X-VITR-ACCOUNT-TOKEN': account,
               'X-VITR-SESSION-TOKEN': session
+            },
+            params: {
+              "page": {
+                 "index": 1,
+                 "size": 20
+              }
             }
         };
 
