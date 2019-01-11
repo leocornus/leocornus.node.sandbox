@@ -42,7 +42,7 @@ let getVersions = {
     method: 'get',
     headers: headers,
     params: {
-        documentId: config.vitrium.testData.docIds[0]
+        documentId: config.vitrium.testData.docIds[1]
     }
 };
 axios.request(getVersions).then(function(versionsRes) {
@@ -81,7 +81,7 @@ axios.request(getVersions).then(function(versionsRes) {
         data: {
             DocCode: versionsRes.data.Results[0].DocCode,
             UniqueDocCopyId: uuidv4(),
-	    Username: config.vitrium.testData.users[0],
+            UserName: config.vitrium.testData.users[0],
             DocPolicyOverride: {
                 AcroJsGosBehaviorType: 'PromptAndCloseDocument',
                 AcroJsGosUnlimitedBehaviourType: 'PromptAndCloseDocument',
