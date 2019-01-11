@@ -15,19 +15,19 @@ const config = require('./../../src/config');
 const vitrium = require('./../../src/libs/vitrium');
 
 // quick test to get all policies.
-vitrium.getPolicies(config.vitrium.oAccountToken,
-                    config.vitrium.oSessionToken,
-                    (res, err) => {
+vitrium.getReaders(config.vitrium.oAccountToken,
+                   config.vitrium.oSessionToken,
+                   (res, err) => {
 
     //console.log(res);
-    let policies = res.data.Results.map((policy) => {
-        // get the id, name, and createdon.
-        return {
-          Id: policy.Id,
-          Name: policy.Name,
-          CreatedOn: policy.CreatedOn
-        };
-    });
+    //let readers = res.data.Results.map((reader) => {
+    //    // get the id, name, and createdon.
+    //    return {
+    //      Id: policy.Id,
+    //      Name: policy.Name,
+    //      CreatedOn: policy.CreatedOn
+    //    };
+    //});
 
-    console.log(policies);
+    //console.log(policies);
 });
