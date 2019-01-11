@@ -20,4 +20,14 @@ vitrium.getPolicies(config.vitrium.oAccountToken,
                     (res, err) => {
 
     //console.log(res);
+    let policies = res.data.Results.map((policy) => {
+        // get the id, name, and createdon.
+        return {
+          Id: policy.Id,
+          Name: policy.Name,
+          CreatedOn: policy.CreatedOn
+        };
+    });
+
+    console.log(policies);
 });
