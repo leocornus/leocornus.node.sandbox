@@ -81,7 +81,7 @@ axios.request(getVersions).then(function(versionsRes) {
         data: {
             DocCode: versionsRes.data.Results[0].DocCode,
             UniqueDocCopyId: uuidv4(),
-            UserName: 'test',
+	    Username: config.vitrium.testData.users[0],
             DocPolicyOverride: {
                 AcroJsGosBehaviorType: 'PromptAndCloseDocument',
                 AcroJsGosUnlimitedBehaviourType: 'PromptAndCloseDocument',
@@ -104,6 +104,7 @@ axios.request(getVersions).then(function(versionsRes) {
         console.log("Unique file Size: " + uniqueRes.data.length);
 
         // save to local
+        console.dir(uniqueRes);
         fs.writeFile('unique.pdf', uniqueRes.data, (wErr) => {
             console.log(wErr);
         });
