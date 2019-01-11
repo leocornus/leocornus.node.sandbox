@@ -113,19 +113,45 @@ let vitrium = {
               'X-VITR-SESSION-TOKEN': session
             }
         };
-        console.log(policyReq);
+        //console.log(policyReq);
+        this.generalApiCall(policyReq, callback);
+    },
 
-        axios.request(policyReq).then(function(policyRes) {
+    /**
+     * get all readers.
+     */
+    getReaders(account, session, callback) {
 
-            // 
-            console.log(policyRes);
-            console.log(policyRes.config);
-            console.log(policyRes.data);
-            callback(policyRes);
-        }).catch(function(policyErr) {
+        // build the request.
+        let readerReq = {
+            // security APIs.
+            url: this.securityApiBaseUrl + 'Reader',
+            method: 'get',
+            headers: {
+              'X-VITR-ACCOUNT-TOKEN': account,
+              'X-VITR-SESSION-TOKEN': session
+            }
+        };
 
-            console.log(policyErr.data);
-            callback(null, policyErr);
+        this.generalApiCall(readerReq, callback);
+    },
+
+    /**
+     * General api calls.
+     * The callback will have 2 params: res, err.
+     */
+    generalApiCall(req, callback) {
+
+        axios.request(req).then(function(res) {
+
+            //console.log(res);
+            //console.log(res.config);
+            console.log(res.data);
+            callback(res);
+        }).catch(function(err) {
+
+            console.log(err.data);
+            callback(null, err);
         });
     }
 };
