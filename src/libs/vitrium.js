@@ -165,6 +165,28 @@ let vitrium = {
     },
 
     /**
+     * get multiple docs
+     */
+    getDocs(account, session, offset, limit, callback) {
+
+        // construct the query request.
+        let docsReq = {
+            url: this.docApiBaseUrl + 'Doc',
+            method: 'get',
+            headers: {
+              'X-VITR-ACCOUNT-TOKEN': account,
+              'X-VITR-SESSION-TOKEN': session
+            },
+            params: {
+                "pagination.limit": limit,
+                "pagination.offset": offset
+            }
+        };
+
+        this.generalApiCall(docsReq, callback);
+    },
+
+    /**
      * General api calls.
      * The callback will have 2 params: res, err.
      */
@@ -173,8 +195,8 @@ let vitrium = {
         axios.request(req).then(function(res) {
 
             //console.log(res);
-            //console.log(res.config);
-            console.log(res.data);
+            console.log(res.config);
+            //console.log(res.data);
             callback(res);
         }).catch(function(err) {
 
