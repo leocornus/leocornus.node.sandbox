@@ -102,7 +102,7 @@ let vitrium = {
      * quick method to get policy.
      *
      */
-    getPolicies(account, session, callback) {
+    getPolicies(account, session, offset, limit, callback) {
 
         // get ready the request.
         let policyReq = {
@@ -111,7 +111,17 @@ let vitrium = {
             headers: {
               'X-VITR-ACCOUNT-TOKEN': account,
               'X-VITR-SESSION-TOKEN': session
+            },
+            params: {
+              "page": {
+                 "index": offset,
+                 "size": limit
+              }
             }
+            //data: {
+            //    "query.pagination.limit": limit,
+            //    "query.pagination.offset": offset
+            //}
         };
         //console.log(policyReq);
         this.generalApiCall(policyReq, callback);
@@ -134,7 +144,7 @@ let vitrium = {
             params: {
               "page": {
                  "index": 1,
-                 "size": 20
+                 "size": 5
               }
             }
         };
@@ -166,6 +176,8 @@ let vitrium = {
 
     /**
      * get multiple docs
+     *
+     * offset starts from 1
      */
     getDocs(account, session, offset, limit, callback) {
 
@@ -178,8 +190,10 @@ let vitrium = {
               'X-VITR-SESSION-TOKEN': session
             },
             params: {
-                "pagination.limit": limit,
-                "pagination.offset": offset
+              "page": {
+                 "index": offset,
+                 "size": limit
+              }
             }
         };
 
@@ -196,7 +210,7 @@ let vitrium = {
 
             //console.log(res);
             console.log(res.config);
-            //console.log(res.data);
+            console.log(res.data);
             callback(res);
         }).catch(function(err) {
 
