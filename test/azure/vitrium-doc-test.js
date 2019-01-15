@@ -17,7 +17,7 @@ const vitrium = require('./../../src/libs/vitrium');
 // quick test to get all policies.
 vitrium.getDocs(config.vitrium.oAccountToken,
                 config.vitrium.oSessionToken,
-                0, 5,
+                1, 5,
                 (res, err) => {
 
     console.log(res.data.Results.length);
