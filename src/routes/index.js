@@ -12,4 +12,7 @@ module.exports = function(app) {
 
     // stream apis.
     require("./stream.js")(app);
+
+    // some client.
+    require("./client.js")(app);
 };
