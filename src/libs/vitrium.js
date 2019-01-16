@@ -105,24 +105,9 @@ let vitrium = {
     getPolicies(account, session, offset, limit, callback) {
 
         // get ready the request.
-        let policyReq = {
-            url: this.docApiBaseUrl + 'Policy',
-            method: 'get',
-            headers: {
-              'X-VITR-ACCOUNT-TOKEN': account,
-              'X-VITR-SESSION-TOKEN': session
-            },
-            params: {
-              "page": {
-                 "index": offset,
-                 "size": limit
-              }
-            }
-            //data: {
-            //    "query.pagination.limit": limit,
-            //    "query.pagination.offset": offset
-            //}
-        };
+        let policyReq =
+            this.buildGetRequest('Policy', account, session, offset, limit);
+
         //console.log(policyReq);
         this.generalApiCall(policyReq, callback);
     },
@@ -182,8 +167,33 @@ let vitrium = {
     getDocs(account, session, offset, limit, callback) {
 
         // construct the query request.
-        let docsReq = {
-            url: this.docApiBaseUrl + 'Doc',
+        let docsReq =
+            this.buildGetRequest('Doc', account, session, offset, limit);
+
+        this.generalApiCall(docsReq, callback);
+    },
+
+    /**
+     * get multiple docs
+     *
+     * offset starts from 1
+     */
+    getFolders(account, session, offset, limit, callback) {
+
+        // construct the query request.
+        let foldersReq =
+            this.buildGetRequest('Folder', account, session, offset, limit);
+
+        this.generalApiCall(foldersReq, callback);
+    },
+
+    /**
+     * utility function to get ready the get request.
+     */
+    buildGetRequest(uri, account, session, offset, limit) {
+
+        return {
+            url: this.docApiBaseUrl + uri,
             method: 'get',
             headers: {
               'X-VITR-ACCOUNT-TOKEN': account,
@@ -196,8 +206,6 @@ let vitrium = {
               }
             }
         };
-
-        this.generalApiCall(docsReq, callback);
     },
 
     /**
