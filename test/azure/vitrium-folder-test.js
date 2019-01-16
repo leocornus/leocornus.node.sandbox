@@ -15,7 +15,7 @@ const config = require('./../../src/config');
 const vitrium = require('./../../src/libs/vitrium');
 
 // quick test to get all policies.
-vitrium.getDocs(config.vitrium.oAccountToken,
+vitrium.getFolders(config.vitrium.oAccountToken,
                 config.vitrium.oSessionToken,
                 1, 15,
                 (res, err) => {
