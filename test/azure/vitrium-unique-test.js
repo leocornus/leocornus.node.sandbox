@@ -37,33 +37,38 @@ let unique = {
     method: 'post',
     headers: headers,
     data: {
-        DocCode: config.vitrium.testData.docCodes[0],
-        UniqueDocCopyId: uuidv4(),
-        UserName: config.vitrium.testData.users[0],
-        DocPolicyOverride: {
-            AcroJsGosBehaviorType: 'PromptAndCloseDocument',
-            AcroJsGosUnlimitedBehaviourType: 'PromptAndCloseDocument',
-            AllowBuildInLoginTemplate: true,
-            AllowCopy: true,
-            PrintType: 'HighResolution'
-        },
-        AccessPolicyOverride: {
-            ComputersMax: 2,
-            OfflineDurationinDays: 7,
-            DocumentLimit: 1,
-            ExpiryInMins: 525600
-        }
+      "DocCode": config.vitrium.testData.docCodes[0],
+      "UserName": config.vitrium.testData.users[0],
+      "UniqueDocCopyId": uuidv4(),
+      "DocPolicyOverride": {
+        "PrintType": "HighResolution",
+        "AllowCopy": true,
+        "AllowBuildInLoginTemplate": true,
+        "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
+        "AcroJsGosBehaviorType": "PromptAndCloseDocument"
+      },
+      "AccessPolicyOverride": {
+        "RelativeExpiryInDays": null,
+        "OpenLimit": null,
+        "OfflineDurationinDays": 18250,
+        "IpAddressesMax": null,
+        "IgnoredIpAddresses": null,
+        "ExpiryInMins": 5256000,
+        "DocumentLimit": 1,
+        "ComputersMax": 2
+      }
     }
 };
 //console.log(unique);
 axios.request(unique).then(function(uniqueRes) {
     console.log(uniqueRes.config);
+    console.log(uniqueRes.config.data);
     // the data will be the binary of the file.
     console.log("Unique file Size: " + uniqueRes.data.length);
 
     // save to local
-    console.dir(uniqueRes);
-    fs.writeFile('unique-0.pdf', uniqueRes.data, (wErr) => {
+    //console.dir(uniqueRes);
+    fs.writeFile('unique-1.pdf', uniqueRes.data, (wErr) => {
         console.log(wErr);
     });
 }).catch(function(uniqueErr) {
