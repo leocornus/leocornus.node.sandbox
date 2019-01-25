@@ -34,8 +34,39 @@ headers["X-VITR-SESSION-TOKEN"] = config.vitrium.oSessionToken;
  */
 let unique = {
     url: config.vitrium.docApiBaseUrl + 'Version/Unique',
-    method: 'post',
+    method: 'POST',
     headers: headers,
+    //data: {
+    //  "mode": "raw",
+    //  "raw": {
+    //    "DocCode": config.vitrium.testData.docCodes[0],
+    //    "UserName": config.vitrium.testData.users[0],
+    //    "UniqueDocCopyId": uuidv4(),
+    //    "DocPolicyOverride": {
+    //      "PrintType": "HighResolution",
+    //      "AllowCopy": true,
+    //      "AllowBuildInLoginTemplate": true,
+    //      "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
+    //      "AcroJsGosBehaviorType": "PromptAndCloseDocument"
+    //    },
+    //    "AccessPolicyOverride": {
+    //      "RelativeExpiryInDays": null,
+    //      "OpenLimit": null,
+    //      "OfflineDurationinDays": 18250,
+    //      "IpAddressesMax": null,
+    //      "IgnoredIpAddresses": null,
+    //      "ExpiryInMins": 5256000,
+    //      "DocumentLimit": 1,
+    //      "ComputersMax": 2
+    //    }
+    //  }
+    //  //"raw": "{\"DocCode\":\"" + config.vitrium.testData.docCodes[0] +
+    //  //       "\",\"UserName\":\"" + config.vitrium.testData.users[0] +
+    //  //       "\",\"UniqueDocCopyId\":\"" + uuidv4() + "\",\"DocPolicyOverride\":{\"PrintType\":\"HighResolution\",\"AllowCopy\":true,\"AllowBuildInLoginTemplate\":true,\"AcroJsGosUnlimitedBehaviourType\":\"PromptAndCloseDocument\",\"AcroJsGosBehaviorType\":\"PromptAndCloseDocument\"},\"AccessPolicyOverride\":{\"RelativeExpiryInDays\":null,\"OpenLimit\":null,\"OfflineDurationinDays\":18250,\"IpAddressesMax\":null,\"IgnoredIpAddresses\":null,\"ExpiryInMins\":5256000,\"DocumentLimit\":1,\"ComputersMax\":2}}"
+    //  //"raw": '{"DocCode":"' + config.vitrium.testData.docCodes[0] + '","UserName":"' +
+    //  //       config.vitrium.testData.users[0] +
+    //  //       '","UniqueDocCopyId":"' + uuidv4() + '","DocPolicyOverride":{"PrintType":"HighResolution","AllowCopy":true,"AllowBuildInLoginTemplate":true,"AcroJsGosUnlimitedBehaviourType":"PromptAndCloseDocument","AcroJsGosBehaviorType":"PromptAndCloseDocument"},"AccessPolicyOverride":{"RelativeExpiryInDays":null,"OpenLimit":null,"OfflineDurationinDays":18250,"IpAddressesMax":null,"IgnoredIpAddresses":null,"ExpiryInMins":5256000,"DocumentLimit":1,"ComputersMax":2}}'
+    //}
     data: {
       "DocCode": config.vitrium.testData.docCodes[0],
       "UserName": config.vitrium.testData.users[0],
@@ -68,7 +99,7 @@ axios.request(unique).then(function(uniqueRes) {
 
     // save to local
     //console.dir(uniqueRes);
-    fs.writeFile('unique-1.pdf', uniqueRes.data, (wErr) => {
+    fs.writeFile('unique-raw.pdf', uniqueRes.data, (wErr) => {
         console.log(wErr);
     });
 }).catch(function(uniqueErr) {
