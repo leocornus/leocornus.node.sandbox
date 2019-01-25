@@ -34,39 +34,10 @@ headers["X-VITR-SESSION-TOKEN"] = config.vitrium.oSessionToken;
  */
 let unique = {
     url: config.vitrium.docApiBaseUrl + 'Version/Unique',
-    method: 'POST',
+    method: 'post',
+    // default is JSON type
+    responseType: 'stream',
     headers: headers,
-    //data: {
-    //  "mode": "raw",
-    //  "raw": {
-    //    "DocCode": config.vitrium.testData.docCodes[0],
-    //    "UserName": config.vitrium.testData.users[0],
-    //    "UniqueDocCopyId": uuidv4(),
-    //    "DocPolicyOverride": {
-    //      "PrintType": "HighResolution",
-    //      "AllowCopy": true,
-    //      "AllowBuildInLoginTemplate": true,
-    //      "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
-    //      "AcroJsGosBehaviorType": "PromptAndCloseDocument"
-    //    },
-    //    "AccessPolicyOverride": {
-    //      "RelativeExpiryInDays": null,
-    //      "OpenLimit": null,
-    //      "OfflineDurationinDays": 18250,
-    //      "IpAddressesMax": null,
-    //      "IgnoredIpAddresses": null,
-    //      "ExpiryInMins": 5256000,
-    //      "DocumentLimit": 1,
-    //      "ComputersMax": 2
-    //    }
-    //  }
-    //  //"raw": "{\"DocCode\":\"" + config.vitrium.testData.docCodes[0] +
-    //  //       "\",\"UserName\":\"" + config.vitrium.testData.users[0] +
-    //  //       "\",\"UniqueDocCopyId\":\"" + uuidv4() + "\",\"DocPolicyOverride\":{\"PrintType\":\"HighResolution\",\"AllowCopy\":true,\"AllowBuildInLoginTemplate\":true,\"AcroJsGosUnlimitedBehaviourType\":\"PromptAndCloseDocument\",\"AcroJsGosBehaviorType\":\"PromptAndCloseDocument\"},\"AccessPolicyOverride\":{\"RelativeExpiryInDays\":null,\"OpenLimit\":null,\"OfflineDurationinDays\":18250,\"IpAddressesMax\":null,\"IgnoredIpAddresses\":null,\"ExpiryInMins\":5256000,\"DocumentLimit\":1,\"ComputersMax\":2}}"
-    //  //"raw": '{"DocCode":"' + config.vitrium.testData.docCodes[0] + '","UserName":"' +
-    //  //       config.vitrium.testData.users[0] +
-    //  //       '","UniqueDocCopyId":"' + uuidv4() + '","DocPolicyOverride":{"PrintType":"HighResolution","AllowCopy":true,"AllowBuildInLoginTemplate":true,"AcroJsGosUnlimitedBehaviourType":"PromptAndCloseDocument","AcroJsGosBehaviorType":"PromptAndCloseDocument"},"AccessPolicyOverride":{"RelativeExpiryInDays":null,"OpenLimit":null,"OfflineDurationinDays":18250,"IpAddressesMax":null,"IgnoredIpAddresses":null,"ExpiryInMins":5256000,"DocumentLimit":1,"ComputersMax":2}}'
-    //}
     data: {
       "DocCode": config.vitrium.testData.docCodes[0],
       "UserName": config.vitrium.testData.users[0],
@@ -92,17 +63,27 @@ let unique = {
 };
 //console.log(unique);
 axios.request(unique).then(function(uniqueRes) {
-    console.log(uniqueRes.config);
-    console.log(uniqueRes.config.data);
+
+    //console.log(uniqueRes.config);
+    // inspect the data (body) of the request.
+    //console.log(uniqueRes.config.data);
     // the data will be the binary of the file.
-    console.log("Unique file Size: " + uniqueRes.data.length);
+    // stream response data will be Object
+    //console.log(uniqueRes.data);
 
     // save to local
     //console.dir(uniqueRes);
-    fs.writeFile('unique-raw.pdf', uniqueRes.data, (wErr) => {
-        console.log(wErr);
+    let writer = fs.createWriteStream('unique-stream.pdf');
+    console.log(uniqueRes.headers);
+    let reader = uniqueRes.data;
+    reader.on('data', (chunk) => {
+        writer.write(new Buffer(chunk));
+    });
+    reader.on('end', () => {
+        writer.end();
     });
 }).catch(function(uniqueErr) {
-    console.log(uniqueErr.config);
-    console.log(uniqueErr.response.data);
+    console.log('Error Response');
+    //console.log(uniqueErr.config);
+    console.log(uniqueErr);
 });
