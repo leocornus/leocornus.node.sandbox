@@ -75,6 +75,8 @@ axios.request(unique).then(function(uniqueRes) {
     //console.dir(uniqueRes);
     let writer = fs.createWriteStream('unique-stream.pdf');
     console.log(uniqueRes.headers);
+    // TODO: get file name from header:
+    //  'content-disposition': 'attachment; filename=2426044.pdf',
     let reader = uniqueRes.data;
     reader.on('data', (chunk) => {
         writer.write(new Buffer(chunk));
