@@ -15,4 +15,7 @@ module.exports = function(app) {
 
     // some client.
     require("./client.js")(app);
+
+    // some clients dddddddd.
+    require("./drm.js")(app);
 };
