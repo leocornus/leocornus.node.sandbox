@@ -10,7 +10,14 @@ const uuidv4 = require('uuid/v4');
 // hmac-sha1 crypto
 const hmacsha1 = require('crypto-js/hmac-sha1');
 
-const vitrium = function(account, username, password) {
+/**
+ * using the function expressions to define the class.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/function
+ *
+ * This fuunction is actually works as a constructor.
+ */
+const Vitrium = function Vitrium (account, username, password) {
 
     // base url to access Vitrium documents.
     this.docApiBaseUrl = 'https://docs-ca.vitrium.com/api/2.0/';
@@ -23,9 +30,12 @@ const vitrium = function(account, username, password) {
     this.password = password;
 };
 
-module.exports = vitrium;
+module.exports = Vitrium;
 
-vitrium.prototype.estabilishSession = function(callback) {
+/**
+ * establish session to Vitrium server.
+ */
+Vitrium.prototype.estabilishSession = function(callback) {
 
     let self = this;
 
