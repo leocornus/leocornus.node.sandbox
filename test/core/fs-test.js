@@ -4,6 +4,7 @@
  */
 
 const fs = require('fs');
+const prettyMs = require('pretty-ms');
 
 let fileName = '/tmp/notexists';
 
@@ -22,12 +23,19 @@ let stats = fs.statSync(fileName);
 console.log(stats);
 
 // change timestamp of a file.
-//let now = new Date();
+// getTime will return the number in milliseconds since the POSIX Epoch
+// which is 1970-01-01
+let now = (new Date()).getTime();
+console.log(now);
+console.log(now - stats.mtimeMs);
+console.log(prettyMs(now-stats.mtimeMs));
 //fs.utimesSync(fileName, now, now);
 
 // write file again.
-fs.writeFileSync(fileName, 'test again!');
+//fs.writeFileSync(fileName, 'test again!');
+//
+//// check the stats again.
+//stats = fs.statSync(fileName);
+//console.log(stats.mtime);
 
-// check the stats again.
-stats = fs.statSync(fileName);
-console.log(stats.mtime);
+
