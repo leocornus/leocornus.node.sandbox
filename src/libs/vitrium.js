@@ -9,6 +9,7 @@ const axios = require('axios');
 const uuidv4 = require('uuid/v4');
 // hmac-sha1 crypto
 const hmacsha1 = require('crypto-js/hmac-sha1');
+const md5 = require('crypto-js/md5');
 
 /**
  * using the function expressions to define the class.
@@ -28,6 +29,12 @@ const Vitrium = function Vitrium (account, username, password) {
     this.accountToken = account;
     this.username = username;
     this.password = password;
+
+    // local file to store the API session token.
+    this.tokenFilePath = '/tmp/' + md5(username + password);
+
+    // check the token age, create new one if it is expired.
+
 };
 
 module.exports = Vitrium;

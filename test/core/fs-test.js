@@ -12,7 +12,7 @@ let exists = fs.existsSync(fileName);
 console.log(exists);
 
 // create the file.
-fs.writeFileSync(fileName, 'test');
+//fs.writeFileSync(fileName, 'test');
 
 exists = fs.existsSync(fileName);
 console.log(exists);
@@ -22,4 +22,12 @@ let stats = fs.statSync(fileName);
 console.log(stats);
 
 // change timestamp of a file.
+//let now = new Date();
+//fs.utimesSync(fileName, now, now);
 
+// write file again.
+fs.writeFileSync(fileName, 'test again!');
+
+// check the stats again.
+stats = fs.statSync(fileName);
+console.log(stats.mtime);
