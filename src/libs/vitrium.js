@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * utilities to manipulate Vitrium APIs.
  */
@@ -8,7 +10,103 @@ const uuidv4 = require('uuid/v4');
 // hmac-sha1 crypto
 const hmacsha1 = require('crypto-js/hmac-sha1');
 
-let vitrium = {
+const vitrium = function(account, username, password) {
+
+    // base url to access Vitrium documents.
+    this.docApiBaseUrl = 'https://docs-ca.vitrium.com/api/2.0/';
+    // base URL to security APIs.
+    this.securityApiBaseUrl = 'https://security-ca.vitrium.com/api/2.0/';
+
+    // set the instance property.
+    this.accountToken = account;
+    this.username = username;
+    this.password = password;
+};
+
+module.exports = vitrium;
+
+vitrium.prototype.estabilishSession = function(callback) {
+
+    let self = this;
+
+    // set up the request header.
+    let headers = {};
+    headers['X-VITR-ACCOUNT-TOKEN'] = self.accountToken;
+    headers["X-VITR-SESSION-TOKEN"] = uuidv4();
+
+    // set the payload
+    let clientNonce = uuidv4();
+
+    /**
+     * Step 1: get challenge server to get a ServerNonce.
+     */
+    // get ready the axios request config
+    let reqConf = {
+      url: self.docApiBaseUrl + 'Login/Challenge',
+      method: 'post',
+      headers: headers,
+      data: {
+        "ClientNonce": clientNonce
+      }
+    };
+
+    // challenge to get ServerNonce.
+    axios.request(reqConf).then(function(response) {
+
+        // collect server Nonce
+        //console.dir(response.data);
+        let serverNonce = response.data.ServerNonce;
+
+        /**
+         * Step 2: get the login response.
+         * - use client nonce, server nonce and password to
+         *   generate the client hash
+         * - collect new account token and session token for all other actions.
+         * - the updated tokens will be expired in one hour
+         */
+        // get ready the client Hash:
+        let message = clientNonce + serverNonce + self.password;
+        //console.dir(message);
+        let clientHash = hmacsha1(message, self.password);
+        //console.dir(clientHash);
+        //console.dir(clientHash.toString());
+
+        // get ready the login response request.
+        reqConf['url'] = self.docApiBaseUrl + 'Login/Response';
+        // the payload.
+        reqConf['data'] = {
+          'ClientNonce': clientNonce,
+          // Vitrium requires Upper Case for client hash
+          'ClientHash': clientHash.toString().toUpperCase(),
+          'UserName': self.username,
+          'ApplicationId': 'test'
+        };
+        //console.dir(reqConf);
+
+        axios.request(reqConf).then(function(res) {
+
+            console.log(res.data);
+            // update headers with new tokens.
+            // TODO: check to make sure the reponse has new tokens
+            headers['X-VITR-ACCOUNT-TOKEN'] = res.data.Accounts[0].Id;
+            headers["X-VITR-SESSION-TOKEN"] = res.data.ApiSession.Token;
+
+            // callback!
+            callback(headers);
+        }).catch(function(err) {
+
+            console.log(err);
+            callback(null, err);
+        });
+
+    }).catch(function(error) {
+
+        console.dir(error);
+        callback(null, error);
+    });
+};
+
+let vitriumStatic = {
 
     // base url to access Vitrium documents.
     docApiBaseUrl: 'https://docs-ca.vitrium.com/api/2.0/',
@@ -228,4 +326,3 @@ let vitrium = {
     }
 };
 
-module.exports = vitrium;

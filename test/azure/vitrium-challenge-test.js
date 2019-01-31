@@ -12,14 +12,16 @@
 // we should have separate local.js file for vitrium.
 const config = require('./../../src/config');
 
-const vitrium = require('./../../src/libs/vitrium');
+const Vitrium = require('./../../src/libs/vitrium');
+
+let vitrium = new Vitrium(
+    config.vitrium.accountToken,
+    config.vitrium.userName,
+    config.vitrium.password,
+);
 
 // estabilish security session
-vitrium.estabilishSession(config.vitrium.accountToken,
-                          config.vitrium.sessionToken,
-                          config.vitrium.userName,
-                          config.vitrium.password,
-                          (headers, err) => {
+vitrium.estabilishSession((headers, err) => {
 
     console.log(headers);
 });
