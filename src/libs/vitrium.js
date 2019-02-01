@@ -193,8 +193,8 @@ Vitrium.prototype.generalApiCall = function(req, callback) {
     axios.request(req).then(function(res) {
 
         //console.log(res);
-        console.log(res.config);
-        console.log(res.data);
+        //console.log(res.config);
+        //console.log(res.data);
         callback(res);
     }).catch(function(err) {
 

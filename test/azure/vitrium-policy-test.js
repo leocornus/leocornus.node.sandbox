@@ -20,9 +20,11 @@ let vitrium = new Vitrium(
     config.vitrium.password,
 );
 // quick test to get all policies.
-vitrium.getPolicies(1, 6, (res, err) => {
+vitrium.getPolicies(1, 6000, (res, err) => {
 
-    console.log(res.data.Results.length);
+    //console.log(res.data.Results.length);
+    //console.log(res.data);
+    console.log(`Total Records: ${res.data.TotalRecords}`);
     let policies = res.data.Results.map((policy) => {
         // get the id, name, and createdon.
         return {
