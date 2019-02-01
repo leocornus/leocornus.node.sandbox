@@ -11,6 +11,8 @@ const uuidv4 = require('uuid/v4');
 const hmacsha1 = require('crypto-js/hmac-sha1');
 const md5 = require('crypto-js/md5');
 
+const fs = require('fs');
+
 /**
  * using the function expressions to define the class.
  *
@@ -27,6 +29,7 @@ const Vitrium = function Vitrium (account, username, password) {
 
     // set the instance property.
     this.accountToken = account;
+    this.sessionToken = '';
     this.username = username;
     this.password = password;
 
@@ -34,10 +37,42 @@ const Vitrium = function Vitrium (account, username, password) {
     this.tokenFilePath = '/tmp/' + md5(username + password);
 
     // check the token age, create new one if it is expired.
-
+    this.fetchSessionToken();
 };
 
 module.exports = Vitrium;
+
+/**
+ * get session token for connection.
+ */
+Vitrium.prototype.fetchSessionToken = function() {
+
+    let self = this;
+
+    // check if the token file exists.
+    if(fs.existsSync(self.tokenFilePath)) {
+        // check the modified time to calculate the age.
+        let stats = fs.statSync(self.tokenFilePath);
+        // age is in MS.
+        let age = (new Date()).getTime() - stats.mtimeMs;
+        if(age < 60 * 60 *60) {
+            // token is not expired yet!
+            // read the token.
+            self.sessionToken = fs.readFileSync(self.tokenFilePath, 'utf8');
+            // write the same token to update modified time.
+            fs.writeFileSync(self.tokenFilePath, self.sessionToken, 'utf8');
+        }
+    }
+
+    if(self.sessionToken === "") {
+        // no sessionToken exists or it is expired, establish new session.
+        self.estabilishSession((token, err) => {
+            self.sessionToken = token;
+            // write the same token to update modified time.
+            fs.writeFileSync(self.tokenFilePath, self.sessionToken, 'utf8');
+        });
+    }
+};
 
 /**
  * establish session to Vitrium server.
@@ -109,7 +144,7 @@ Vitrium.prototype.estabilishSession = function(callback) {
             headers["X-VITR-SESSION-TOKEN"] = res.data.ApiSession.Token;
 
             // callback!
-            callback(headers);
+            callback(res.data.ApiSession.Token);
         }).catch(function(err) {
 
             console.log(err);

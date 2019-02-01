@@ -20,8 +20,4 @@ let vitrium = new Vitrium(
     config.vitrium.password,
 );
 
-// estabilish security session
-vitrium.estabilishSession((headers, err) => {
-
-    console.log(headers);
-});
+console.log(vitrium.sessionToken);
