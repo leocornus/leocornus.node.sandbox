@@ -13,7 +13,8 @@ let exists = fs.existsSync(fileName);
 console.log(exists);
 
 // create the file.
-//fs.writeFileSync(fileName, 'test');
+// it is safe to specify the encoding
+//fs.writeFileSync(fileName, 'test', 'utf8');
 
 exists = fs.existsSync(fileName);
 console.log(exists);
@@ -38,4 +39,6 @@ console.log(prettyMs(now-stats.mtimeMs));
 //stats = fs.statSync(fileName);
 //console.log(stats.mtime);
 
-
+// try to read file content. need specify the utf8 encoding.
+// if not encoding specified, buffer will be returned.
+console.log(fs.readFileSync(fileName, 'utf8'));
