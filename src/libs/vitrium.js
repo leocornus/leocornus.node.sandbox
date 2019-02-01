@@ -28,7 +28,8 @@ const Vitrium = function Vitrium (account, username, password) {
     this.securityApiBaseUrl = 'https://security-ca.vitrium.com/api/2.0/';
 
     // set the instance property.
-    this.accountToken = account;
+    this.initAccountToken = account;
+    this.accountToken = '';
     this.sessionToken = '';
     this.username = username;
     this.password = password;
@@ -37,7 +38,7 @@ const Vitrium = function Vitrium (account, username, password) {
     this.tokenFilePath = '/tmp/' + md5(username + password);
 
     // check the token age, create new one if it is expired.
-    this.fetchSessionToken();
+    this.fetchTokens();
 };
 
 module.exports = Vitrium;
@@ -45,7 +46,7 @@ module.exports = Vitrium;
 /**
  * get session token for connection.
  */
-Vitrium.prototype.fetchSessionToken = function() {
+Vitrium.prototype.fetchTokens = function() {
 
     let self = this;
 
@@ -55,21 +56,26 @@ Vitrium.prototype.fetchSessionToken = function() {
         let stats = fs.statSync(self.tokenFilePath);
         // age is in MS.
         let age = (new Date()).getTime() - stats.mtimeMs;
-        if(age < 60 * 60 *60) {
+        if(age < 3600000) {
             // token is not expired yet!
             // read the token.
-            self.sessionToken = fs.readFileSync(self.tokenFilePath, 'utf8');
+            let tokens = fs.readFileSync(self.tokenFilePath, 'utf8').split(',');
+            self.accountToken = tokens[0]
+            self.sessionToken = tokens[1]
             // write the same token to update modified time.
-            fs.writeFileSync(self.tokenFilePath, self.sessionToken, 'utf8');
+            fs.writeFileSync(self.tokenFilePath, 
+                    self.accountToken + ',' + self.sessionToken, 'utf8');
         }
     }
 
     if(self.sessionToken === "") {
         // no sessionToken exists or it is expired, establish new session.
-        self.estabilishSession((token, err) => {
-            self.sessionToken = token;
+        self.estabilishSession((tokens, err) => {
+            self.accountToken = tokens[0];
+            self.sessionToken = tokens[1];
             // write the same token to update modified time.
-            fs.writeFileSync(self.tokenFilePath, self.sessionToken, 'utf8');
+            fs.writeFileSync(self.tokenFilePath,
+                    self.accountToken + ',' + self.sessionToken, 'utf8');
         });
     }
 };
@@ -83,7 +89,7 @@ Vitrium.prototype.estabilishSession = function(callback) {
 
     // set up the request header.
     let headers = {};
-    headers['X-VITR-ACCOUNT-TOKEN'] = self.accountToken;
+    headers['X-VITR-ACCOUNT-TOKEN'] = self.initAccountToken;
     headers["X-VITR-SESSION-TOKEN"] = uuidv4();
 
     // set the payload
@@ -140,11 +146,10 @@ Vitrium.prototype.estabilishSession = function(callback) {
             console.log(res.data);
             // update headers with new tokens.
             // TODO: check to make sure the reponse has new tokens
-            headers['X-VITR-ACCOUNT-TOKEN'] = res.data.Accounts[0].Id;
-            headers["X-VITR-SESSION-TOKEN"] = res.data.ApiSession.Token;
+            let tokens = [res.data.Accounts[0].Id, res.data.ApiSession.Token];
 
             // callback!
-            callback(res.data.ApiSession.Token);
+            callback(tokens);
         }).catch(function(err) {
 
             console.log(err);
@@ -156,6 +161,60 @@ Vitrium.prototype.estabilishSession = function(callback) {
         console.dir(error);
         callback(null, error);
     });
+};
+
+/**
+ * utility function to get ready the get request.
+ */
+Vitrium.prototype.buildGetRequest = function(uri, offset, limit) {
+
+    return {
+        url: this.docApiBaseUrl + uri,
+        method: 'get',
+        headers: {
+          'X-VITR-ACCOUNT-TOKEN': this.accountToken,
+          'X-VITR-SESSION-TOKEN': this.sessionToken
+        },
+        params: {
+          "page": {
+             "index": offset,
+             "size": limit
+          }
+        }
+    };
+};
+
+/**
+ * General api calls.
+ * The callback will have 2 params: res, err.
+ */
+Vitrium.prototype.generalApiCall = function(req, callback) {
+
+    axios.request(req).then(function(res) {
+
+        //console.log(res);
+        console.log(res.config);
+        console.log(res.data);
+        callback(res);
+    }).catch(function(err) {
+
+        console.log(err);
+        callback(null, err);
+    });
+};
+
+/**
+ * quick method to get policy.
+ *
+ */
+Vitrium.prototype.getPolicies = function(offset, limit, callback) {
+
+    // get ready the request.
+    let policyReq =
+        this.buildGetRequest('Policy', offset, limit);
+
+    //console.log(policyReq);
+    this.generalApiCall(policyReq, callback);
 };
 
 let vitriumStatic = {

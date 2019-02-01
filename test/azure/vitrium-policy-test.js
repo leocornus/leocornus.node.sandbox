@@ -12,13 +12,15 @@
 // we should have separate local.js file for vitrium.
 const config = require('./../../src/config');
 
-const vitrium = require('./../../src/libs/vitrium');
+const Vitrium = require('./../../src/libs/vitrium');
 
+let vitrium = new Vitrium(
+    config.vitrium.accountToken,
+    config.vitrium.userName,
+    config.vitrium.password,
+);
 // quick test to get all policies.
-vitrium.getPolicies(config.vitrium.oAccountToken,
-                    config.vitrium.oSessionToken,
-                    1, 6,
-                    (res, err) => {
+vitrium.getPolicies(1, 6, (res, err) => {
 
     console.log(res.data.Results.length);
     let policies = res.data.Results.map((policy) => {
