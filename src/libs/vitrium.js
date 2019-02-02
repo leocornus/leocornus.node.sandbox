@@ -217,6 +217,53 @@ Vitrium.prototype.getPolicies = function(offset, limit, callback) {
     this.generalApiCall(policyReq, callback);
 };
 
+/**
+ * version unique for downloading binary file.
+ */
+Vitrium.prototype.versionUnique = function(docDetails, callback) {
+
+    let self = this;
+
+    // get ready the request.
+    let unique = {
+        url: self.docApiBaseUrl + 'Version/Unique',
+        method: 'post',
+        // default is JSON type
+        responseType: 'stream',
+        headers: headers,
+        // TODO: docDetails goes here.
+        data: {
+          "DocCode": '2090-13A1-3DE9E-00064067',
+          "UserName": "benhugas+testreplacepdf1@gmail.com",
+          "UniqueDocCopyId": uuidv4(),
+          "DocPolicyOverride": {
+            "PrintType": "HighResolution",
+            "AllowCopy": true,
+            "AllowBuildInLoginTemplate": true,
+            "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
+            "AcroJsGosBehaviorType": "PromptAndCloseDocument"
+          },
+          "AccessPolicyOverride": {
+            "RelativeExpiryInDays": null,
+            "OpenLimit": null,
+            "OfflineDurationinDays": 18250,
+            "IpAddressesMax": null,
+            "IgnoredIpAddresses": null,
+            "ExpiryInMins": 5256000,
+            "DocumentLimit": 1,
+            "ComputersMax": 2
+          }
+        }
+    };
+
+    // call the unique APIs
+    axios.request(unique).then(function(uniqueRes) {
+        callback(uniqueRes, null);
+    }).catch(function(uniqueErr) {
+        callback(null, uniqueErr);
+    });
+};
+
 let vitriumStatic = {
 
     // base url to access Vitrium documents.
