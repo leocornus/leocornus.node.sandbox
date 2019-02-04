@@ -16,6 +16,11 @@ module.exports = function(app) {
     // some client.
     require("./client.js")(app);
 
-    // some clients dddddddd.
+    // DRM client.
     require("./drm.js")(app);
+
+    // redirect 404 page to home page.
+    app.use(function (req, res, next) {
+        res.status(404).redirect(301, config.server.homeRedirectUrl);
+    })
 };
