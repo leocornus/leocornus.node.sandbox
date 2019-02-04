@@ -220,6 +220,28 @@ Vitrium.prototype.getPolicies = function(offset, limit, callback) {
 };
 
 /**
+ * quick method to get Readers.
+ */
+Vitrium.prototype.getReaders = function(offset, limit, callback) {
+
+    // readers request.
+    let readersReq =
+        this.buildGetRequest('Reader', offset, limit);
+
+    this.generalApiCall(readersReq, callback);
+};
+
+/**
+ * get a page of docs.
+ */
+Vitrium.prototype.getDocs = function(offset, limit, callback) {
+
+    let docsReq =
+        this.buildGetRequest('Doc', offset limit);
+    this.generalApiCall(docsReq, callback);
+};
+
+/**
  * version unique for downloading binary file.
  */
 Vitrium.prototype.versionUnique = function(docDetails, callback) {
