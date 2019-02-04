@@ -17,7 +17,27 @@ module.exports = function(app) {
 
         // check the body.
         logging(req.body);
-        return res.send(req.body.name);
+
+        let vitrium = new Vitrium(
+            config.vitrium.accountToken,
+            config.vitrium.userName,
+            config.vitrium.password
+        );
+
+        // the req.body will the payload.
+        vitrium.versionUnique(req.body, (uniqueRes, uniqueErr) => {
+
+            console.log('unique respose header:');
+            console.log(uniqueRes.headers);
+
+            // set header from the unique response.
+            res.setHeader('content-disposition',
+                    uniqueRes.headers['content-disposition']);
+            res.setHeader('content-type',
+                    uniqueRes.headers['content-type']);
+            // the data is a stream.
+            uniqueRes.data.pipe(res);
+        });
     });
 
     // quick test for download.

@@ -239,7 +239,7 @@ Vitrium.prototype.versionUnique = function(docDetails, callback) {
         },
         data: docDetails
     };
-    //console.log(unique);
+    console.log(unique);
 
     // call the unique APIs
     axios.request(unique).then(function(uniqueRes) {
