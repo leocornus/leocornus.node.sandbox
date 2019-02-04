@@ -237,7 +237,7 @@ Vitrium.prototype.getReaders = function(offset, limit, callback) {
 Vitrium.prototype.getDocs = function(offset, limit, callback) {
 
     let docsReq =
-        this.buildGetRequest('Doc', offset limit);
+        this.buildGetRequest('Doc', offset, limit);
     this.generalApiCall(docsReq, callback);
 };
 
