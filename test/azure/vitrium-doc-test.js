@@ -21,7 +21,8 @@ let vitrium = new Vitrium(
 );
 
 // quick test to get all policies.
-vitrium.getDocs(1, 10, (res, err) => {
+vitrium.getDocs(1, 2, (res, err) => {
 
     console.log(`Total Records: ${res.data.TotalRecords}`);
+    console.log(res.data.Results);
 });
