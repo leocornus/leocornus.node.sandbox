@@ -237,29 +237,7 @@ Vitrium.prototype.versionUnique = function(docDetails, callback) {
           'X-VITR-ACCOUNT-TOKEN': self.accountToken,
           'X-VITR-SESSION-TOKEN': self.sessionToken
         },
-        // TODO: docDetails goes here.
-        data: {
-          "DocCode": '2090-13A1-3DE9E-00064067',
-          "UserName": "benhugas+testreplacepdf1@gmail.com",
-          "UniqueDocCopyId": uuidv4(),
-          "DocPolicyOverride": {
-            "PrintType": "HighResolution",
-            "AllowCopy": true,
-            "AllowBuildInLoginTemplate": true,
-            "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
-            "AcroJsGosBehaviorType": "PromptAndCloseDocument"
-          },
-          "AccessPolicyOverride": {
-            "RelativeExpiryInDays": null,
-            "OpenLimit": null,
-            "OfflineDurationinDays": 18250,
-            "IpAddressesMax": null,
-            "IgnoredIpAddresses": null,
-            "ExpiryInMins": 5256000,
-            "DocumentLimit": 1,
-            "ComputersMax": 2
-          }
-        }
+        data: docDetails
     };
     //console.log(unique);
 
