@@ -70,6 +70,8 @@ Vitrium.prototype.fetchTokens = function() {
 
     if(self.sessionToken === "") {
         // no sessionToken exists or it is expired, establish new session.
+        console.log("Try to establish session");
+        console.log(self.initAccountToken);
         self.estabilishSession((tokens, err) => {
             self.accountToken = tokens[0];
             self.sessionToken = tokens[1];
@@ -225,12 +227,16 @@ Vitrium.prototype.versionUnique = function(docDetails, callback) {
     let self = this;
 
     // get ready the request.
+    console.log("get ready the request!");
     let unique = {
         url: self.docApiBaseUrl + 'Version/Unique',
         method: 'post',
         // default is JSON type
         responseType: 'stream',
-        headers: headers,
+        headers: {
+          'X-VITR-ACCOUNT-TOKEN': self.accountToken,
+          'X-VITR-SESSION-TOKEN': self.sessionToken
+        },
         // TODO: docDetails goes here.
         data: {
           "DocCode": '2090-13A1-3DE9E-00064067',
@@ -255,11 +261,15 @@ Vitrium.prototype.versionUnique = function(docDetails, callback) {
           }
         }
     };
+    //console.log(unique);
 
     // call the unique APIs
     axios.request(unique).then(function(uniqueRes) {
+
+        //console.log(uniqueRes.headers);
         callback(uniqueRes, null);
     }).catch(function(uniqueErr) {
+
         callback(null, uniqueErr);
     });
 };
