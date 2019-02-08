@@ -114,15 +114,17 @@ axios.get(sourceSelect, totalQuery)
                             console.log(`File exist! Skip - ${doc[localConfig.idField]}`);
                             report();
                         }
-                        // post to target.
+                        // post to target. update the target doc
                         axios.post(targetUpdate, theDoc
                         ).then(function(postRes) {
                             //console.log("Post Success!");
                             report();
+
                             //console.dir(postRes);
                             doc['process_status'] = 'success-metadata';
                             doc['process_message'] = 'Metadata process success';
-                            // update the source document.
+                            // update the source document, process status and
+                            // process message.
                             axios.post(sourceUpdate, doc
                             ).then(function(su1Res) {
 
@@ -135,7 +137,7 @@ axios.get(sourceSelect, totalQuery)
                             // log the erorr and then report the copy is done!
                             report();
                             doc['process_status'] = 'failed-metadata';
-                            doc['process_message'] = 'Metadata process Failed!';
+                            doc['process_message'] = 'Metadata process Failed! - Post failed';
                             // update the source document.
                             axios.post(sourceUpdate, doc
                             ).then(function(su2Res) {
@@ -172,7 +174,7 @@ axios.get(sourceSelect, totalQuery)
         })
         .catch(function(error) {
             // handle errors here.
-            console.log("ERROR!");
+            console.log("Batch Query ERROR!");
             console.dir(error);
         });
 
