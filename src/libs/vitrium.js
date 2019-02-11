@@ -39,6 +39,7 @@ const Vitrium = function Vitrium (account, username, password) {
 
     // check the token age, create new one if it is expired.
     this.fetchTokens();
+    console.log(`Session Token: ${this.sessionToken}`);
 };
 
 module.exports = Vitrium;
@@ -72,6 +73,7 @@ Vitrium.prototype.fetchTokens = function() {
         // no sessionToken exists or it is expired, establish new session.
         console.log("Try to establish session");
         console.log(self.initAccountToken);
+        //let tokens = self.estabilishSessionSync();
         self.estabilishSession((tokens, err) => {
             self.accountToken = tokens[0];
             self.sessionToken = tokens[1];
@@ -80,6 +82,77 @@ Vitrium.prototype.fetchTokens = function() {
                     self.accountToken + ',' + self.sessionToken, 'utf8');
         });
     }
+};
+
+/**
+ * wait until the session is estabilished.
+ */
+Vitrium.prototype.estabilishSessionSync = async function() {
+
+    let self = this;
+
+    // set up the request header.
+    let headers = {};
+    headers['X-VITR-ACCOUNT-TOKEN'] = self.initAccountToken;
+    headers["X-VITR-SESSION-TOKEN"] = uuidv4();
+
+    // set the payload
+    let clientNonce = uuidv4();
+
+    /**
+     * Step 1: get challenge server to get a ServerNonce.
+     */
+    // get ready the axios request config
+    let reqConf = {
+      url: self.docApiBaseUrl + 'Login/Challenge',
+      method: 'post',
+      headers: headers,
+      data: {
+        "ClientNonce": clientNonce
+      }
+    };
+
+    // challenge to get ServerNonce.
+    let challengeRes = await axios.request(reqConf);
+
+    // collect server Nonce
+    //console.dir(response.data);
+    let serverNonce = challengeRes.data.ServerNonce;
+
+    /**
+     * Step 2: get the login response.
+     * - use client nonce, server nonce and password to
+     *   generate the client hash
+     * - collect new account token and session token for all other actions.
+     * - the updated tokens will be expired in one hour
+     */
+    // get ready the client Hash:
+    let message = clientNonce + serverNonce + self.password;
+    //console.dir(message);
+    let clientHash = hmacsha1(message, self.password);
+    //console.dir(clientHash);
+    //console.dir(clientHash.toString());
+
+    // get ready the login response request.
+    reqConf['url'] = self.docApiBaseUrl + 'Login/Response';
+    // the payload.
+    reqConf['data'] = {
+      'ClientNonce': clientNonce,
+      // Vitrium requires Upper Case for client hash
+      'ClientHash': clientHash.toString().toUpperCase(),
+      'UserName': self.username,
+      'ApplicationId': 'test'
+    };
+    //console.dir(reqConf);
+
+    let loginRes = await axios.request(reqConf);
+
+    console.log(loginRes.data);
+    // update headers with new tokens.
+    // TODO: check to make sure the reponse has new tokens
+    let tokens = [loginRes.data.Accounts[0].Id,
+                  loginRes.data.ApiSession.Token];
+    return tokens;
 };
 
 /**
