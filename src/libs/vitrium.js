@@ -278,6 +278,16 @@ Vitrium.prototype.generalApiCall = function(req, callback) {
     });
 };
 
+Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
+
+    // get ready the request.
+    let itemsReq =
+        this.buildGetRequest(topic, offset, limit);
+
+    //console.log(policyReq);
+    this.generalApiCall(itemsReq, callback);
+};
+
 /**
  * quick method to get policy.
  *
