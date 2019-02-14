@@ -47,7 +47,7 @@ module.exports = Vitrium;
 /**
  * get session token for connection.
  */
-Vitrium.prototype.fetchTokens = function() {
+Vitrium.prototype.fetchTokens = async function() {
 
     let self = this;
 
@@ -69,12 +69,15 @@ Vitrium.prototype.fetchTokens = function() {
         }
     }
 
+    // no sessionToken exists or it is expired, estabilish new session.
     if(self.sessionToken === "") {
-        // no sessionToken exists or it is expired, establish new session.
-        console.log("Try to establish session");
+        console.log("Try to estabilish session");
         console.log(self.initAccountToken);
-        //let tokens = self.estabilishSessionSync();
-        self.estabilishSession((tokens, err) => {
+        // async function always return a promise,
+        // whether you use await or not
+        const tokensPromise = self.estabilishSessionSync();
+        tokensPromise.then(tokens => {
+        //self.estabilishSession((tokens, err) => {
             self.accountToken = tokens[0];
             self.sessionToken = tokens[1];
             // write the same token to update modified time.
@@ -112,51 +115,56 @@ Vitrium.prototype.estabilishSessionSync = async function() {
       }
     };
 
-    // challenge to get ServerNonce.
-    let challengeRes = await axios.request(reqConf);
+    try {
+        // challenge to get ServerNonce.
+        // suppose wait for the axios promise fulfilled.
+        const challengeRes = await axios.request(reqConf);
 
-    // collect server Nonce
-    //console.dir(response.data);
-    let serverNonce = challengeRes.data.ServerNonce;
+        // collect server Nonce
+        console.dir(challengeRes.data);
+        let serverNonce = challengeRes.data.ServerNonce;
 
-    /**
-     * Step 2: get the login response.
-     * - use client nonce, server nonce and password to
-     *   generate the client hash
-     * - collect new account token and session token for all other actions.
-     * - the updated tokens will be expired in one hour
-     */
-    // get ready the client Hash:
-    let message = clientNonce + serverNonce + self.password;
-    //console.dir(message);
-    let clientHash = hmacsha1(message, self.password);
-    //console.dir(clientHash);
-    //console.dir(clientHash.toString());
+        /**
+         * Step 2: get the login response.
+         * - use client nonce, server nonce and password to
+         *   generate the client hash
+         * - collect new account token and session token for all other actions.
+         * - the updated tokens will be expired in one hour
+         */
+        // get ready the client Hash:
+        let message = clientNonce + serverNonce + self.password;
+        //console.dir(message);
+        let clientHash = hmacsha1(message, self.password);
+        //console.dir(clientHash);
+        //console.dir(clientHash.toString());
 
-    // get ready the login response request.
-    reqConf['url'] = self.docApiBaseUrl + 'Login/Response';
-    // the payload.
-    reqConf['data'] = {
-      'ClientNonce': clientNonce,
-      // Vitrium requires Upper Case for client hash
-      'ClientHash': clientHash.toString().toUpperCase(),
-      'UserName': self.username,
-      'ApplicationId': 'test'
-    };
-    //console.dir(reqConf);
+        // get ready the login response request.
+        reqConf['url'] = self.docApiBaseUrl + 'Login/Response';
+        // the payload.
+        reqConf['data'] = {
+          'ClientNonce': clientNonce,
+          // Vitrium requires Upper Case for client hash
+          'ClientHash': clientHash.toString().toUpperCase(),
+          'UserName': self.username,
+          'ApplicationId': 'test'
+        };
+        //console.dir(reqConf);
 
-    let loginRes = await axios.request(reqConf);
+        const loginRes = await axios.request(reqConf);
 
-    console.log(loginRes.data);
-    // update headers with new tokens.
-    // TODO: check to make sure the reponse has new tokens
-    let tokens = [loginRes.data.Accounts[0].Id,
-                  loginRes.data.ApiSession.Token];
-    return tokens;
+        console.log(loginRes.data);
+        // update headers with new tokens.
+        // TODO: check to make sure the reponse has new tokens
+        let tokens = [loginRes.data.Accounts[0].Id,
+                      loginRes.data.ApiSession.Token];
+        return tokens;
+    } catch (awaitError) {
+        console.log(awaitError);
+    }
 };
 
 /**
- * establish session to Vitrium server.
+ * estabilish session to Vitrium server.
  */
 Vitrium.prototype.estabilishSession = function(callback) {
 
