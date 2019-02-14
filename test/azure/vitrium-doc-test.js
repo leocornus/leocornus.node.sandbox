@@ -24,5 +24,5 @@ let vitrium = new Vitrium(
 vitrium.getDocs(1, 2, (res, err) => {
 
     console.log(`Total Records: ${res.data.TotalRecords}`);
-    console.log(res.data.Results);
+    console.log(res.data.Results.length);
 });

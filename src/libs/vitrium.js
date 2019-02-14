@@ -324,23 +324,20 @@ Vitrium.prototype.getPolicies = async function(offset, limit, callback) {
 /**
  * quick method to get Readers.
  */
-Vitrium.prototype.getReaders = function(offset, limit, callback) {
+Vitrium.prototype.getReaders = async function(offset, limit, callback) {
 
+    await this._initialized;
     // readers request.
-    let readersReq =
-        this.buildGetRequest('Reader', offset, limit);
-
-    this.generalApiCall(readersReq, callback);
+    this.getMultiItems('Reader', offset, limit, callback);
 };
 
 /**
  * get a page of docs.
  */
-Vitrium.prototype.getDocs = function(offset, limit, callback) {
+Vitrium.prototype.getDocs = async function(offset, limit, callback) {
 
-    let docsReq =
-        this.buildGetRequest('Doc', offset, limit);
-    this.generalApiCall(docsReq, callback);
+    await this._initialized;
+    this.getMultiItems('Doc', offset, limit, callback);
 };
 
 /**
