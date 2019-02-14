@@ -19,7 +19,6 @@ let vitrium = new Vitrium(
     config.vitrium.userName,
     config.vitrium.password,
 );
-
 vitrium._initialized.then(resolve => {
     console.log(`Vitrium session is fulfilled with token: ${resolve}`);
 });
