@@ -51,7 +51,6 @@ module.exports = Vitrium;
 Vitrium.prototype.fetchTokens = async function() {
 
     let self = this;
-    let tokens = null;
 
     // using the try catch block to make sure we return the fulfill
     // or error for the Promise, we are using the async function.
@@ -65,7 +64,7 @@ Vitrium.prototype.fetchTokens = async function() {
             if(age < 3600000) {
                 // token is not expired yet!
                 // read the token.
-                tokens = fs.readFileSync(self.tokenFilePath, 'utf8').split(',');
+                const tokens = fs.readFileSync(self.tokenFilePath, 'utf8').split(',');
                 // set tokens.
                 self.accountToken = tokens[0];
                 self.sessionToken = tokens[1];
@@ -78,23 +77,24 @@ Vitrium.prototype.fetchTokens = async function() {
             console.log(self.initAccountToken);
             // async function always return a promise,
             // whether you use await or not
-            tokens = await self.estabilishSessionSync();
+            const tokens = await self.estabilishSessionSync();
             // set tokens here too after the estabilish session fulfilled.
             self.accountToken = tokens[0]
             self.sessionToken = tokens[1]
         }
 
-        if(tokens === null) {
+        if(self.sessionToken === "") {
             // try again.
             // TODO: set timeout!
-            tokens = await self.fetchTokens();
+            const token = await self.fetchTokens();
         } else {
             // write the same tokens to update modified time.
             fs.writeFileSync(self.tokenFilePath, 
                     self.accountToken + ',' + self.sessionToken, 'utf8');
         }
 
-        return tokens;
+        // return will fulfill the async function promise.
+        return self.sessionToken;
     } catch(err) {
         console.log(err);
         throw Error(err);

@@ -21,6 +21,5 @@ let vitrium = new Vitrium(
 );
 
 vitrium._initialized.then(resolve => {
-    console.log(resolve);
-    console.log(vitrium.sessionToken);
+    console.log(`Vitrium session is fulfilled with token: ${resolve}`);
 });
