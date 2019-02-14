@@ -315,14 +315,10 @@ Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
  * quick method to get policy.
  *
  */
-Vitrium.prototype.getPolicies = function(offset, limit, callback) {
+Vitrium.prototype.getPolicies = async function(offset, limit, callback) {
 
-    // get ready the request.
-    let policyReq =
-        this.buildGetRequest('Policy', offset, limit);
-
-    //console.log(policyReq);
-    this.generalApiCall(policyReq, callback);
+    await this._initialized;
+    this.getMultiItems('Policy', offset, limit, callback);
 };
 
 /**
