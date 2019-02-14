@@ -343,9 +343,11 @@ Vitrium.prototype.getDocs = async function(offset, limit, callback) {
 /**
  * version unique for downloading binary file.
  */
-Vitrium.prototype.versionUnique = function(docDetails, callback) {
+Vitrium.prototype.versionUnique = async function(docDetails, callback) {
 
     let self = this;
+
+    await self._initialized;
 
     // get ready the request.
     console.log("get ready the request!");
