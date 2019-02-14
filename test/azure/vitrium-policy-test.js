@@ -19,6 +19,10 @@ let vitrium = new Vitrium(
     config.vitrium.userName,
     config.vitrium.password,
 );
+
+vitrium._initialized.then(resolve => {
+    //console.log(resolve);
+    //console.log(vitrium.sessionToken);
 // quick test to get all policies.
 vitrium.getPolicies(1, 6000, (res, err) => {
 
@@ -35,4 +39,5 @@ vitrium.getPolicies(1, 6000, (res, err) => {
     });
 
     console.log(policies);
+});
 });

@@ -20,4 +20,7 @@ let vitrium = new Vitrium(
     config.vitrium.password,
 );
 
-console.log(vitrium.sessionToken);
+vitrium._initialized.then(resolve => {
+    console.log(resolve);
+    console.log(vitrium.sessionToken);
+});
