@@ -38,7 +38,8 @@ const Vitrium = function Vitrium (account, username, password) {
     this.tokenFilePath = '/tmp/' + md5(username + password);
 
     // check the token age, create new one if it is expired.
-    this.fetchTokens();
+    // set it as a promise object.
+    this._initialized = this.fetchTokens();
     console.log(`Session Token: ${this.sessionToken}`);
 };
 
@@ -50,40 +51,53 @@ module.exports = Vitrium;
 Vitrium.prototype.fetchTokens = async function() {
 
     let self = this;
+    let tokens = null;
 
-    // check if the token file exists.
-    if(fs.existsSync(self.tokenFilePath)) {
-        // check the modified time to calculate the age.
-        let stats = fs.statSync(self.tokenFilePath);
-        // age is in MS.
-        let age = (new Date()).getTime() - stats.mtimeMs;
-        if(age < 3600000) {
-            // token is not expired yet!
-            // read the token.
-            let tokens = fs.readFileSync(self.tokenFilePath, 'utf8').split(',');
+    // using the try catch block to make sure we return the fulfill
+    // or error for the Promise, we are using the async function.
+    try {
+        // check if the token file exists.
+        if(fs.existsSync(self.tokenFilePath)) {
+            // check the modified time to calculate the age.
+            let stats = fs.statSync(self.tokenFilePath);
+            // age is in MS.
+            let age = (new Date()).getTime() - stats.mtimeMs;
+            if(age < 3600000) {
+                // token is not expired yet!
+                // read the token.
+                tokens = fs.readFileSync(self.tokenFilePath, 'utf8').split(',');
+                // set tokens.
+                self.accountToken = tokens[0];
+                self.sessionToken = tokens[1];
+            }
+        }
+
+        // no sessionToken exists or it is expired, estabilish new session.
+        if(self.sessionToken === "") {
+            console.log("Try to estabilish session");
+            console.log(self.initAccountToken);
+            // async function always return a promise,
+            // whether you use await or not
+            tokens = await self.estabilishSessionSync();
+            // set tokens here too after the estabilish session fulfilled.
             self.accountToken = tokens[0]
             self.sessionToken = tokens[1]
-            // write the same token to update modified time.
+        }
+
+        if(tokens === null) {
+            // try again.
+            // TODO: set timeout!
+            tokens = await self.fetchTokens();
+        } else {
+            // write the same tokens to update modified time.
             fs.writeFileSync(self.tokenFilePath, 
                     self.accountToken + ',' + self.sessionToken, 'utf8');
         }
-    }
 
-    // no sessionToken exists or it is expired, estabilish new session.
-    if(self.sessionToken === "") {
-        console.log("Try to estabilish session");
-        console.log(self.initAccountToken);
-        // async function always return a promise,
-        // whether you use await or not
-        const tokensPromise = self.estabilishSessionSync();
-        tokensPromise.then(tokens => {
-        //self.estabilishSession((tokens, err) => {
-            self.accountToken = tokens[0];
-            self.sessionToken = tokens[1];
-            // write the same token to update modified time.
-            fs.writeFileSync(self.tokenFilePath,
-                    self.accountToken + ',' + self.sessionToken, 'utf8');
-        });
+        return tokens;
+    } catch(err) {
+        console.log(err);
+        throw Error(err);
     }
 };
 
