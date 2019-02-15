@@ -262,6 +262,28 @@ Vitrium.prototype.estabilishSession = function(callback) {
 };
 
 /**
+ * utility fucntion to build the query parameters.
+ *
+ * params: the input parameters object.
+ */
+Vitrium.prototype.buildQueryParams = function(params) {
+
+    let queryParams = {};
+
+    // pagination prarms.
+    if(params.hasOwnProperty('offset') && params.hasOwnProperty('limit')) {
+        queryParams["page"] = {
+            "index": params["offset"],
+            "size": params["limit"]
+        }
+    }
+
+    // document id.
+
+    return queryParams;
+}
+
+/**
  * utility function to get ready the get request.
  */
 Vitrium.prototype.buildGetRequest = function(baseUrl, uri, queryParams) {
@@ -300,14 +322,9 @@ Vitrium.prototype.generalApiCall = function(req, callback) {
  * the generic function to get multiple items for a topic.
  * this will be Get request only.
  */
-Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
+Vitrium.prototype.getMultiItems = function(topic, params, callback) {
 
-    const queryParams = {
-        "page": {
-            "index": offset,
-            "size": limit
-        }
-    };
+    const queryParams = this.buildQueryParams(params);
 
     // get ready the request.
     let itemsReq =
@@ -321,14 +338,9 @@ Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
  * the generic function to get multiple items for a topic.
  * this will be Get request only.
  */
-Vitrium.prototype.getSMultiItems = function(topic, offset, limit, callback) {
+Vitrium.prototype.getSMultiItems = function(topic, params, callback) {
 
-    const queryParams = {
-        "page": {
-            "index": offset,
-            "size": limit
-        }
-    };
+    const queryParams = this.buildQueryParams(params);
 
     // get ready the request.
     let itemsReq =
@@ -345,7 +357,7 @@ Vitrium.prototype.getSMultiItems = function(topic, offset, limit, callback) {
 Vitrium.prototype.getPolicies = async function(offset, limit, callback) {
 
     await this._initialized;
-    this.getMultiItems('Policy', offset, limit, callback);
+    this.getMultiItems('Policy', {"offset":offset, "limit":limit}, callback);
 };
 
 /**
@@ -355,7 +367,7 @@ Vitrium.prototype.getReaders = async function(offset, limit, callback) {
 
     await this._initialized;
     // readers request.
-    this.getSMultiItems('Reader', offset, limit, callback);
+    this.getSMultiItems('Reader', {"offset":offset, "limit":limit}, callback);
 };
 
 /**
@@ -364,7 +376,7 @@ Vitrium.prototype.getReaders = async function(offset, limit, callback) {
 Vitrium.prototype.getDocs = async function(offset, limit, callback) {
 
     await this._initialized;
-    this.getMultiItems('Doc', offset, limit, callback);
+    this.getMultiItems('Doc', {"offset":offset, "limit":limit}, callback);
 };
 
 /**
