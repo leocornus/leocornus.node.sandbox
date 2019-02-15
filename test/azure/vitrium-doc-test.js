@@ -23,6 +23,7 @@ let vitrium = new Vitrium(
 // quick test to get all policies.
 vitrium.getDocs(1, 2, (res, err) => {
 
+    console.log(res.data.Results);
     console.log(`Total Records: ${res.data.TotalRecords}`);
-    console.log(res.data.Results.length);
+    console.log(`Return ${res.data.Results.length} on this page`);
 });

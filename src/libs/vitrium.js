@@ -264,7 +264,7 @@ Vitrium.prototype.estabilishSession = function(callback) {
 /**
  * utility function to get ready the get request.
  */
-Vitrium.prototype.buildGetRequest = function(uri, offset, limit, baseUrl) {
+Vitrium.prototype.buildGetRequest = function(baseUrl, uri, queryParams) {
 
     return {
         url: baseUrl + uri,
@@ -273,12 +273,7 @@ Vitrium.prototype.buildGetRequest = function(uri, offset, limit, baseUrl) {
           'X-VITR-ACCOUNT-TOKEN': this.accountToken,
           'X-VITR-SESSION-TOKEN': this.sessionToken
         },
-        params: {
-          "page": {
-             "index": offset,
-             "size": limit
-          }
-        }
+        params: queryParams
     };
 };
 
@@ -307,9 +302,16 @@ Vitrium.prototype.generalApiCall = function(req, callback) {
  */
 Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
 
+    const queryParams = {
+        "page": {
+            "index": offset,
+            "size": limit
+        }
+    };
+
     // get ready the request.
     let itemsReq =
-        this.buildGetRequest(topic, offset, limit, this.docApiBaseUrl);
+        this.buildGetRequest(this.docApiBaseUrl, topic, queryParams);
 
     //console.log(policyReq);
     this.generalApiCall(itemsReq, callback);
@@ -321,9 +323,16 @@ Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
  */
 Vitrium.prototype.getSMultiItems = function(topic, offset, limit, callback) {
 
+    const queryParams = {
+        "page": {
+            "index": offset,
+            "size": limit
+        }
+    };
+
     // get ready the request.
     let itemsReq =
-        this.buildGetRequest(topic, offset, limit, this.securityApiBaseUrl);
+        this.buildGetRequest(this.securityApiBaseUrl, topic, queryParams);
 
     //console.log(policyReq);
     this.generalApiCall(itemsReq, callback);
@@ -356,6 +365,12 @@ Vitrium.prototype.getDocs = async function(offset, limit, callback) {
 
     await this._initialized;
     this.getMultiItems('Doc', offset, limit, callback);
+};
+
+/**
+ * get versions for a doc.
+ */
+Vitrium.prototype.getDocVersions = async function(docId, offset, limit, callback) {
 };
 
 /**
