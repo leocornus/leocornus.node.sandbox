@@ -264,10 +264,10 @@ Vitrium.prototype.estabilishSession = function(callback) {
 /**
  * utility function to get ready the get request.
  */
-Vitrium.prototype.buildGetRequest = function(uri, offset, limit) {
+Vitrium.prototype.buildGetRequest = function(uri, offset, limit, baseUrl) {
 
     return {
-        url: this.docApiBaseUrl + uri,
+        url: baseUrl + uri,
         method: 'get',
         headers: {
           'X-VITR-ACCOUNT-TOKEN': this.accountToken,
@@ -301,11 +301,29 @@ Vitrium.prototype.generalApiCall = function(req, callback) {
     });
 };
 
+/**
+ * the generic function to get multiple items for a topic.
+ * this will be Get request only.
+ */
 Vitrium.prototype.getMultiItems = function(topic, offset, limit, callback) {
 
     // get ready the request.
     let itemsReq =
-        this.buildGetRequest(topic, offset, limit);
+        this.buildGetRequest(topic, offset, limit, this.docApiBaseUrl);
+
+    //console.log(policyReq);
+    this.generalApiCall(itemsReq, callback);
+};
+
+/**
+ * the generic function to get multiple items for a topic.
+ * this will be Get request only.
+ */
+Vitrium.prototype.getSMultiItems = function(topic, offset, limit, callback) {
+
+    // get ready the request.
+    let itemsReq =
+        this.buildGetRequest(topic, offset, limit, this.securityApiBaseUrl);
 
     //console.log(policyReq);
     this.generalApiCall(itemsReq, callback);
@@ -328,7 +346,7 @@ Vitrium.prototype.getReaders = async function(offset, limit, callback) {
 
     await this._initialized;
     // readers request.
-    this.getMultiItems('Reader', offset, limit, callback);
+    this.getSMultiItems('Reader', offset, limit, callback);
 };
 
 /**
