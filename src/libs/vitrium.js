@@ -279,6 +279,9 @@ Vitrium.prototype.buildQueryParams = function(params) {
     }
 
     // document id.
+    if(params.hasOwnProperty('documentId')) {
+        queryParams['documentId'] = params['documentId'];
+    }
 
     return queryParams;
 }
@@ -383,6 +386,14 @@ Vitrium.prototype.getDocs = async function(offset, limit, callback) {
  * get versions for a doc.
  */
 Vitrium.prototype.getDocVersions = async function(docId, offset, limit, callback) {
+
+    await this._initialized;
+    const params = {
+        "documentId": docId,
+        "offset": offset,
+        "limit": limit
+    }
+    this.getMultiItems('Version', params, callback);
 };
 
 /**

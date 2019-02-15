@@ -26,4 +26,12 @@ vitrium.getDocs(1, 2, (res, err) => {
     console.log(res.data.Results);
     console.log(`Total Records: ${res.data.TotalRecords}`);
     console.log(`Return ${res.data.Results.length} on this page`);
+
+    console.log('All versions for first doc');
+    const first = res.data.Results[0];
+    vitrium.getDocVersions(first.Id, 1, 100, (r, e) => {
+
+        console.log(r.data.Results);
+        console.log(`Total versions: ${r.data.TotalRecords}`);
+    });
 });
