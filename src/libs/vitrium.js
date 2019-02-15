@@ -397,6 +397,16 @@ Vitrium.prototype.getDocVersions = async function(docId, offset, limit, callback
 };
 
 /**
+ * quick method to get folders by page.
+ */
+Vitrium.prototype.getFolders = async function(offset, limit, callback) {
+
+    await this._initialized;
+    // readers request.
+    this.getMultiItems('Folder', {"offset":offset, "limit":limit}, callback);
+};
+
+/**
  * version unique for downloading binary file.
  */
 Vitrium.prototype.versionUnique = async function(docDetails, callback) {
