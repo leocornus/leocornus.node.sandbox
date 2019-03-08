@@ -446,7 +446,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
     };
 
     return docDetails;
-}
+};
 
 /**
  * version unique for downloading binary file.
