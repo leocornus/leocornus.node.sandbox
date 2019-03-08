@@ -407,13 +407,57 @@ Vitrium.prototype.getFolders = async function(offset, limit, callback) {
 };
 
 /**
+ * utility class to build details payload for a document.
+ * Here is sample of the doc request.
+ *
+ * {
+ *    "DocCode": "2090-13A1-3DE9E-00064067",
+ *    "UserName": "someemail@gmail.com",
+ *    "UserSetType": "Retail",
+ *    "PolicyExceptionOverrideCode": null,
+ *    "DocExpiryDate": "20691231",
+ *    "IPAddressRange": null
+ * }
+ */
+Vitrium.prototype.buildDocDetails = function(docRequest) {
+
+    let docDetails = {
+      "DocCode": docRequest.DocCode,
+      "UserName": docREquest.UserName,
+      // generate the uniqu doc copy id.
+      "UniqueDocCopyId": uuidv4(),
+      "DocPolicyOverride": {
+        "PrintType": "HighResolution",
+        "AllowCopy": true,
+        "AllowBuildInLoginTemplate": true,
+        "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
+        "AcroJsGosBehaviorType": "PromptAndCloseDocument"
+      },
+      "AccessPolicyOverride": {
+        "RelativeExpiryInDays": null,
+        "OpenLimit": null,
+        "OfflineDurationinDays": 18250,
+        "IpAddressesMax": null,
+        "IgnoredIpAddresses": null,
+        "ExpiryInMins": 5256000,
+        "DocumentLimit": 10,
+        "ComputersMax": 2
+      }
+    };
+
+    return docDetails;
+}
+
+/**
  * version unique for downloading binary file.
  */
-Vitrium.prototype.versionUnique = async function(docDetails, callback) {
+Vitrium.prototype.versionUnique = async function(docReq, callback) {
 
     let self = this;
 
     await self._initialized;
+
+    let docDetails = self.buildDocDetails(docReq);
 
     // get ready the request.
     console.log("get ready the request!");
