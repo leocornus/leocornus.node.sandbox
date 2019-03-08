@@ -4,7 +4,7 @@
 
 const config = require('./../../src/config');
 const d3 = require("d3");
-const strategy = require('./../../src/strategy');
+const strategy = require('./../../src/libs/strategy');
 const prettyMs = require('pretty-ms');
 const axios = require('axios');
 

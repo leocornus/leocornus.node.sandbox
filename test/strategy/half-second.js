@@ -2,7 +2,7 @@
  * some test cases to use strategy.js
  */
 
-const strategy = require('./../../src/strategy');
+const strategy = require('./../../src/libs/strategy');
 const prettyMs = require('pretty-ms');
 
 const now = () => new Date().toUTCString()

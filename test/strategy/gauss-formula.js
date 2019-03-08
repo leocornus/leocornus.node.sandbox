@@ -2,7 +2,7 @@
  * using strategy.iterateOver to implement Gauss formula
  */
 
-const strategy = require('./../../src/strategy');
+const strategy = require('./../../src/libs/strategy');
 
 const now = () => new Date().toUTCString()
 

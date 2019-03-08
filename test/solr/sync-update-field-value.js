@@ -17,7 +17,7 @@ const axios = require('axios');
 const prettyMs = require('pretty-ms');
 
 const config = require('./../../src/config');
-const strategy = require('./../../src/strategy');
+const strategy = require('./../../src/libs/strategy');
 
 // using UTC for the logging message.
 const now = () => new Date().toUTCString()

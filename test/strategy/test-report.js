@@ -2,7 +2,7 @@ const axios = require('axios');
 const prettyMs = require('pretty-ms');
 
 const config = require('./../../src/config');
-const strategy = require('./../../src/strategy');
+const strategy = require('./../../src/libs/strategy');
 
 const now = () => new Date().toUTCString()
 
