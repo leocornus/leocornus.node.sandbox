@@ -415,34 +415,113 @@ Vitrium.prototype.getFolders = async function(offset, limit, callback) {
  *    "UserName": "someemail@gmail.com",
  *    "UserSetType": "Retail",
  *    "PolicyExceptionOverrideCode": null,
- *    "DocExpiryDate": "20691231",
+ *    "DocExpiryDate": "2069-12-31",
  *    "IPAddressRange": null
  * }
  */
 Vitrium.prototype.buildDocDetails = function(docRequest) {
+
+    // the default doc policy override,
+    let docPolicyOverride = {
+        "PrintType": "HighResolution",
+        "AllowAnnotations": false,
+        "AllowCopy": true,
+        "AllowBuildInLoginTemplate": true,
+        "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
+        "AcroJsGosBehaviorType": "PromptAndCloseDocument"
+    };
+
+    // parse and process the DocExpiryDate, format: YYYY-MM-DD
+    // follow the ISO 8601 calendar date extended format, the date-only form.
+    // It will be considered as UTC.
+    const docExpiryDate = new Date(docRequest.DocExpiryDate);
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const days = Math.round((docExpiryDate - new Date()) / msPerDay);
+    const docExpriyInMins = (days + 1) * 24 * 60;
+
+    // the default access policy override.
+    let accessPolicyOverride = {
+        "RelativeExpiryInDays": null,
+        "OpenLimit": null,
+        "OfflineDurationinDays": 18250,
+        "IpAddressesMax": null,
+        "IgnoredIpAddresses": null,
+        // 525600 mins is 1 year, which is max
+        "ExpiryInMins": Math.min(525600, docExpriyInMins),
+        "DocumentLimit": 1,
+        "ComputersMax": 2
+    };
+
+
+    // set policies based on the UserSetType:
+    switch(docRequest.UserSetType) {
+        case 'Retail':
+            docPolicyOverride.AllowAnnotations = true;
+            accessPolicyOverride.OfflineDurationinDays = 18250;
+            // allow max 50 years which is 262840000 mins
+            accessPolicyOverride.ExpiryInMins =
+                Math.min(262840000, docExpriyInMins);
+            break;
+        case 'Subscription-User':
+            docPolicyOverride.AllowAnnotations = true;
+            // 30 offline days
+            accessPolicyOverride.OfflineDurationinDays = 30;
+            break;
+        case 'Subscription-IP Generic':
+            docPolicyOverride.PrintType = 'NotAllowed';
+            docPolicyOverride.AllowCopy = false;
+            docPolicyOverride.AllowAnnotations = false;
+            // disable offline access.
+            accessPolicyOverride.OfflineDurationinDays = -1;
+            accessPolicyOverride.IpAddressesMax = 0;
+            accessPolicyOverride.IgnoredIpAddresses =
+                docRequest.IPAddressRange;
+            break;
+        case 'Subscription-IP Corp':
+            docPolicyOverride.PrintType = 'HighResolution';
+            docPolicyOverride.AllowCopy = true;
+            docPolicyOverride.AllowAnnotations = true;
+            accessPolicyOverride.OfflineDurationinDays = 30;
+            accessPolicyOverride.IpAddressesMax = 0;
+            accessPolicyOverride.IgnoredIpAddresses =
+                docRequest.IPAddressRange;
+            break;
+        case 'Subscription-IP University':
+            docPolicyOverride.PrintType = 'NotAllowed';
+            docPolicyOverride.AllowCopy = true;
+            docPolicyOverride.AllowAnnotations = true;
+            // disable offline access.
+            accessPolicyOverride.OfflineDurationinDays = -1;
+            accessPolicyOverride.IpAddressesMax = 0;
+            accessPolicyOverride.IgnoredIpAddresses =
+                docRequest.IPAddressRange;
+            break;
+        case 'Subscription-IP College':
+            docPolicyOverride.PrintType = 'NotAllowed';
+            if(docRequest.PolicyExceptionOverrideCode === "College") {
+                docPolicyOverride.AllowCopy = false;
+                docPolicyOverride.AllowAnnotations = false;
+            } else {
+                docPolicyOverride.AllowCopy = true;
+                docPolicyOverride.AllowAnnotations = true;
+            }
+            // disable offline access.
+            accessPolicyOverride.OfflineDurationinDays = -1;
+            accessPolicyOverride.IpAddressesMax = 0;
+            accessPolicyOverride.IgnoredIpAddresses =
+                docRequest.IPAddressRange;
+            break;
+        default:
+            break;
+    }
 
     let docDetails = {
       "DocCode": docRequest.DocCode,
       "UserName": docREquest.UserName,
       // generate the uniqu doc copy id.
       "UniqueDocCopyId": uuidv4(),
-      "DocPolicyOverride": {
-        "PrintType": "HighResolution",
-        "AllowCopy": true,
-        "AllowBuildInLoginTemplate": true,
-        "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
-        "AcroJsGosBehaviorType": "PromptAndCloseDocument"
-      },
-      "AccessPolicyOverride": {
-        "RelativeExpiryInDays": null,
-        "OpenLimit": null,
-        "OfflineDurationinDays": 18250,
-        "IpAddressesMax": null,
-        "IgnoredIpAddresses": null,
-        "ExpiryInMins": 5256000,
-        "DocumentLimit": 10,
-        "ComputersMax": 2
-      }
+      "DocPolicyOverride": docPolicyOverride,
+      "AccessPolicyOverride": accessPolicyOverride
     };
 
     return docDetails;
