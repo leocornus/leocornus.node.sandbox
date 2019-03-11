@@ -55,30 +55,15 @@ module.exports = function(app) {
             config.vitrium.userName,
             config.vitrium.password
         );
-        let docDetails = {
+
+        let docReq = {
           "DocCode": config.vitrium.testData.docCodes[0],
           "UserName": config.vitrium.testData.users[0],
-          "UniqueDocCopyId": uuidv4(),
-          "DocPolicyOverride": {
-            "PrintType": "HighResolution",
-            "AllowCopy": true,
-            "AllowBuildInLoginTemplate": true,
-            "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
-            "AcroJsGosBehaviorType": "PromptAndCloseDocument"
-          },
-          "AccessPolicyOverride": {
-            "RelativeExpiryInDays": null,
-            "OpenLimit": null,
-            "OfflineDurationinDays": 18250,
-            "IpAddressesMax": null,
-            "IgnoredIpAddresses": null,
-            "ExpiryInMins": 5256000,
-            "DocumentLimit": 10,
-            "ComputersMax": 2
-          }
+          "UserSetType": 'Retail',
+          "DocExpiryDate": '2069-12-31'
         };
 
-        vitrium.versionUnique(docDetails, (uniqueRes, uniqueErr) => {
+        vitrium.versionUnique(docReq, (uniqueRes, uniqueErr) => {
 
             console.log('unique respose header:');
             console.log(uniqueRes.headers);
