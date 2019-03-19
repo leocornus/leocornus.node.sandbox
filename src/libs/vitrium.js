@@ -430,6 +430,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
         "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
         "AcroJsGosBehaviorType": "PromptAndCloseDocument"
     };
+    //console.log(docPolicyOverride);
 
     // parse and process the DocExpiryDate, format: YYYY-MM-DD
     // follow the ISO 8601 calendar date extended format, the date-only form.
@@ -451,7 +452,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
         "DocumentLimit": 1,
         "ComputersMax": 2
     };
-
+    //console.log(accessPolicyOverride);
 
     // set policies based on the UserSetType:
     switch(docRequest.UserSetType) {
@@ -517,7 +518,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
 
     let docDetails = {
       "DocCode": docRequest.DocCode,
-      "UserName": docREquest.UserName,
+      "UserName": docRequest.UserName,
       // generate the uniqu doc copy id.
       "UniqueDocCopyId": uuidv4(),
       "DocPolicyOverride": docPolicyOverride,
@@ -533,6 +534,8 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
 Vitrium.prototype.versionUnique = async function(docReq, callback) {
 
     let self = this;
+
+    console.log(docReq);
 
     await self._initialized;
 

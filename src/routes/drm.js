@@ -65,6 +65,8 @@ module.exports = function(app) {
 
         vitrium.versionUnique(docReq, (uniqueRes, uniqueErr) => {
 
+            //console.log(uniqueRes);
+            //console.log(uniqueErr);
             console.log('unique respose header:');
             console.log(uniqueRes.headers);
 
