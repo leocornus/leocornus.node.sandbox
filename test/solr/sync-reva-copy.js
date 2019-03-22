@@ -56,61 +56,61 @@ axios.post(revaEndpoint, totalQuery)
 
     // sync interation to get docs from source 
     // batch by batch...
-    //--strategy.waterfallOver(localConfig.startIndex,
-    //--                       bulk, function(start, reportDone) {
+    strategy.waterfallOver(localConfig.startIndex,
+                           bulk, function(start, reportDone) {
 
-    //--    axios.get(revaEndpoint, {
-    //--      params: {
-    //--        q: localConfig.selectQuery,
-    //--        // sort to make sure we are in the same sequence 
-    //--        // for each batch load.
-    //--        sort: localConfig.selectSort,
-    //--        rows: batchSize,
-    //--        start: start
-    //--      }
-    //--    })
-    //--    .then(function(response) {
-    //--        // handle response here.
-    //--        //console.log("Got Response:");
-    //--        //console.dir(response.data.response.docs.length);
-    //--        let payload = response.data.response.docs.map(function(doc) {
+        axios.post(revaEndpoint, {
+          workflow: "search",
+          query: localConfig.selectQuery,
+          rows: batchSize,
+          offset: start,
+          sort: localConfig.selectSort,
+          searchProfile: "checkcity",
+          //queryLanguage: "simple",
+          queryLanguage: "advanced"
+        })
+        .then(function(response) {
+            // handle response here.
+            //console.log("Got Response:");
+            //console.dir(response.data.response.docs.length);
+            let payload = response.data.documents.map(function(doc) {
 
-    //--            // final touch for each doc.
-    //--            return localConfig.tweakDoc(doc);
-    //--        });
+                // final touch for each doc.
+                return localConfig.tweakDoc(doc.fields);
+            });
 
-    //--        // async call
-    //--        strategy.iterateOver(payload, function(doc, report) {
-    //--            axios.post(targetEndPoint, doc
-    //--            ).then(function(postRes) {
-    //--                //console.log("Post Success!");
-    //--                report();
-    //--                //console.dir(postRes);
-    //--            }).catch(function(postError) {
-    //--                console.log("Post Failed! - " + doc[localConfig.idField]);
-    //--                //console.dir(postError.data);
-    //--                // log the erorr and then report the copy is done!
-    //--                report();
-    //--            });
-    //--        }, function() {
-    //--            console.log(now() + " Async post done!");
-    //--            reportDone(payload.length);
-    //--        });
-    //--    })
-    //--    .catch(function(error) {
-    //--        // handle errors here.
-    //--        console.log("ERROR!");
-    //--        console.dir(error);
-    //--    });
+            // async call
+            strategy.iterateOver(payload, function(doc, report) {
+                axios.post(targetEndPoint, doc
+                ).then(function(postRes) {
+                    //console.log("Post Success!");
+                    report();
+                    //console.dir(postRes);
+                }).catch(function(postError) {
+                    console.log("Post Failed! - " + doc[localConfig.idField]);
+                    //console.dir(postError.data);
+                    // log the erorr and then report the copy is done!
+                    report();
+                });
+            }, function() {
+                console.log(now() + " Async post done!");
+                reportDone(payload.length);
+            });
+        })
+        .catch(function(error) {
+            // handle errors here.
+            console.log("ERROR!");
+            console.dir(error);
+        });
 
-    //--}, function() {
-    //--    console.log(now() + " All Done");
-    //--    // summary message:
-    //--    let endTime = new Date();
-    //--    // the differenc will be in ms
-    //--    let totalTime = endTime - startTime;
-    //--    console.log("Running time: " + prettyMs(totalTime));
-    //--});
+    }, function() {
+        console.log(now() + " All Done");
+        // summary message:
+        let endTime = new Date();
+        // the differenc will be in ms
+        let totalTime = endTime - startTime;
+        console.log("Running time: " + prettyMs(totalTime));
+    });
 })
 .catch(function(totalError) {
     console.log("Total Query Error!");
