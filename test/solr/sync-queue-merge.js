@@ -111,9 +111,20 @@ axios.get(sourceSelect, totalQuery)
                         if(theDoc === null) {
                             // target has the source content!
                             // skip it!
-                            console.log(`File exist! Skip - ${doc[localConfig.idField]}`);
+                            console.log(`No metadata change! Skip - ${doc[localConfig.idField]}`);
                             report();
-                        }
+
+                            doc['process_status'] = 'skip-metadata';
+                            doc['process_message'] = 'No metadata change, skip';
+                            // update the source document, process status and
+                            // process message.
+                            axios.post(sourceUpdate, doc
+                            ).then(function(skipRes) {
+
+                            }).catch(function(su1Err) {
+
+                            });
+                        } else {
                         // post to target. update the target doc
                         axios.post(targetUpdate, theDoc
                         ).then(function(postRes) {
@@ -136,7 +147,7 @@ axios.get(sourceSelect, totalQuery)
                             //console.dir(postError);
                             // log the erorr and then report the copy is done!
                             report();
-                            doc['process_status'] = 'failed-metadata';
+                            doc['process_status'] = 'failed-metadata-post';
                             doc['process_message'] = 'Metadata process Failed! - Post failed';
                             // update the source document.
                             axios.post(sourceUpdate, doc
@@ -146,12 +157,12 @@ axios.get(sourceSelect, totalQuery)
 
                             });
                         });
-
+                        }
                     }).catch(function(err) {
                         console.log("Query Failed! - " + doc[localConfig.idField]);
                         //console.dir(err);
                         report();
-                        doc['process_status'] = 'failed-metadata';
+                        doc['process_status'] = 'failed-metadata-query';
                         doc['process_message'] = 'Metadata process Failed, query failed.';
                         // update the source document.
                         axios.post(sourceUpdate, doc
