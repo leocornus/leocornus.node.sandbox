@@ -22,7 +22,8 @@ let streamBody = {
 // simple get request.
 axios.get(solrEndpoint, streamBody)
 .then(function(res) {
-    console.log(res);
+    //console.log(res);
+    console.log(res.data);
 })
 .catch(function(err) {
     console.log(err);
