@@ -114,17 +114,6 @@ axios.get(sourceSelect, totalQuery)
                                     doc[localConfig.idField]);
                         // create new doc.
                         createNewDoc(doc, report);
-                        //console.dir(err);
-                        //report();
-                        //doc['process_status'] = 'failed-metadata-query';
-                        //doc['process_message'] = 'Metadata process Failed, query failed.';
-                        //// update the source document.
-                        //axios.post(sourceUpdate, doc
-                        //).then(function(su3Res) {
-
-                        //}).catch(function(su3Err) {
-
-                        //});
                     });
                 }).catch(function(suErr) {
 
