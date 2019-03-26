@@ -104,73 +104,27 @@ axios.get(sourceSelect, totalQuery)
                     axios.get(targetSelect, query)
                     .then(function(res) {
 
+                        // we found the doc with same id
                         // merge docs to one doc.
-                        let theDoc = localConfig.mergeDoc(res.data.response.docs[0],
-                                                          doc);
-                        //console.dir(theDoc);
-                        if(theDoc === null) {
-                            // target has the source content!
-                            // skip it!
-                            console.log(`No metadata change! Skip - ${doc[localConfig.idField]}`);
-                            report();
-
-                            doc['process_status'] = 'skip-metadata';
-                            doc['process_message'] = 'No metadata change, skip';
-                            // update the source document, process status and
-                            // process message.
-                            axios.post(sourceUpdate, doc
-                            ).then(function(skipRes) {
-
-                            }).catch(function(su1Err) {
-
-                            });
-                        } else {
-                        // post to target. update the target doc
-                        axios.post(targetUpdate, theDoc
-                        ).then(function(postRes) {
-                            //console.log("Post Success!");
-                            report();
-
-                            //console.dir(postRes);
-                            doc['process_status'] = 'success-metadata';
-                            doc['process_message'] = 'Metadata process success';
-                            // update the source document, process status and
-                            // process message.
-                            axios.post(sourceUpdate, doc
-                            ).then(function(su1Res) {
-
-                            }).catch(function(su1Err) {
-
-                            });
-                        }).catch(function(postError) {
-                            console.log("Post Failed! - " + theDoc[localConfig.idField]);
-                            //console.dir(postError);
-                            // log the erorr and then report the copy is done!
-                            report();
-                            doc['process_status'] = 'failed-metadata-post';
-                            doc['process_message'] = 'Metadata process Failed! - Post failed';
-                            // update the source document.
-                            axios.post(sourceUpdate, doc
-                            ).then(function(su2Res) {
-
-                            }).catch(function(su2Err) {
-
-                            });
-                        });
-                        }
+                        mergeExistingDoc(res.data.response.docs[0], 
+                                         doc, report);
                     }).catch(function(err) {
-                        console.log("Query Failed! - " + doc[localConfig.idField]);
+
+                        console.log("Query Failed! - " +
+                                    doc[localConfig.idField]);
+                        // create new doc.
+                        createNewDoc(doc, report);
                         //console.dir(err);
-                        report();
-                        doc['process_status'] = 'failed-metadata-query';
-                        doc['process_message'] = 'Metadata process Failed, query failed.';
-                        // update the source document.
-                        axios.post(sourceUpdate, doc
-                        ).then(function(su3Res) {
+                        //report();
+                        //doc['process_status'] = 'failed-metadata-query';
+                        //doc['process_message'] = 'Metadata process Failed, query failed.';
+                        //// update the source document.
+                        //axios.post(sourceUpdate, doc
+                        //).then(function(su3Res) {
 
-                        }).catch(function(su3Err) {
+                        //}).catch(function(su3Err) {
 
-                        });
+                        //});
                     });
                 }).catch(function(suErr) {
 
@@ -202,3 +156,104 @@ axios.get(sourceSelect, totalQuery)
     console.log("Total Query Error!");
     console.dir(totalError);
 });
+
+/**
+ * merge existing doc.
+ */
+function mergeExistingDoc(targetDoc, sourceDoc, report) {
+
+    let theDoc = localConfig.mergeDoc(targetDoc, sourceDoc);
+    //console.dir(theDoc);
+    if(theDoc === null) {
+        // target has the source content!
+        // skip it!
+        console.log(`No metadata change! Skip - ${sourceDoc[localConfig.idField]}`);
+        report();
+
+        sourceDoc['process_status'] = 'skip-metadata';
+        sourceDoc['process_message'] = 'No metadata change, skip';
+        // update the source document, process status and
+        // process message.
+        axios.post(sourceUpdate, sourceDoc
+        ).then(function(skipRes) {
+
+        }).catch(function(su1Err) {
+
+        });
+    } else {
+        // post to target. update the target doc
+        axios.post(targetUpdate, theDoc
+        ).then(function(postRes) {
+            //console.log("Post Success!");
+            report();
+
+            //console.dir(postRes);
+            sourceDoc['process_status'] = 'success-metadata';
+            sourceDoc['process_message'] = 'Metadata process success';
+            // update the source document, process status and
+            // process message.
+            axios.post(sourceUpdate, sourceDoc
+            ).then(function(su1Res) {
+
+            }).catch(function(su1Err) {
+
+            });
+        }).catch(function(postError) {
+            console.log("Post Failed! - " + theDoc[localConfig.idField]);
+            //console.dir(postError);
+            // log the erorr and then report the copy is done!
+            report();
+            sourceDoc['process_status'] = 'failed-metadata-post';
+            sourceDoc['process_message'] = 'Metadata process Failed! - Post failed';
+            // update the source document.
+            axios.post(sourceUpdate, sourceDoc
+            ).then(function(su2Res) {
+
+            }).catch(function(su2Err) {
+
+            });
+        });
+    }
+}
+
+/**
+ * create new doc.
+ */
+function createNewDoc(sourceDoc, report) {
+
+    let theDoc = localConfig.createDoc(sourceDoc);
+    //console.dir(theDoc);
+    // post to target. update the target doc
+    axios.post(targetUpdate, theDoc
+    ).then(function(postRes) {
+        console.log("Create new doc: " + theDoc[localConfig.idField]);
+        report();
+
+        //console.dir(postRes);
+        sourceDoc['process_status'] = 'success-create-metadata';
+        sourceDoc['process_message'] = 'Metadata created successfully';
+        // update the source document, process status and
+        // process message.
+        axios.post(sourceUpdate, sourceDoc
+        ).then(function(su1Res) {
+
+        }).catch(function(su1Err) {
+
+        });
+    }).catch(function(postError) {
+        console.log("Post Failed! - " + theDoc[localConfig.idField]);
+        //console.dir(postError);
+        // log the erorr and then report the copy is done!
+        report();
+
+        sourceDoc['process_status'] = 'failed-metadata-post';
+        sourceDoc['process_message'] = 'Metadata process Failed! - Post failed';
+        // update the source document.
+        axios.post(sourceUpdate, sourceDoc
+        ).then(function(su2Res) {
+
+        }).catch(function(su2Err) {
+
+        });
+    });
+}
