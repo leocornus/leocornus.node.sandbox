@@ -20,7 +20,7 @@ module.exports = function(app) {
     });
 
     // basic search function.
-    app.get("/solr/selecta", function(req, res) {
+    app.get("/solr/select", function(req, res) {
 
         search.select(req.query, function(response, error){
 
