@@ -19,6 +19,9 @@ module.exports = function(app) {
     // DRM client.
     require("./drm.js")(app);
 
+    // solr
+    require("./solr.js")(app);
+
     // redirect 404 page to home page.
     app.use(function (req, res, next) {
         res.status(404).redirect(301, config.server.homeRedirectUrl);
