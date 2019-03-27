@@ -22,7 +22,7 @@ module.exports = function(app) {
     // basic search function.
     app.get("/solr/selecta", function(req, res) {
 
-        search.select("", function(response, error){
+        search.select(req.query, function(response, error){
 
             res.json(response.data);
         });

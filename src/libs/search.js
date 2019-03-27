@@ -36,14 +36,13 @@ Search.prototype.info = function() {
 Search.prototype.select = function(query, callback) {
 
     let selectQuery = {
-        params: {
-            q: "*:*"
-        }
+        params: query
     };
+    console.log(selectQuery);
 
     axios.get(this.searchUrl, selectQuery)
     .then(function(response) {
-        console.log(response);
+        //console.log(response);
         callback(response, null);
     })
     .catch(function(error) {
