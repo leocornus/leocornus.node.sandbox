@@ -23,6 +23,7 @@ try {
     config = Object.assign(config, local);
 } catch (e) {
     // file not exist.
+    console.dir(e);
     console.log("Could not find src/local.js! Consider create one!");
 }
 
