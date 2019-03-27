@@ -8,11 +8,23 @@ module.exports = function(app) {
 
     let search = new Search(config.solr.baseUrl);
 
-    // quick test for download.
+    // display the search server information.
     app.get("/solr/info", function(req, res) {
 
         let info = search.info();
-        // redirect to homepage.
-        res.send("Hello Solr: " + info.endpoint);
+
+        res.setHeader('Content-Type', "application/json;charset=utf-8");
+
+        //res.send("Hello Solr: " + info.endpoint);
+        res.json(info);
+    });
+
+    // basic search function.
+    app.get("/solr/selecta", function(req, res) {
+
+        search.select("", function(response, error){
+
+            res.json(response.data);
+        });
     });
 };
