@@ -19,3 +19,13 @@ const Search = function Search (baseUrl) {
 
 // export the Vitrium module.
 module.exports = Search;
+
+/**
+ * show information about search server.
+ */
+Search.prototype.info = function() {
+
+    return {
+        endpoint: this.searchUrl
+    };
+};

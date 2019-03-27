@@ -6,10 +6,13 @@ const Search = require("../libs/search");
 
 module.exports = function(app) {
 
-    // quick test for download.
-    app.get("/solr/select", function(req, res) {
+    let search = new Search(config.solr.baseUrl);
 
+    // quick test for download.
+    app.get("/solr/info", function(req, res) {
+
+        let info = search.info();
         // redirect to homepage.
-        res.send("Hello Solr");
+        res.send("Hello Solr: " + info.endpoint);
     });
 };
