@@ -84,6 +84,7 @@ axios.get(sourceSelect, totalQuery)
                 // brief steps:
                 // - update source to processing
                 delete doc["_version_"];
+                delete doc["_modified_"];
                 doc["process_status"] = "processing";
                 doc["process_message"] = "start processing";
                 axios.post(sourceUpdate, doc
