@@ -94,7 +94,7 @@ axios.get(sourceSelect, totalQuery)
                     // preparying the query to search target.
                     let query = {
                       params: {
-                        q: `${localConfig.idField}:${doc[localConfig.idField]}`
+                        q: `${localConfig.idField}:"${doc[localConfig.idField]}"`
                       }
                     };
                     // inspect query.
