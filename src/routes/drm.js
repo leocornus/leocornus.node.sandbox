@@ -31,10 +31,12 @@ module.exports = function(app) {
             console.log(uniqueRes.headers);
 
             // set header from the unique response.
-            res.setHeader('content-disposition',
+            res.setHeader('Content-Disposition',
                     uniqueRes.headers['content-disposition']);
-            res.setHeader('content-type',
+            res.setHeader('Content-Type',
                     uniqueRes.headers['content-type']);
+            res.setHeader('Content-Length',
+                    uniqueRes.headers['content-length']);
             // the data is a stream.
             uniqueRes.data.pipe(res);
         });
@@ -71,10 +73,12 @@ module.exports = function(app) {
             console.log(uniqueRes.headers);
 
             // set header from the unique response.
-            res.setHeader('content-disposition',
+            res.setHeader('Content-Disposition',
                     uniqueRes.headers['content-disposition']);
-            res.setHeader('content-type',
-                    uniqueRes.headers['content-type']);
+            res.setHeader('Content-Type',
+                    uniqueRes.headers['Content-Type']);
+            res.setHeader('Content-Length',
+                    uniqueRes.headers['content-length']);
             // the data is a stream.
             uniqueRes.data.pipe(res);
         });

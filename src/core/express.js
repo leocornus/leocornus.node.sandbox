@@ -24,7 +24,8 @@ module.exports = function() {
           }
 
           return callback(null, true);
-      }
+      },
+      exposedHeaders: config.server.exposedHeaders
     }));
 
     // use body-parser as the middle-ware.
