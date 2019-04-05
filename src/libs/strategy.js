@@ -2,7 +2,7 @@
  * some strategy to manipulate large volume of data.
  */
 
-const now = () => new Date().toUTCString()
+const logger = require('log4js').getLogger('strategy');
 
 var strategy = {
 
@@ -33,7 +33,7 @@ var strategy = {
 
             // keep tracking how many items are done work.
             doneCount = doneCount + subTotal;
-            console.log(now() + " Processed: " + doneCount);
+            logger.info("Processed: " + doneCount);
 
             if(doneCount >= end) {
                 // we have completed the iteration.

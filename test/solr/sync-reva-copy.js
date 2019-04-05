@@ -14,18 +14,17 @@
 
 const axios = require('axios');
 const prettyMs = require('pretty-ms');
-const log4js = require('log4js');
-
 const config = require('./../../src/config');
+
+const localConfig = config.solrCopy;
+const log4js = require('log4js');
+// configure log4js
+log4js.configure(localConfig.log4jsConfig);
+
 const strategy = require('./../../src/libs/strategy');
 
 // timestamp for logging message.
-const now = () => new Date().toUTCString()
 const startTime = new Date();
-
-const localConfig = config.solrCopy;
-// configure log4js
-log4js.configure(localConfig.log4jsConfig);
 
 // reva endpoint.
 const revaEndpoint = localConfig.baseUrl + "searchApi/search";
