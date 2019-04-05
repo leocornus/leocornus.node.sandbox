@@ -14,6 +14,7 @@
 
 const axios = require('axios');
 const prettyMs = require('pretty-ms');
+const log4js = require('log4js');
 
 const config = require('./../../src/config');
 const strategy = require('./../../src/libs/strategy');
@@ -23,6 +24,18 @@ const now = () => new Date().toUTCString()
 const startTime = new Date();
 
 const localConfig = config.solrCopy;
+// configure log4js
+log4js.configure({
+    appenders: {
+        'console': {type: 'stdout'}
+    },
+    categories: {
+        default: {
+            appenders: ['console'],
+            level: 'trace'
+        }
+    }
+});
 
 // reva endpoint.
 const revaEndpoint = localConfig.baseUrl + "searchApi/search";
@@ -30,9 +43,11 @@ const targetEndPoint = localConfig.targetBaseUrl + "update/json/docs?commit=true
 
 // set batch size.
 const batchSize = localConfig.selectRows;
-console.log("From: " + revaEndpoint);
-console.log("To: " + targetEndPoint);
-console.log("Copy " + batchSize + " docs each time!");
+const logger = log4js.getLogger();
+
+logger.info("From: " + revaEndpoint);
+logger.info("To: " + targetEndPoint);
+logger.info("Copy " + batchSize + " docs each time!");
 
 // simple query to get total number:
 let totalQuery = {
@@ -49,9 +64,9 @@ axios.post(revaEndpoint, totalQuery)
 .then(function(totalRes) {
 
     let amount = totalRes.data.totalHits;
-    console.log("Total Docs: " + amount);
+    logger.info("Total Docs: " + amount);
     let bulk = Math.min(localConfig.endIndex, amount);
-    console.log("Working on items from", localConfig.startIndex,
+    logger.info("Working on items from", localConfig.startIndex,
                 "to", bulk);
 
     // sync interation to get docs from source 
@@ -71,7 +86,7 @@ axios.post(revaEndpoint, totalQuery)
         })
         .then(function(response) {
             // handle response here.
-            //console.log("Got Response:");
+            //logger.info("Got Response:");
             //console.dir(response.data.response.docs.length);
             let payload = response.data.documents.map(function(doc) {
 
@@ -83,36 +98,36 @@ axios.post(revaEndpoint, totalQuery)
             strategy.iterateOver(payload, function(doc, report) {
                 axios.post(targetEndPoint, doc
                 ).then(function(postRes) {
-                    //console.log("Post Success!");
+                    //logger.info("Post Success!");
                     report();
                     //console.dir(postRes);
                 }).catch(function(postError) {
-                    console.log("Post Failed! - " + doc[localConfig.idField]);
+                    logger.error("Post Failed! - " + doc[localConfig.idField]);
                     //console.dir(postError.data);
                     // log the erorr and then report the copy is done!
                     report();
                 });
             }, function() {
-                console.log(now() + " Async post done!");
+                logger.info("Async post done!");
                 reportDone(payload.length);
             });
         })
         .catch(function(error) {
             // handle errors here.
-            console.log("ERROR!");
+            logger.error("ERROR!");
             console.dir(error);
         });
 
     }, function() {
-        console.log(now() + " All Done");
+        logger.info("All Done");
         // summary message:
         let endTime = new Date();
         // the differenc will be in ms
         let totalTime = endTime - startTime;
-        console.log("Running time: " + prettyMs(totalTime));
+        logger.info("Running time: " + prettyMs(totalTime));
     });
 })
 .catch(function(totalError) {
-    console.log("Total Query Error!");
+    logger.info("Total Query Error!");
     console.dir(totalError);
 });
