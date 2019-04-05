@@ -25,17 +25,7 @@ const startTime = new Date();
 
 const localConfig = config.solrCopy;
 // configure log4js
-log4js.configure({
-    appenders: {
-        'console': {type: 'stdout'}
-    },
-    categories: {
-        default: {
-            appenders: ['console'],
-            level: 'trace'
-        }
-    }
-});
+log4js.configure(localConfig.log4jsConfig);
 
 // reva endpoint.
 const revaEndpoint = localConfig.baseUrl + "searchApi/search";
@@ -43,7 +33,8 @@ const targetEndPoint = localConfig.targetBaseUrl + "update/json/docs?commit=true
 
 // set batch size.
 const batchSize = localConfig.selectRows;
-const logger = log4js.getLogger();
+// if the category is not exist, the default category will be used.
+const logger = log4js.getLogger('test');
 
 logger.info("From: " + revaEndpoint);
 logger.info("To: " + targetEndPoint);
