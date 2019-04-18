@@ -31,6 +31,7 @@
     "d3": "^5.7.0",
     "express": "^4.16.4",
     "googleapis": "^36.0.0",
+    "jsforce": "^1.9.1",
     "log4js": "^4.1.0",
     "node-fetch-polyfill": "^2.0.6",
     "node-sp-auth": "^2.5.4",
