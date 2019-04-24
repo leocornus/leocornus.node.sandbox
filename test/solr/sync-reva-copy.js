@@ -93,12 +93,12 @@ axios.post(revaEndpoint, totalQuery)
                     //console.dir(postRes);
                 }).catch(function(postError) {
                     logger.error("Post Failed! - " + doc[localConfig.idField]);
-                    //console.dir(postError.data);
+                    logger.error(postError);
                     // log the erorr and then report the copy is done!
                     report();
                 });
             }, function() {
-                logger.info("Async post done!");
+                logger.info("Async post done! Subtotal: " + payload.length);
                 reportDone(payload.length);
             });
         })
