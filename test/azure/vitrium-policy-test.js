@@ -11,6 +11,11 @@
 
 // we should have separate local.js file for vitrium.
 const config = require('./../../src/config');
+const log4js = require('log4js');
+// configure log4js
+log4js.configure(config.vitrium.log4jsConfig);
+
+const logger = log4js.getLogger('test');
 
 const Vitrium = require('./../../src/libs/vitrium');
 
@@ -34,6 +39,6 @@ vitrium.getPolicies(1, 6000, (res, err) => {
         };
     });
 
-    console.log(policies);
-    console.log(`Total Records: ${res.data.TotalRecords}`);
+    logger.info(policies);
+    logger.info(`Total Records: ${res.data.TotalRecords}`);
 });
