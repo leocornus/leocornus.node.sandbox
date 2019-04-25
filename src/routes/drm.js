@@ -70,7 +70,7 @@ module.exports = function(app) {
             res.setHeader('Content-Disposition',
                     uniqueRes.headers['content-disposition']);
             res.setHeader('Content-Type',
-                    uniqueRes.headers['Content-Type']);
+                    uniqueRes.headers['content-type']);
             res.setHeader('Content-Length',
                     uniqueRes.headers['content-length']);
             // the data is a stream.
