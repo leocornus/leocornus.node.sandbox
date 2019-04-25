@@ -1,6 +1,10 @@
 "use strict";
 
 let config = require("../config");
+const log4js = require('log4js');
+// configure log4js
+log4js.configure(config.server.log4jsConfig);
+
 let express = require("express");
 let cors = require("cors");
 let bodyParser = require("body-parser");
