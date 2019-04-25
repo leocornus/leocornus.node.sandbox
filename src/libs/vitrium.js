@@ -4,6 +4,8 @@
  * utilities to manipulate Vitrium APIs.
  */
 
+const logger = require('log4js').getLogger('vitrium');
+
 const axios = require('axios');
 // using the UUID v4.
 const uuidv4 = require('uuid/v4');
@@ -40,7 +42,7 @@ const Vitrium = function Vitrium (account, username, password) {
     // check the token age, create new one if it is expired.
     // set it as a promise object.
     this._initialized = this.fetchTokens();
-    console.log(`Current session: ${this.sessionToken}`);
+    logger.info(`Current session: ${this.sessionToken}`);
 };
 
 // export the Vitrium module.
@@ -63,6 +65,7 @@ Vitrium.prototype.fetchTokens = async function() {
             // age is in MS.
             let age = (new Date()).getTime() - stats.mtimeMs;
             if(age < 3600000) {
+                logger.info("Try to get existing session");
                 // token is not expired yet!
                 // read the token.
                 const tokens = fs.readFileSync(self.tokenFilePath, 'utf8').split(',');
@@ -74,8 +77,8 @@ Vitrium.prototype.fetchTokens = async function() {
 
         // no sessionToken exists or it is expired, estabilish new session.
         if(self.sessionToken === "") {
-            console.log("Try to estabilish session");
-            console.log(self.initAccountToken);
+            logger.info("Try to estabilish new session for account: " +
+                        self.initAccountToken);
             // async function always return a promise,
             // whether you use await or not
             const tokens = await self.estabilishSessionSync();
@@ -89,6 +92,7 @@ Vitrium.prototype.fetchTokens = async function() {
             // TODO: set timeout!
             const token = await self.fetchTokens();
         } else {
+            logger.info("Successfully estabilished session!");
             // write the same tokens to update modified time.
             fs.writeFileSync(self.tokenFilePath, 
                     self.accountToken + ',' + self.sessionToken, 'utf8');
@@ -97,7 +101,7 @@ Vitrium.prototype.fetchTokens = async function() {
         // return will fulfill the async function promise.
         return self.sessionToken;
     } catch(err) {
-        console.log(err);
+        logger.error('Failed to estabilish session: ', err);
         throw Error(err);
     }
 };
@@ -136,7 +140,7 @@ Vitrium.prototype.estabilishSessionSync = async function() {
         const challengeRes = await axios.request(reqConf);
 
         // collect server Nonce
-        console.dir(challengeRes.data);
+        logger.debug('Challenge Response:', challengeRes.data);
         let serverNonce = challengeRes.data.ServerNonce;
 
         /**
@@ -167,14 +171,14 @@ Vitrium.prototype.estabilishSessionSync = async function() {
 
         const loginRes = await axios.request(reqConf);
 
-        console.log(loginRes.data);
+        logger.debug('Log in Response:', loginRes.data);
         // update headers with new tokens.
         // TODO: check to make sure the reponse has new tokens
         let tokens = [loginRes.data.Accounts[0].Id,
                       loginRes.data.ApiSession.Token];
         return tokens;
     } catch (awaitError) {
-        console.log(awaitError);
+        logger.error("Failed on challenge request!", awaitError);
     }
 };
 
@@ -241,7 +245,7 @@ Vitrium.prototype.estabilishSession = function(callback) {
 
         axios.request(reqConf).then(function(res) {
 
-            console.log(res.data);
+            logger.debug("Log in response: ", res.data);
             // update headers with new tokens.
             // TODO: check to make sure the reponse has new tokens
             let tokens = [res.data.Accounts[0].Id, res.data.ApiSession.Token];
@@ -250,13 +254,13 @@ Vitrium.prototype.estabilishSession = function(callback) {
             callback(tokens);
         }).catch(function(err) {
 
-            console.log(err);
+            logger.error("Failed to log in: ", err);
             callback(null, err);
         });
 
     }).catch(function(error) {
 
-        console.dir(error);
+        logger.error("Failed to challenge: ", error);
         callback(null, error);
     });
 };
