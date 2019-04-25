@@ -3,7 +3,7 @@
 /**
  * utilities to manipulate Vitrium APIs.
  */
-
+// get log4j logger.
 const logger = require('log4js').getLogger('vitrium');
 
 const axios = require('axios');
@@ -531,6 +531,8 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
       "AccessPolicyOverride": accessPolicyOverride
     };
 
+    logger.debug("The doc details: ", docDetails);
+
     return docDetails;
 };
 
@@ -541,14 +543,14 @@ Vitrium.prototype.versionUnique = async function(docReq, callback) {
 
     let self = this;
 
-    console.log(docReq);
+    logger.debug("Incomming request: ", docReq);
 
     await self._initialized;
 
     let docDetails = self.buildDocDetails(docReq);
 
     // get ready the request.
-    console.log("get ready the request!");
+    //console.log("get ready the request!");
     let unique = {
         url: self.docApiBaseUrl + 'Version/Unique',
         method: 'post',
@@ -560,15 +562,16 @@ Vitrium.prototype.versionUnique = async function(docReq, callback) {
         },
         data: docDetails
     };
-    console.log(unique);
+    logger.debug("Payload to Version/Unique: ", unique);
 
     // call the unique APIs
     axios.request(unique).then(function(uniqueRes) {
 
         //console.log(uniqueRes.headers);
+        logger.debug("Version/Unique response headers: ", uniqueRes.headers);
         callback(uniqueRes, null);
     }).catch(function(uniqueErr) {
-
+        logger.error("Failed Version/Unique: ", uniqueErr);
         callback(null, uniqueErr);
     });
 };
