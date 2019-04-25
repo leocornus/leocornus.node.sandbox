@@ -4,11 +4,7 @@
 const uuidv4 = require('uuid/v4');
 const config = require("../config");
 const Vitrium = require("../libs/vitrium");
-
-let logging = function(message) {
-
-    console.log(message);
-};
+const logger = require('log4js').getLogger('polaris.drm');
 
 module.exports = function(app) {
 
@@ -16,7 +12,7 @@ module.exports = function(app) {
     app.post("/drm/download", function(req, res) {
 
         // check the body.
-        logging(req.body);
+        logger.debug("request payload: ", req.body);
 
         let vitrium = new Vitrium(
             config.vitrium.accountToken,
@@ -27,8 +23,7 @@ module.exports = function(app) {
         // the req.body will the payload.
         vitrium.versionUnique(req.body, (uniqueRes, uniqueErr) => {
 
-            console.log('unique respose header:');
-            console.log(uniqueRes.headers);
+            logger.debug('Unique respose headers: ', uniqueRes.headers);
 
             // set header from the unique response.
             res.setHeader('Content-Disposition',
@@ -69,8 +64,7 @@ module.exports = function(app) {
 
             //console.log(uniqueRes);
             //console.log(uniqueErr);
-            console.log('unique respose header:');
-            console.log(uniqueRes.headers);
+            logger.debug('Unique respose headers: ', uniqueRes.headers);
 
             // set header from the unique response.
             res.setHeader('Content-Disposition',
