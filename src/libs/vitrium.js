@@ -241,7 +241,7 @@ Vitrium.prototype.estabilishSession = function(callback) {
           'UserName': self.username,
           'ApplicationId': 'test'
         };
-        //console.dir(reqConf);
+        logger.debug("Log in request: ", reqConf);
 
         axios.request(reqConf).then(function(res) {
 
@@ -312,15 +312,17 @@ Vitrium.prototype.buildGetRequest = function(baseUrl, uri, queryParams) {
  */
 Vitrium.prototype.generalApiCall = function(req, callback) {
 
+    logger.debug("General API request: ", req);
+
     axios.request(req).then(function(res) {
 
-        //console.log(res);
+        logger.debug("General API response: ", res.data);
         //console.log(res.config);
         //console.log(res.data);
         callback(res);
     }).catch(function(err) {
 
-        console.log(err);
+        logger.error("Failed general API call: ", err);
         callback(null, err);
     });
 };
