@@ -11,8 +11,12 @@
 
 // we should have separate local.js file for vitrium.
 const config = require('./../../src/config');
+const log4js = require('log4js');
+// configure log4js
+log4js.configure(config.vitrium.log4jsConfig);
 
 const Vitrium = require('./../../src/libs/vitrium');
+const logger = log4js.getLogger('test');
 
 let vitrium = new Vitrium(
     config.vitrium.accountToken,
@@ -20,5 +24,5 @@ let vitrium = new Vitrium(
     config.vitrium.password,
 );
 vitrium._initialized.then(resolve => {
-    console.log(`Vitrium session is fulfilled with token: ${resolve}`);
+    logger.info(`Vitrium session is fulfilled with token: ${resolve}`);
 });
