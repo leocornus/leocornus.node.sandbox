@@ -4,7 +4,7 @@
 const uuidv4 = require('uuid/v4');
 const config = require("../config");
 const Vitrium = require("../libs/vitrium");
-const logger = require('log4js').getLogger('polaris.drm');
+const logger = require('log4js').getLogger('drm');
 
 module.exports = function(app) {
 
