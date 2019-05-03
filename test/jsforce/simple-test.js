@@ -26,7 +26,7 @@ conn.login(config.jsforce.username,
 
     // test a simple query.
     //let soql = 'SELECT Id, Name FROM Account';
-    let soql = config.jsforce.testingQuerys[0];
+    let soql = config.jsforce.testingQuerys[0].soql;
 
     // get more account information.
     conn.query(soql, function(err, res) {
@@ -35,7 +35,8 @@ conn.login(config.jsforce.username,
         }
         console.log(res.records);
         csvStringify(res.records, {
-            header: true
+            header: true,
+            columns: config.jsforce.testingQuerys[0].csvColumns
         }).pipe(process.stdout);
         //let csv = generate(res[0]);
         //console.log(csv);
