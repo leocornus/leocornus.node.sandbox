@@ -3,6 +3,8 @@
  */
 
 const axios = require('axios');
+const stringify = require('csv-stringify');
+const fs = require('fs');
 
 // we using the solrCSVExport section of the local config.
 const config = require('./../../src/config').solrCSVExport;
@@ -15,7 +17,7 @@ let reportQuery = {
     params: {
         q: config.report.query,
         sort: config.report.sort,
-        rows: 2,
+        rows: config.report.rows,
         fl: config.report.fl
     }
 };
@@ -24,7 +26,13 @@ let reportQuery = {
 axios.get(solrEndpoint, reportQuery)
 .then(function(res) {
     //console.log(res);
-    console.log(res.data.response.docs);
+    //console.log(res.data.response.docs);
+
+    let fileStream = fs.createWriteStream(config.report.csvFile);
+    stringify(res.data.response.docs, {
+        header: true,
+        columns: config.report.csvColumns
+    }).pipe(fileStream);
 })
 .catch(function(err) {
     console.log(err);
