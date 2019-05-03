@@ -8,15 +8,17 @@ const csvStringify = require('csv-stringify');
 const process = require('process');
 const fs = require('fs');
 
-const config = require('./../../src/config');
+// get the config for jsforce.
+// Make sure to get the correct section from the config file.
+const config = require('./../../src/config').jsforce;
 
 let conn = new jsforce.Connection({
     //logLevel: "DEBUG",
-    loginUrl: config.jsforce.authorizationUrl
+    loginUrl: config.authorizationUrl
 });
 
-conn.login(config.jsforce.username, 
-           config.jsforce.password + config.jsforce.securityToken,
+conn.login(config.username,
+           config.password + config.securityToken,
            function(err, res) {
 
     if (err) {
@@ -27,7 +29,7 @@ conn.login(config.jsforce.username,
 
     // test a simple query.
     //let soql = 'SELECT Id, Name FROM Account';
-    let soql = config.jsforce.testingQuerys[0].soql;
+    let soql = config.testingQuerys[0].soql;
 
     // get more account information.
     conn.query(soql, function(err, res) {
@@ -41,7 +43,7 @@ conn.login(config.jsforce.username,
         console.log(res.records);
         csvStringify(res.records, {
             header: true,
-            columns: config.jsforce.testingQuerys[0].csvColumns
+            columns: config.testingQuerys[0].csvColumns
         })
         // pipe the stream to stdout.
         //.pipe(process.stdout);
