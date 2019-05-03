@@ -6,6 +6,7 @@ const jsforce = require('jsforce');
 // the csv generator.
 const csvStringify = require('csv-stringify');
 const process = require('process');
+const fs = require('fs');
 
 const config = require('./../../src/config');
 
@@ -33,12 +34,18 @@ conn.login(config.jsforce.username,
         if (err) {
             return console.error(err);
         }
+
+        // the file stream
+        var fileStream = fs.createWriteStream('/tmp/test.csv');
+
         console.log(res.records);
         csvStringify(res.records, {
             header: true,
             columns: config.jsforce.testingQuerys[0].csvColumns
-        }).pipe(process.stdout);
-        //let csv = generate(res[0]);
-        //console.log(csv);
+        })
+        // pipe the stream to stdout.
+        //.pipe(process.stdout);
+        // pipe the stream to a file.
+        .pipe(fileStream);
     });
 });
