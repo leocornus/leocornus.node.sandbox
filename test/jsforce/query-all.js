@@ -38,15 +38,22 @@ conn.login(config.username,
         console.log(totalRes);
         let volume = totalRes.totalSize;
         //let volume = 21;
-        let batchSize = 200;
+        let batchSize = 300;
+
+        // set the locator for next batch
+        // workaround the 2000 limit.
+        let locator = '';
 
         strategy.waterfallOver(0, volume, function(start, reportDone) {
 
             // build the SOQL.
             let soql = 'SELECT Id, Name FROM Account' +
+                // the simple workaround to avoid 2000 limit.
+                (locator === '' ? '' : " WHERE Id > '" + locator + "'") +
                 ' ORDER BY Id' +
                 ' LIMIT ' + batchSize +
-                ' OFFSET ' + start;
+                // Always use OFFSET as 0 to workaround 2000 limit.
+                ' OFFSET 0';
             //let soql = config.testingQuerys[config.qIndex].soql;
 
             // we will use the strategy to query all
@@ -62,6 +69,9 @@ conn.login(config.username,
                 oneRes.records.forEach(function(record) {
                     console.log("id: " + record.Id + " Name: " + record.Name);
                 });
+                // set up locator to workaround the 2000 limit
+                locator = oneRes.records[oneRes.totalSize - 1].Id;
+
                 console.log("======== Processed: " + oneRes.totalSize);
                 reportDone(oneRes.totalSize);
             });
