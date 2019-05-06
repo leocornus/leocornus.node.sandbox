@@ -27,14 +27,14 @@ conn.login(config.username,
     console.log(res);
 
     // find out the total records.
-    let totalQuery = 'SELECT count(Id) FROM Account';
+    let totalQuery = 'SELECT count() FROM Account';
     conn.query(totalQuery, function(totalErr, totalRes) {
 
         if (totalErr) {
             return console.error(totalErr);
         }
 
-        console.log(totalRes.records);
+        console.log(totalRes);
 
         // test a simple query.
         let soql = 'SELECT Id, Name FROM Account ORDER BY id LIMIT 10 OFFSET 200';
@@ -44,7 +44,7 @@ conn.login(config.username,
         // here is the initial query.
         conn.query(soql, function(initErr, initRes) {
 
-            console.log(initRes);
+            console.dir(initRes.records);
         });
     });
 });
