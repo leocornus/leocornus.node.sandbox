@@ -7,6 +7,7 @@ const jsforce = require('jsforce');
 // get the config for jsforce.
 // Make sure to get the correct section from the config file.
 const config = require('./../../src/config').jsforce;
+const strategy = require('./../../src/libs/strategy');
 
 // set up the connection object.
 let conn = new jsforce.Connection({
@@ -35,16 +36,35 @@ conn.login(config.username,
         }
 
         console.log(totalRes);
+        let volume = totalRes.totalSize;
+        //let volume = 21;
+        let batchSize = 200;
 
-        // test a simple query.
-        let soql = 'SELECT Id, Name FROM Account ORDER BY id LIMIT 10 OFFSET 200';
-        //let soql = config.testingQuerys[config.qIndex].soql;
+        strategy.waterfallOver(0, volume, function(start, reportDone) {
 
-        // we will use the strategy to query all
-        // here is the initial query.
-        conn.query(soql, function(initErr, initRes) {
+            // build the SOQL.
+            let soql = 'SELECT Id, Name FROM Account' +
+                ' ORDER BY Id' +
+                ' LIMIT ' + batchSize +
+                ' OFFSET ' + start;
+            //let soql = config.testingQuerys[config.qIndex].soql;
 
-            console.dir(initRes.records);
+            // we will use the strategy to query all
+            // here is the initial query.
+            console.log("QUERY: " + soql);
+            conn.query(soql, function(oneErr, oneRes) {
+
+                if (oneErr) {
+                    return console.error(oneErr);
+                }
+
+                //console.log(oneRes.records);
+                oneRes.records.forEach(function(record) {
+                    console.log("id: " + record.Id + " Name: " + record.Name);
+                });
+                console.log("======== Processed: " + oneRes.totalSize);
+                reportDone(oneRes.totalSize);
+            });
         });
     });
 });
