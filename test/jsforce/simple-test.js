@@ -1,5 +1,6 @@
 /**
- * simple test for login.
+ * simple test to login and execute a simple SOQL query.
+ * We also produce a csv file from the query results
  */
 
 const jsforce = require('jsforce');
@@ -33,14 +34,28 @@ conn.login(config.username,
 
     // get more account information.
     conn.query(soql, function(err, res) {
+
         if (err) {
             return console.error(err);
         }
 
+        console.log(res);
+        /**
+         * here are the response data structure:
+         * { 
+         *     totalSize: 10482,
+         *     done: false,
+         *     nextRecordsUrl: '/services/data/v42.0/query/01g5500000PI2d6AAD-2000',
+         *     records: []
+         * }
+         *
+         * the nextRecordsUrl will be the locator for method queryMore.
+         */
+
         // the file stream
         var fileStream = fs.createWriteStream('/tmp/test.csv');
 
-        console.log(res.records);
+        //console.log(res.records);
         csvStringify(res.records, {
             header: true,
             columns: config.testingQuerys[config.qIndex].csvColumns
