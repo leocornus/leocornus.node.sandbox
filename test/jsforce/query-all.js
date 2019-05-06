@@ -26,14 +26,25 @@ conn.login(config.username,
     // log in success.
     console.log(res);
 
-    // test a simple query.
-    let soql = 'SELECT Id, Name FROM Account ORDER BY id LIMIT 10 OFFSET 200';
-    //let soql = config.testingQuerys[config.qIndex].soql;
+    // find out the total records.
+    let totalQuery = 'SELECT count(Id) FROM Account';
+    conn.query(totalQuery, function(totalErr, totalRes) {
 
-    // we will use the strategy to query all
-    // here is the initial query.
-    conn.query(soql, function(initErr, initRes) {
+        if (totalErr) {
+            return console.error(totalErr);
+        }
 
-        console.log(initRes);
+        console.log(totalRes.records);
+
+        // test a simple query.
+        let soql = 'SELECT Id, Name FROM Account ORDER BY id LIMIT 10 OFFSET 200';
+        //let soql = config.testingQuerys[config.qIndex].soql;
+
+        // we will use the strategy to query all
+        // here is the initial query.
+        conn.query(soql, function(initErr, initRes) {
+
+            console.log(initRes);
+        });
     });
 });
