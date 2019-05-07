@@ -35,13 +35,19 @@ var strategy = {
             doneCount = doneCount + subTotal;
             logger.info("Processed: " + doneCount);
 
-            if(doneCount >= end) {
+            if (doneCount >= end) {
                 // we have completed the iteration.
-                callback();
+                if (callback) {
+                    // execute callback function.
+                    callback();
+                }
             } else {
                 // iterate to next one in line.
                 iterator(doneCount, reportDone);
             }
+
+            // return the done count for information.
+            return doneCount;
         }
     },
 
@@ -70,8 +76,11 @@ var strategy = {
             doneCount++;
 
             // if doneCount equals the number of items in list, then we're done
-            if(doneCount === items.length)
-                callback();
+            if (doneCount === items.length) {
+                if (callback) {
+                    callback();
+                }
+            }
         }
     }
 }; 
