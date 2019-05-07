@@ -1,6 +1,9 @@
 /**
  * simple test to login and execute a simple SOQL query.
  * We also produce a csv file from the query results
+ *
+ * - testing simple query, using SOQL
+ * - export the search results on CSV format
  */
 
 const jsforce = require('jsforce');
