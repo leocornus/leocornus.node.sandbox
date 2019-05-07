@@ -7,6 +7,9 @@
  */
 
 const jsforce = require('jsforce');
+// using the sync api for quick test.
+const csvStringify = require('csv-stringify/lib/sync');
+const process = require('process');
 
 // get the config for jsforce.
 // Make sure to get the correct section from the config file.
@@ -72,10 +75,15 @@ conn.login(config.username,
                 }
 
                 //console.log(oneRes.records);
-                oneRes.records.forEach(function(record) {
-                    console.log("id: " + record.Id + " Name: " + record.Name);
-                    //console.log("id: " + record.Id);
-                });
+                console.log(csvStringify(oneRes.records, {
+                    header: false,
+                    columns: config.queryAll.objectFields
+                }));
+                //oneRes.records.forEach(function(record) {
+                //    console.log("id: " + record.Id + " Name: " + record.Name);
+                //    //console.log("id: " + record.Id);
+                //});
+
                 // set up locator to workaround the 2000 limit
                 locator = oneRes.records[oneRes.totalSize - 1].Id;
 
