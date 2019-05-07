@@ -1,5 +1,9 @@
 /**
  * this is a quick test to query all records in a Salesforce object.
+ *
+ * There is the 2000 limit on OFFSET.
+ * We have to use the workaround to iterate through all records.
+ * That is how the locator is introduced.
  */
 
 const jsforce = require('jsforce');
@@ -28,7 +32,8 @@ conn.login(config.username,
     console.log(res);
 
     // find out the total records.
-    let totalQuery = 'SELECT count() FROM Account';
+    // we need this query to find the amount of recores.
+    let totalQuery = 'SELECT count() FROM ' + config.queryAll.objectName;
     conn.query(totalQuery, function(totalErr, totalRes) {
 
         if (totalErr) {
@@ -38,7 +43,7 @@ conn.login(config.username,
         console.log(totalRes);
         let volume = totalRes.totalSize;
         //let volume = 21;
-        let batchSize = 300;
+        let batchSize = config.queryAll.batchSize;
 
         // set the locator for next batch
         // workaround the 2000 limit.
@@ -47,7 +52,8 @@ conn.login(config.username,
         strategy.waterfallOver(0, volume, function(start, reportDone) {
 
             // build the SOQL.
-            let soql = 'SELECT Id, Name FROM Account' +
+            let soql = 'SELECT ' + config.queryAll.objectFields.join(",") +
+                ' FROM ' + config.queryAll.objectName +
                 // the simple workaround to avoid 2000 limit.
                 (locator === '' ? '' : " WHERE Id > '" + locator + "'") +
                 ' ORDER BY Id' +
@@ -58,7 +64,7 @@ conn.login(config.username,
 
             // we will use the strategy to query all
             // here is the initial query.
-            console.log("QUERY: " + soql);
+            console.log("======== QUERY: " + soql);
             conn.query(soql, function(oneErr, oneRes) {
 
                 if (oneErr) {
@@ -68,12 +74,13 @@ conn.login(config.username,
                 //console.log(oneRes.records);
                 oneRes.records.forEach(function(record) {
                     console.log("id: " + record.Id + " Name: " + record.Name);
+                    //console.log("id: " + record.Id);
                 });
                 // set up locator to workaround the 2000 limit
                 locator = oneRes.records[oneRes.totalSize - 1].Id;
 
-                console.log("======== Processed: " + oneRes.totalSize);
-                reportDone(oneRes.totalSize);
+                var done = reportDone(oneRes.totalSize);
+                console.log("======== Processed: " + done);
             });
         });
     });
