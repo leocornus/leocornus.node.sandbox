@@ -68,4 +68,21 @@ conn.login(config.username,
         // pipe the stream to a file.
         .pipe(fileStream);
     });
+
+    // describe an object.
+    conn.describe('Account', function(descErr, descRes) {
+
+        if (descErr) {
+            return console.error(descErr);
+        }
+        
+        console.log(descRes.fields[0]);
+
+        descRes.fields.forEach(field => {
+
+            console.log(field.name);
+        });
+
+        console.log("There are " + descRes.fields.length + " fields");
+    });
 });
