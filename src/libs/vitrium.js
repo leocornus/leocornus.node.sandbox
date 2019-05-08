@@ -525,6 +525,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
     let docDetails = {
       "DocCode": docRequest.DocCode,
       "UserName": docRequest.UserName,
+      "CustomField": docRequest.CustomField,
       // generate the uniqu doc copy id.
       "UniqueDocCopyId": uuidv4(),
       "DocPolicyOverride": docPolicyOverride,
