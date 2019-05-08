@@ -26,13 +26,26 @@ conn.login(config.username,
 
     console.log(res);
 
-    // get more account information.
-    conn.query(config.crudTest.queryObject, function(err, res) {
+    let queryObject = config.crudTest.queryObject;
+    // get account information.
+    conn.query(queryObject, function(err, res) {
 
         if (err) {
             return console.error(err);
         }
 
         console.log(res);
+
+        // update some information.
+        let objectName = config.crudTest.objectName;
+        conn.sobject(objectName).update(config.crudTest.updateValue, 
+                                        function(uErr, uRes) {
+            console.log(uRes);
+
+            conn.query(queryObject, function(qqErr, qqRes) {
+
+                console.log(qqRes);
+            });
+        });
     });
 });
