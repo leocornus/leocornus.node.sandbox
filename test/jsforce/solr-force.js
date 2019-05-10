@@ -5,6 +5,7 @@
  * - update values to Salesforce.
  */
 
+const jsforce = require('jsforce');
 const axios = require('axios');
 const prettyMs = require('pretty-ms');
 
@@ -24,6 +25,11 @@ const solrEndpoint = localConfig.solrBaseUrl + "select";
 const batchSize = localConfig.solrSelectRows;
 console.log("From: " + solrEndpoint);
 console.log("Copy " + batchSize + " docs each time!");
+
+let conn = new jsforce.Connection({
+    //logLevel: "DEBUG",
+    loginUrl: config.authorizationUrl
+});
 
 // simple query to get total number:
 let totalQuery = {
@@ -70,15 +76,27 @@ axios.get(solrEndpoint, totalQuery)
                 return localConfig.prepareValue(doc);
             });
 
-            console.log(values);
-            reportDone(values.length);
+            //console.log(values);
 
-            // call jsforce object pudate.
-            //conn.sobject.update(values, function() {
+            conn.login(config.username,
+                       config.password + config.securityToken,
+                       function(err, res) {
+            
+                if (err) {
+                    return console.error(err);
+                }
+            
+                //console.log(res);
+            
+                // update some information.
+                let objectName = localConfig.forceObjectName;
+                conn.sobject(objectName).update(values, function(uErr, uRes) {
 
-            //    console.log(now() + " Async post done!");
-            //    reportDone(values.length);
-            //});
+                    console.log(uRes);
+                    //
+                    reportDone(values.length);
+                });
+            });
         })
         .catch(function(error) {
             // handle errors here.
