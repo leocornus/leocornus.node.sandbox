@@ -16,6 +16,19 @@ const fs = require('fs');
 // Make sure to get the correct section from the config file.
 const config = require('./../../src/config').jsforce;
 
+// find out the object name from command line parameters.
+// default will be the Account.
+// TODO: we only get the 3rd param for now.
+// The first 2 parms are 
+// - full path to node binary
+// - full path to this js file.
+//
+// try to get the command line parameters from process.
+//process.argv.forEach(arg => {
+//    console.log(arg);
+//});
+let objectName = process.argv.length > 2 ? process.argv[2] : "Account";
+
 let conn = new jsforce.Connection({
     //logLevel: "DEBUG",
     loginUrl: config.authorizationUrl
@@ -32,7 +45,7 @@ conn.login(config.username,
     console.log(res);
 
     // describe an object.
-    conn.describe('Account', function(descErr, descRes) {
+    conn.describe(objectName, function(descErr, descRes) {
 
         if (descErr) {
             return console.error(descErr);
@@ -46,10 +59,5 @@ conn.login(config.username,
         });
 
         console.log("There are " + descRes.fields.length + " fields");
-
-        // try to get the command line parameters from process.
-        process.argv.forEach(arg => {
-            console.log(arg);
-        });
     });
 });
