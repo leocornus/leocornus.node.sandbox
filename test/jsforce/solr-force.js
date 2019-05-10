@@ -51,6 +51,7 @@ axios.get(solrEndpoint, totalQuery)
         axios.get(solrEndpoint, {
           params: {
             q: localConfig.solrSelectQuery,
+            fl: localConfig.solrSelectFields,
             // sort to make sure we are in the same sequence 
             // for each batch load.
             sort: localConfig.solrSelectSort,
