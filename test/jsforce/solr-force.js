@@ -67,6 +67,7 @@ axios.get(solrEndpoint, totalQuery)
         })
         .then(function(response) {
 
+            console.log("working on: " + start);
             // handle response here.
             //console.log("Got Response:");
             //console.dir(response.data.response.docs.length);
