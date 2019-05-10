@@ -46,5 +46,10 @@ conn.login(config.username,
         });
 
         console.log("There are " + descRes.fields.length + " fields");
+
+        // try to get the command line parameters from process.
+        process.argv.forEach(arg => {
+            console.log(arg);
+        });
     });
 });
