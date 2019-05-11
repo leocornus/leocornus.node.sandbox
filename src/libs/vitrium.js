@@ -430,7 +430,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
     // the default doc policy override,
     let docPolicyOverride = {
         "PrintType": "HighResolution",
-        "AllowAnnotations": false,
+        "DisableAnnotations": false,
         "AllowCopy": true,
         "AllowBuildInLoginTemplate": true,
         "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
@@ -463,18 +463,17 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
     // set policies based on the UserSetType:
     switch(docRequest.UserSetType) {
         case 'Retail':
-            docPolicyOverride.AllowAnnotations = true;
             accessPolicyOverride.OfflineDurationinDays = 18250;
             // allow max 50 years which is 262840000 mins
             accessPolicyOverride.ExpiryInMins =
                 Math.min(262840000, docExpriyInMins);
             break;
         case 'Subscription-User':
-            docPolicyOverride.AllowAnnotations = true;
             // 30 offline days
             accessPolicyOverride.OfflineDurationinDays = 30;
             break;
         case 'Subscription-IP Generic':
+            docPolicyOverride.DisableAnnotations = true;
             docPolicyOverride.PrintType = 'NotAllowed';
             docPolicyOverride.AllowCopy = false;
             docPolicyOverride.AllowAnnotations = false;
@@ -487,7 +486,6 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
         case 'Subscription-IP Corp':
             docPolicyOverride.PrintType = 'HighResolution';
             docPolicyOverride.AllowCopy = true;
-            docPolicyOverride.AllowAnnotations = true;
             accessPolicyOverride.OfflineDurationinDays = 30;
             accessPolicyOverride.IpAddressesMax = 0;
             accessPolicyOverride.IgnoredIpAddresses =
@@ -496,7 +494,6 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
         case 'Subscription-IP University':
             docPolicyOverride.PrintType = 'NotAllowed';
             docPolicyOverride.AllowCopy = true;
-            docPolicyOverride.AllowAnnotations = true;
             // disable offline access.
             accessPolicyOverride.OfflineDurationinDays = -1;
             accessPolicyOverride.IpAddressesMax = 0;
@@ -507,10 +504,10 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
             docPolicyOverride.PrintType = 'NotAllowed';
             if(docRequest.PolicyExceptionOverrideCode === "College") {
                 docPolicyOverride.AllowCopy = false;
-                docPolicyOverride.AllowAnnotations = false;
+                docPolicyOverride.DisableAnnotations = true;
             } else {
                 docPolicyOverride.AllowCopy = true;
-                docPolicyOverride.AllowAnnotations = true;
+                docPolicyOverride.DisableAnnotations = false;
             }
             // disable offline access.
             accessPolicyOverride.OfflineDurationinDays = -1;
