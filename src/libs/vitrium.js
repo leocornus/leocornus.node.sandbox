@@ -476,7 +476,6 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
             docPolicyOverride.DisableAnnotations = true;
             docPolicyOverride.PrintType = 'NotAllowed';
             docPolicyOverride.AllowCopy = false;
-            docPolicyOverride.AllowAnnotations = false;
             // disable offline access.
             accessPolicyOverride.OfflineDurationinDays = -1;
             accessPolicyOverride.IpAddressesMax = 0;
