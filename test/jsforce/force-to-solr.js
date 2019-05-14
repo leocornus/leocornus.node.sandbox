@@ -83,11 +83,13 @@ conn.login(config.username,
                 let payloads = oneRes.records.map(function(record) {
 
                     // final touch for each doc.
-                    return localConfig.fieldMapping(record, localConfig.objectFields);
+                    return localConfig.fieldMapping(record, 
+                              localConfig.objectFields);
                 });
 
                 //console.log(oneRes.records);
-                console.log(csvStringify(oneRes.records));
+                //console.log(csvStringify(oneRes.records));
+                console.log(csvStringify(payloads));
                 //    , {
                 //    header: false,
                 //    columns: localConfig.objectFields
