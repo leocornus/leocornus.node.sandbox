@@ -5,6 +5,11 @@
  * - update values to Salesforce.
  */
 
+const prettyMs = require('pretty-ms');
+// timestamp for logging message.
+const now = () => new Date().toUTCString()
+const startTime = new Date();
+
 const jsforce = require('jsforce');
 // using the sync api for quick test.
 const csvStringify = require('csv-stringify/lib/sync');
@@ -74,15 +79,19 @@ conn.login(config.username,
                     return console.error(oneErr);
                 }
 
+                // get ready the payload for Solr.
+                let payloads = oneRes.records.map(function(record) {
+
+                    // final touch for each doc.
+                    return localConfig.fieldMapping(record, localConfig.objectFields);
+                });
+
                 //console.log(oneRes.records);
-                console.log(csvStringify(oneRes.records, {
-                    header: false,
-                    columns: localConfig.objectFields
-                }));
-                //oneRes.records.forEach(function(record) {
-                //    console.log("id: " + record.Id + " Name: " + record.Name);
-                //    //console.log("id: " + record.Id);
-                //});
+                console.log(csvStringify(oneRes.records));
+                //    , {
+                //    header: false,
+                //    columns: localConfig.objectFields
+                //}));
 
                 // set up locator to workaround the 2000 limit
                 locator = oneRes.records[oneRes.totalSize - 1].Id;
@@ -90,6 +99,13 @@ conn.login(config.username,
                 var done = reportDone(oneRes.totalSize);
                 console.log("======== Processed: " + done);
             });
+        }, function() {
+            console.log(now() + " All Done");
+            // summary message:
+            let endTime = new Date();
+            // the differenc will be in ms
+            let totalTime = endTime - startTime;
+            console.log("Running time: " + prettyMs(totalTime));
         });
     });
 });
