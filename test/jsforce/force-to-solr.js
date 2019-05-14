@@ -11,6 +11,7 @@ const now = () => new Date().toUTCString()
 const startTime = new Date();
 
 const jsforce = require('jsforce');
+const axios = require('axios');
 // using the sync api for quick test.
 const csvStringify = require('csv-stringify/lib/sync');
 const process = require('process');
@@ -20,6 +21,8 @@ const process = require('process');
 const config = require('./../../src/config').jsforce;
 const strategy = require('./../../src/libs/strategy');
 const localConfig = config.force2Solr
+// set the target end point to Solr
+const targetEndPoint = localConfig.solrBaseUrl + "update/json/docs?commit=true";
 
 // set up the connection object.
 let conn = new jsforce.Connection({
@@ -79,6 +82,9 @@ conn.login(config.username,
                     return console.error(oneErr);
                 }
 
+                // set up locator to workaround the 2000 limit
+                locator = oneRes.records[oneRes.totalSize - 1].Id;
+
                 // get ready the payload for Solr.
                 let payloads = oneRes.records.map(function(record) {
 
@@ -89,17 +95,29 @@ conn.login(config.username,
 
                 //console.log(oneRes.records);
                 //console.log(csvStringify(oneRes.records));
-                console.log(csvStringify(payloads));
+                //console.log(csvStringify(payloads));
                 //    , {
                 //    header: false,
                 //    columns: localConfig.objectFields
                 //}));
 
-                // set up locator to workaround the 2000 limit
-                locator = oneRes.records[oneRes.totalSize - 1].Id;
-
-                var done = reportDone(oneRes.totalSize);
-                console.log("======== Processed: " + done);
+                // async post call
+                strategy.iterateOver(payloads, function(doc, report) {
+                    axios.post(targetEndPoint, doc
+                    ).then(function(postRes) {
+                        //console.log("Post Success!");
+                        report();
+                        //console.dir(postRes);
+                    }).catch(function(postError) {
+                        console.log("Post Failed! - " + doc[localConfig.idField]);
+                        console.dir(postError.data);
+                        // log the erorr and then report the copy is done!
+                        report();
+                    });
+                }, function() {
+                    console.log(now() + " Async post done!");
+                    reportDone(payloads.length);
+                });
             });
         }, function() {
             console.log(now() + " All Done");
