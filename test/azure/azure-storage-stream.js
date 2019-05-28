@@ -4,13 +4,17 @@ const crypto = require('crypto');
 
 const azure = require('azure-storage');
 
+const localConfig = config.azure;
+
 // create file service.
-var fileService = azure.createFileService(config.azure.storageAccount, 
-                                          config.azure.storageAccessKey);
+var fileService = azure.createFileService(localConfig.storageAccount,
+                                          localConfig.storageAccessKey);
 
 var hash = crypto.createHash('md5');
 // get file to stream.
-fileService.getFileToStream(config.azure.storageFileShare, 'csa', '2410984.pdf',
+fileService.getFileToStream(localConfig.storageFileShare,
+                            localConfig.testData[0].folder,
+                            localConfig.testData[0].file,
                             hash,
                             function(error, result, response) {
     if (!error) {
