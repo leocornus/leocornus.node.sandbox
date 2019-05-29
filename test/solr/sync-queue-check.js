@@ -102,7 +102,7 @@ axios.get(sourceSelect, totalQuery)
 
                             s.on('end', function() {
                                 var d = hash.digest('hex');
-                                console.log(d + '  ' + filePath.localName);
+                                //console.log(d + '  ' + filePath.localName);
                                 if (d === doc.file_hash) {
                                     // this is identical file, skip.
                                     doc["process_status"] = "same_hash_skip";
@@ -121,6 +121,7 @@ axios.get(sourceSelect, totalQuery)
                             // call report.
                             doc["process_status"] = "download_failed";
                             doc["process_message"] = "Failed to download file!";
+                            console.log("Failed to download: " + doc[localConfig.idField]);
                             reportStatus(doc);
                         }
 
@@ -165,7 +166,7 @@ function reportStatus(doc) {
     axios.post(sourceUpdate, doc
     ).then(function(suRes) {
         // status update success.
-        console.log("Update status successfully: " + doc.id);
+        //console.log("Update status successfully: " + doc.id);
     }).catch(function(suErr) {
         // failed to update status.
         console.log("Failed to update status: " + doc.id);
