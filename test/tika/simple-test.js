@@ -26,7 +26,7 @@ let multipartPost = {
     method: 'post',
     url: localConfig.baseUrl + 'meta/form',
     data: {
-        file: fs.createReadStream('/datadrive/tmp/csa-2409870.pdf')
+        file: fs.createReadStream(localConfig.testData[0].file)
     },
     headers: {
         "Accept": "application/json",
