@@ -8,6 +8,9 @@
 
 const axios = require('axios');
 const prettyMs = require('pretty-ms');
+const fs = require('fs');
+const crypto = require('crypto');
+const azure = require('azure-storage');
 
 const config = require('./../../src/config');
 const strategy = require('./../../src/libs/strategy');
@@ -18,6 +21,7 @@ const startTime = new Date();
 
 // we will re use the solrCopy configurations.
 const localConfig = config.solrQueueCheck;
+const azureConfig = config.azure;
 
 // solr endpoint.
 const sourceSelect = localConfig.baseUrl + "select";
@@ -27,6 +31,9 @@ const sourceUpdate = localConfig.baseUrl + "update/json/docs?commit=true";
 const batchSize = localConfig.selectRows;
 console.log("Checking: " + sourceSelect);
 console.log("Process " + batchSize + " docs each time!");
+
+let fileService = azure.createFileService(azureConfig.storageAccount,
+                                          azureConfig.storageAccessKey);
 
 // simple query to get total number:
 let totalQuery = {
@@ -72,53 +79,55 @@ axios.get(sourceSelect, totalQuery)
             function(doc, report) {
                 // brief steps:
                 // - get the file path on Azure
+                let filePath = localConfig.getFilePath(doc);
+
                 // - download file
-                // - calculate MD5 hash
                 // - compare the md5 hash
                 // - setup process status based on the compare result.
                 // - update process status.
                 // - call report for ineration.
+                fileService.getFileToStream(azureConfig.storageFileShare,
+                    filePath.folder, filePath.file,
+                    fs.createWriteStream(filePath.localName),
+                    function(error, result, response) {
 
-                // - update source to processing
-                delete doc["_version_"];
-                delete doc["_modified_"];
-                doc["process_status"] = "processing";
-                doc["process_message"] = "start processing";
-                axios.post(sourceUpdate, doc
-                ).then(function(suRes) {
-                    // source update response.
+                        if (!error) {
+                            // got the file.
+                            // - calculate MD5 hash
+                            var hash = crypto.createHash('md5');
+                            var s = fs.ReadStream(filePath.localName);
+                            s.on('data', function(d) {
+                                hash.update(d);
+                            });
 
-                    // - copy metada to target
-                    // preparying the query to search target.
-                    let query = {
-                      params: {
-                        q: `${localConfig.idField}:"${doc[localConfig.idField]}"`
-                      }
-                    };
-                    // inspect query.
-                    //console.log(query);
+                            s.on('end', function() {
+                                var d = hash.digest('hex');
+                                console.log(d + '  ' + filePath.localName);
+                                if (d === doc.file_hash) {
+                                    // this is identical file, skip.
+                                    doc["process_status"] = "same_hash_skip";
+                                    doc["process_message"] = "Skip because of same MD5 hash";
+                                    reportStatus(doc);
+                                } else {
+                                    // different file content, set to reindex.
+                                    doc["process_status"] = "pending_reindex";
+                                    doc["process_message"] = "Pending reindex because of different MD5 hash";
+                                    reportStatus(doc);
+                                }
+                            });
+                        } else {
+                            // failed to download file.
+                            // update process status and message.
+                            // call report.
+                            doc["process_status"] = "download_failed";
+                            doc["process_message"] = "Failed to download file!";
+                            reportStatus(doc);
+                        }
 
-                    // query the matched doc in target collection
-                    axios.get(targetSelect, query)
-                    .then(function(res) {
-
-                        // we found the doc with same id
-                        // merge docs to one doc.
-                        mergeExistingDoc(res.data.response.docs[0], 
-                                         doc, report);
-                    }).catch(function(err) {
-
-                        console.log("Query Failed! - " +
-                                    doc[localConfig.idField]);
-                        // create new doc.
-                        createNewDoc(doc, report);
-                    });
-                }).catch(function(suErr) {
-
-                });
-                // - if success update status to metadata processing done
-                // - if fail update status to metadata processing failed
-
+                        // report the async iteration
+                        report();
+                    }
+                );
             }, function() {
                 console.log(now() + " Async post done!");
                 reportDone(payload.length);
@@ -145,102 +154,20 @@ axios.get(sourceSelect, totalQuery)
 });
 
 /**
- * merge existing doc.
+ * report status.
  */
-function mergeExistingDoc(targetDoc, sourceDoc, report) {
+function reportStatus(doc) {
 
-    let theDoc = localConfig.mergeDoc(targetDoc, sourceDoc);
-    //console.dir(theDoc);
-    if(theDoc === null) {
-        // target has the source content!
-        // skip it!
-        console.log(`No metadata change! Skip - ${sourceDoc[localConfig.idField]}`);
-        report();
+    // - update source to processing
+    delete doc["_version_"];
+    delete doc["_modified_"];
 
-        sourceDoc['process_status'] = 'skip-metadata';
-        sourceDoc['process_message'] = 'No metadata change, skip';
-        // update the source document, process status and
-        // process message.
-        axios.post(sourceUpdate, sourceDoc
-        ).then(function(skipRes) {
-
-        }).catch(function(su1Err) {
-
-        });
-    } else {
-        // post to target. update the target doc
-        axios.post(targetUpdate, theDoc
-        ).then(function(postRes) {
-            //console.log("Post Success!");
-            report();
-
-            //console.dir(postRes);
-            sourceDoc['process_status'] = 'success-metadata';
-            sourceDoc['process_message'] = 'Metadata process success';
-            // update the source document, process status and
-            // process message.
-            axios.post(sourceUpdate, sourceDoc
-            ).then(function(su1Res) {
-
-            }).catch(function(su1Err) {
-
-            });
-        }).catch(function(postError) {
-            console.log("Post Failed! - " + theDoc[localConfig.idField]);
-            //console.dir(postError);
-            // log the erorr and then report the copy is done!
-            report();
-            sourceDoc['process_status'] = 'failed-metadata-post';
-            sourceDoc['process_message'] = 'Metadata process Failed! - Post failed';
-            // update the source document.
-            axios.post(sourceUpdate, sourceDoc
-            ).then(function(su2Res) {
-
-            }).catch(function(su2Err) {
-
-            });
-        });
-    }
-}
-
-/**
- * create new doc.
- */
-function createNewDoc(sourceDoc, report) {
-
-    let theDoc = localConfig.createDoc(sourceDoc);
-    //console.dir(theDoc);
-    // post to target. update the target doc
-    axios.post(targetUpdate, theDoc
-    ).then(function(postRes) {
-        console.log("Create new doc: " + theDoc[localConfig.idField]);
-        report();
-
-        //console.dir(postRes);
-        sourceDoc['process_status'] = 'success-create-metadata';
-        sourceDoc['process_message'] = 'Metadata created successfully';
-        // update the source document, process status and
-        // process message.
-        axios.post(sourceUpdate, sourceDoc
-        ).then(function(su1Res) {
-
-        }).catch(function(su1Err) {
-
-        });
-    }).catch(function(postError) {
-        console.log("Post Failed! - " + theDoc[localConfig.idField]);
-        //console.dir(postError);
-        // log the erorr and then report the copy is done!
-        report();
-
-        sourceDoc['process_status'] = 'failed-metadata-post';
-        sourceDoc['process_message'] = 'Metadata process Failed! - Post failed';
-        // update the source document.
-        axios.post(sourceUpdate, sourceDoc
-        ).then(function(su2Res) {
-
-        }).catch(function(su2Err) {
-
-        });
+    axios.post(sourceUpdate, doc
+    ).then(function(suRes) {
+        // status update success.
+        console.log("Update status successfully: " + doc.id);
+    }).catch(function(suErr) {
+        // failed to update status.
+        console.log("Failed to update status: " + doc.id);
     });
 }
