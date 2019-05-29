@@ -28,27 +28,28 @@ let metaReq = {
 
 request.post( metaReq, function(err, res, body) {
 
-    console.dir(body);
+    //console.dir(body);
     console.log("type of body: " + typeof(body));
     console.dir(JSON.parse(body));
     //console.dir(res);
-} );
 
-// the request to get content text
-let tikaReq = {
-    url: localConfig.baseUrl + 'tika/form',
-    headers: {
-        "Accept": "text/plain",
-        "Content-Type": "multipart/form-data"
-    },
-    // we could not reuse the form data.
-    formData: formData
-};
+    // the request to get content text
+    let tikaReq = {
+        url: localConfig.baseUrl + 'tika/form',
+        headers: {
+            "Accept": "text/plain",
+            "Content-Type": "multipart/form-data"
+        },
+        // we could not reuse the form data.
+        formData: {file: fs.createReadStream( localConfig.testData[0].file )}
+    };
 
-request.post( tikaReq, function(err, res, body) {
-
-    console.dir(body);
-    console.log("type of body: " + typeof(body));
-    //console.dir(JSON.parse(body));
-    //console.dir(res);
+    request.post( tikaReq, function(err, res, body) {
+    
+        //console.dir(body);
+        console.log("type of body: " + typeof(body) );
+        console.log("Size of body: " + body.length );
+        //console.dir(JSON.parse(body));
+        //console.dir(res);
+    } );
 } );
