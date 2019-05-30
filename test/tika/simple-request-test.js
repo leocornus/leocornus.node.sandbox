@@ -40,7 +40,8 @@ request.post( metaReq, function(err, res, body) {
             "Accept": "text/plain",
             "Content-Type": "multipart/form-data"
         },
-        // we could not reuse the form data.
+        // we could not reuse the same form data object.
+        // we have to create a new read stream.
         formData: {file: fs.createReadStream( localConfig.testData[0].file )}
     };
 
