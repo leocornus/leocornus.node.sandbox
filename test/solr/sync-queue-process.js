@@ -7,6 +7,7 @@
  */
 
 const axios = require('axios');
+const request = require('request');
 const prettyMs = require('pretty-ms');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -78,6 +79,7 @@ axios.get(sourceSelect, totalQuery)
             //console.log("Got Response:");
             //console.dir(response.data.response.docs.length);
 
+            //===========================================================
             // async call to iterate each doc / event
             let payload = response.data.response.docs;
             strategy.iterateOver(payload,
@@ -101,21 +103,46 @@ axios.get(sourceSelect, totalQuery)
                             // - calculate MD5 hash
                             var hash = crypto.createHash('md5');
                             var s = fs.ReadStream(filePath.localName);
-                            s.on('data', function(d) {
-                                hash.update(d);
+                            s.on('data', function(theData) {
+                                hash.update(theData);
                             });
 
                             s.on('end', function() {
                                 var d = hash.digest('hex');
                                 //console.log(d + '  ' + filePath.localName);
-                                if( doc.hasOwnProperty('file_hash') && (d === doc.file_hash) ) {
-                                    // this is identical file, skip.
-                                    doc["process_status"] = "same_hash_skip";
-                                    doc["process_message"] = "Skip because of same MD5 hash";
-                                    reportStatus(doc);
-                                } else {
-                                    // different file content, kick off indexing process.
-                                    indexFile(filePath.localName, d, doc);
+
+                                // query target colleciton.
+                                let targetQuery = {
+                                    params: {
+                                        //fl: 'file_hash',
+                                        q: `${localConfig.idField}:"${doc[localConfig.idField]}"`
+                                    }
+                                };
+                                axios.get( targetSelect, targetQuery )
+                                .then( function( matchRes ) {
+                                    // found the match. check the file hash.
+                                    let matchDoc = matchRes.data.response.docs[0];
+
+                                    if( matchDoc.hasOwnProperty('file_hash') && 
+                                        ( d === matchDoc.file_hash ) ) {
+                                        // this is an identical file, skip.
+                                        doc["process_status"] = "same_hash_skip";
+                                        doc["process_message"] = "Skip because of same MD5 hash";
+                                        reportStatus(doc);
+                                    } else {
+                                        // different file content, kick off indexing process.
+                                        indexingFile(matchDoc, filePath.localName, d, doc);
+                                        reportStatus(doc);
+                                    }
+
+                                } ).catch( function( matchErr ) {
+
+                                    // failed to find match!
+                                    // log mismatch and terminate the process.
+                                    console.log( "Target query failed! - " +
+                                                 doc[localConfig.idField] );
+                                    doc["process_status"] = "missing_id_skip";
+                                    doc["process_message"] = "Skip because of product not exist in main schema";
                                     reportStatus(doc);
                                 }
                             });
@@ -180,5 +207,80 @@ function reportStatus(doc) {
 /**
  * process file indexing.
  */
-function indexFile(fullPath, md5Hash, eventDoc) {
+function indexingFile(targetDoc, fullPath, md5Hash, eventDoc) {
+
+    // the request to get metadata.
+    let metaReq = {
+        url: tikaConfig.baseUrl + 'meta/form',
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "multipart/form-data"
+        },
+        formData: { file: fs.createReadStream( fullPath ) } 
+    };
+
+    // form-data post to get meta data.
+    request.post( metaReq, function(metErr, metRes, body) {
+
+        //console.dir(body);
+        //console.log("type of body: " + typeof(body));
+        let metadata = JSON.parse( body );
+
+        // the request to get content text
+        let tikaReq = {
+            url: tikaConfig.baseUrl + 'tika/form',
+            headers: {
+                "Accept": "text/plain",
+                "Content-Type": "multipart/form-data"
+            },
+            // we could not reuse the same form data object.
+            // we have to create a new read stream.
+            formData: {file: fs.createReadStream( fullPath )}
+        };
+        // form-data post to get content in text format.
+        request.post( tikaReq, function(err, res, body) {
+
+            //console.dir(body);
+            //console.log("type of body: " + typeof(body) );
+            //console.log("Size of body: " + body.length );
+
+            //=========================================================
+            // get ready the payload for target collection.
+            let payload = localConfig.mergeDoc( targetDoc, metadata, body,
+                                                md5Hash, eventDoc );
+
+            if( payload === null ) {
+                // this is an identical file, skip.
+                eventDoc["process_status"] = "same_hash_skip";
+                eventDoc["process_message"] = "Skip because of same MD5 hash";
+                reportStatus(eventDoc);
+
+            } else {
+
+            // post payload to target collection.
+            axios.post( targetUpdate, payload )
+            .then(function(postRes) {
+                //console.log("Post Success!");
+
+                //console.dir(postRes);
+                eventDoc['process_status'] = 'Reindex_success';
+                eventDoc['process_message'] = 'Successfully reindex';
+                // update the source document, process status and
+                // process message.
+                reportStatus(eventDoc);
+
+            }).catch(function(postError) {
+                console.log("Post Failed! - " + targetDoc[localConfig.idField]);
+                //console.dir(postError);
+
+                // log the erorr and then report the copy is done!
+                eventDoc['process_status'] = 'Reindex_failed';
+                eventDoc['process_message'] = 'Metadata process Failed! - Post failed';
+                // update the source document.
+                reportStatus(eventDoc);
+            });
+
+            }
+        } );
+    } );
 }
