@@ -38,5 +38,8 @@ fileService.getFileToStream(localConfig.storageFileShare,
               var d = hash.digest('hex');
               console.log(d + '  ' + localConfig.testData[0].file);
         });
+    } else {
+
+        console.dir( error );
     }
 });
