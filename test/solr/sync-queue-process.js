@@ -122,18 +122,7 @@ axios.get(sourceSelect, totalQuery)
                                 .then( function( matchRes ) {
                                     // found the match. check the file hash.
                                     let matchDoc = matchRes.data.response.docs[0];
-
-                                    if( matchDoc.hasOwnProperty('file_hash') && 
-                                        ( d === matchDoc.file_hash ) ) {
-                                        // this is an identical file, skip.
-                                        doc["process_status"] = "same_hash_skip";
-                                        doc["process_message"] = "Skip because of same MD5 hash";
-                                        reportStatus(doc);
-                                    } else {
-                                        // different file content, kick off indexing process.
-                                        indexingFile(matchDoc, filePath.localName, d, doc);
-                                        reportStatus(doc);
-                                    }
+                                    indexingFile(matchDoc, filePath.localName, d, doc);
 
                                 } ).catch( function( matchErr ) {
 
@@ -144,7 +133,7 @@ axios.get(sourceSelect, totalQuery)
                                     doc["process_status"] = "missing_id_skip";
                                     doc["process_message"] = "Skip because of product not exist in main schema";
                                     reportStatus(doc);
-                                }
+                                } );
                             });
                         } else {
                             // failed to download file.
