@@ -120,10 +120,10 @@ axios.get(sourceSelect, totalQuery)
                                 };
                                 axios.get( targetSelect, targetQuery )
                                 .then( function( matchRes ) {
+
                                     // found the match. check the file hash.
                                     let matchDoc = matchRes.data.response.docs[0];
-                                    indexingFile(matchDoc, filePath.localName, d, doc);
-
+                                    indexingFile(matchDoc, filePath.localName, d, doc, report);
                                 } ).catch( function( matchErr ) {
 
                                     // failed to find match!
@@ -133,6 +133,9 @@ axios.get(sourceSelect, totalQuery)
                                     doc["process_status"] = "missing_id_skip";
                                     doc["process_message"] = "Skip because of product not exist in main schema";
                                     reportStatus(doc);
+
+                                    // report the async iteration
+                                    report();
                                 } );
                             });
                         } else {
@@ -143,10 +146,10 @@ axios.get(sourceSelect, totalQuery)
                             doc["process_message"] = "Failed to download file!";
                             console.log("Failed to download: " + doc[localConfig.idField]);
                             reportStatus(doc);
-                        }
 
-                        // report the async iteration
-                        report();
+                            // report the async iteration
+                            report();
+                        }
                     }
                 );
             }, function() {
@@ -196,7 +199,7 @@ function reportStatus(doc) {
 /**
  * process file indexing.
  */
-function indexingFile(targetDoc, fullPath, md5Hash, eventDoc) {
+function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
 
     // the request to get metadata.
     let metaReq = {
@@ -244,31 +247,37 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc) {
                 eventDoc["process_message"] = "Skip because of same MD5 hash";
                 reportStatus(eventDoc);
 
+                // report async iteration.
+                report();
             } else {
 
-            // post payload to target collection.
-            axios.post( targetUpdate, payload )
-            .then(function(postRes) {
-                //console.log("Post Success!");
+                // post payload to target collection.
+                axios.post( targetUpdate, payload )
+                .then(function(postRes) {
+                    //console.log("Post Success!");
 
-                //console.dir(postRes);
-                eventDoc['process_status'] = 'Reindex_success';
-                eventDoc['process_message'] = 'Successfully reindex';
-                // update the source document, process status and
-                // process message.
-                reportStatus(eventDoc);
+                    //console.dir(postRes);
+                    eventDoc['process_status'] = 'Reindex_success';
+                    eventDoc['process_message'] = 'Successfully reindex';
+                    // update the source document, process status and
+                    // process message.
+                    reportStatus(eventDoc);
 
-            }).catch(function(postError) {
-                console.log("Post Failed! - " + targetDoc[localConfig.idField]);
-                //console.dir(postError);
+                    // report async iteration.
+                    report();
+                }).catch(function(postError) {
+                    console.log("Post Failed! - " + targetDoc[localConfig.idField]);
+                    //console.dir(postError);
 
-                // log the erorr and then report the copy is done!
-                eventDoc['process_status'] = 'Reindex_failed';
-                eventDoc['process_message'] = 'Metadata process Failed! - Post failed';
-                // update the source document.
-                reportStatus(eventDoc);
-            });
+                    // log the erorr and then report the copy is done!
+                    eventDoc['process_status'] = 'Reindex_failed';
+                    eventDoc['process_message'] = 'Metadata process Failed! - Post failed';
+                    // update the source document.
+                    reportStatus(eventDoc);
 
+                    // report async iteration.
+                    report();
+                });
             }
         } );
     } );
