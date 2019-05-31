@@ -64,6 +64,7 @@ axios.get(sourceSelect, totalQuery)
     strategy.waterfallOver(localConfig.startIndex,
                            bulk, function(start, reportDone) {
 
+        console.log(now() + " Start to process: " + start);
         axios.get(sourceSelect, {
           params: {
             q: localConfig.selectQuery,
@@ -81,8 +82,8 @@ axios.get(sourceSelect, totalQuery)
 
             //===========================================================
             // async call to iterate each doc / event
-            let payload = response.data.response.docs;
-            strategy.iterateOver(payload,
+            let events = response.data.response.docs;
+            strategy.iterateOver(events,
             function(doc, report) {
                 // brief steps:
                 // - get the file path on Azure
@@ -154,7 +155,7 @@ axios.get(sourceSelect, totalQuery)
                 );
             }, function() {
                 console.log(now() + " Async post done!");
-                reportDone(payload.length);
+                reportDone(events.length);
             });
         })
         .catch(function(error) {
