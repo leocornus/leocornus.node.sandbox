@@ -90,11 +90,10 @@ axios.get(sourceSelect, totalQuery)
                 let filePath = localConfig.getFilePath(doc);
                 if( filePath === null ) {
 
-                    // sourece file not exist!
-                    doc["process_status"] = "missing_file_skip";
-                    doc["process_message"] = "Skip because of source file not exist in event";
+                    localConfig.setupStatus(doc, "MISSING_FILE");
                     reportStatus(doc);
 
+                    // report async iteration.
                     report();
                     return;
                 }
@@ -135,14 +134,14 @@ axios.get(sourceSelect, totalQuery)
                                     // found the match. check the file hash.
                                     let matchDoc = matchRes.data.response.docs[0];
                                     indexingFile(matchDoc, filePath.localName, d, doc, report);
+
                                 } ).catch( function( matchErr ) {
 
                                     // failed to find match!
                                     // log mismatch and terminate the process.
                                     console.log( "Target query failed! - " +
                                                  doc[localConfig.idField] );
-                                    doc["process_status"] = "missing_id_skip";
-                                    doc["process_message"] = "Skip because of product not exist in main schema";
+                                    localConfig.setupStatus(doc, "TARGET_ID_NO_EXIST");
                                     reportStatus(doc);
 
                                     // report the async iteration
@@ -153,9 +152,8 @@ axios.get(sourceSelect, totalQuery)
                             // failed to download file.
                             // update process status and message.
                             // call report.
-                            doc["process_status"] = "download_failed";
-                            doc["process_message"] = "Failed to download file!";
                             console.log("Failed to download: " + doc[localConfig.idField]);
+                            localConfig.setupStatus(doc, "DOWNLOAD_FAILED");
                             reportStatus(doc);
 
                             // report the async iteration
@@ -192,10 +190,6 @@ axios.get(sourceSelect, totalQuery)
  * report status.
  */
 function reportStatus(doc) {
-
-    // - update source to processing
-    delete doc["_version_"];
-    delete doc["_modified_"];
 
     axios.post(sourceUpdate, doc
     ).then(function(suRes) {
@@ -254,8 +248,7 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
 
             if( payload === null ) {
                 // this is an identical file, skip.
-                eventDoc["process_status"] = "same_hash_skip";
-                eventDoc["process_message"] = "Skip because of same MD5 hash";
+                localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
                 reportStatus(eventDoc);
 
                 // report async iteration.
@@ -268,8 +261,7 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
                     //console.log("Post Success!");
 
                     //console.dir(postRes);
-                    eventDoc['process_status'] = 'Reindex_success';
-                    eventDoc['process_message'] = 'Successfully reindex';
+                    localConfig.setupStatus(eventDoc, "TARGET_UPDATE_SUCCESS");
                     // update the source document, process status and
                     // process message.
                     reportStatus(eventDoc);
@@ -281,8 +273,7 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
                     //console.dir(postError);
 
                     // log the erorr and then report the copy is done!
-                    eventDoc['process_status'] = 'Reindex_failed';
-                    eventDoc['process_message'] = 'Metadata process Failed! - Post failed';
+                    localConfig.setupStatus(eventDoc, "TARGET_UPDATE_FAIL");
                     // update the source document.
                     reportStatus(eventDoc);
 
