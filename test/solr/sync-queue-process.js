@@ -256,7 +256,9 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
             } else {
 
                 // post payload to target collection.
-                axios.post( targetUpdate, payload )
+                axios.post( targetUpdate, payload,
+                    // default limit is 10MB, set to 1GB for now.
+                    {maxContentLength: 1073741824} )
                 .then(function(postRes) {
                     //console.log("Post Success!");
 
@@ -270,7 +272,7 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
                     report();
                 }).catch(function(postError) {
                     console.log("Post Failed! - " + targetDoc[localConfig.idField]);
-                    //console.dir(postError);
+                    console.dir(postError);
 
                     // log the erorr and then report the copy is done!
                     localConfig.setupStatus(eventDoc, "TARGET_UPDATE_FAIL");
