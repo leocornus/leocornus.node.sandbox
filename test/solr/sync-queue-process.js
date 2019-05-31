@@ -88,6 +88,16 @@ axios.get(sourceSelect, totalQuery)
                 // brief steps:
                 // - get the file path on Azure
                 let filePath = localConfig.getFilePath(doc);
+                if( filePath === null ) {
+
+                    // sourece file not exist!
+                    doc["process_status"] = "missing_file_skip";
+                    doc["process_message"] = "Skip because of source file not exist in event";
+                    reportStatus(doc);
+
+                    report();
+                    return;
+                }
 
                 // - download file
                 // - compare the md5 hash
