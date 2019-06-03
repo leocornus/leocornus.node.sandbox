@@ -434,15 +434,45 @@ Vitrium.prototype.getUniqueDocs = async function(docCode, userName, customField,
 
     // get ready the request.
     let itemsReq =
-        this.buildGetRequest(this.docApiBaseUrl, '/Version/GetUniqueDocuments', 
+        this.buildGetRequest(this.docApiBaseUrl, 'Version/GetUniqueDocuments',
                              queryParams);
 
-    console.log(itemsReq);
+    //console.log(itemsReq);
+    logger.debug('GetUniqueDocuments request: ', itemsReq);
     this.generalApiCall(itemsReq, callback);
 };
 
 /**
- * utility class to build details payload for a document.
+ * uttility function to get the unique copy id for he document request.
+ *
+ * it will try to find the exist unique copy id,
+ * if could not found, it will create a new one.
+ *
+ * it will turn a unique copy id in any case.
+ */
+Vitrium.prototype.getUniqueDocCopyId = function(docRequest) {
+
+    let self = this;
+
+    self.getUniqueDocs(docRequest.DocCode, docRequest.UserName,
+        docRequest.CustomField, (res, err) => {
+
+        // assume it will not return err!
+        if( res.data.length < 1 ) {
+            // could not find any existing docs.
+            let newId = uuidv4();
+            logger.debug("Create new unique id: ", newId);
+            return newId;
+        } else {
+            // found existing docs.
+            logger.debug("Return existing unique id: ", res.data[0].Id);
+            return res.data[0].Id;
+        }
+    });
+}
+
+/**
+ * utility function to build details payload for a document.
  * Here is sample of the doc request.
  *
  * {
@@ -455,6 +485,8 @@ Vitrium.prototype.getUniqueDocs = async function(docCode, userName, customField,
  * }
  */
 Vitrium.prototype.buildDocDetails = function(docRequest) {
+
+    let self = this;
 
     // the default doc policy override,
     let docPolicyOverride = {
@@ -552,7 +584,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
       "UserName": docRequest.UserName,
       "CustomField": docRequest.CustomField,
       // generate the uniqu doc copy id.
-      "UniqueDocCopyId": uuidv4(),
+      "UniqueDocCopyId": self.getUniqueDocCopyId( docRequest ),
       "DocPolicyOverride": docPolicyOverride,
       "AccessPolicyOverride": accessPolicyOverride
     };
