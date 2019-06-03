@@ -28,4 +28,6 @@ vitrium.getUniqueDocs(config.testData.docCodes[0],
 
     //console.dir(res);
     console.log(`Total docs: ${res.data.length}`);
+    console.log(`unique id: ${res.data[0].Id}`);
+    console.log(res.data[0]);
 });
