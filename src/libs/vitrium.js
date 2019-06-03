@@ -413,6 +413,35 @@ Vitrium.prototype.getFolders = async function(offset, limit, callback) {
 };
 
 /**
+ * return the unique doc version for the given
+ *
+ * @param {String} docCode
+ * @param {String} userName
+ * @param {String} customField
+ */
+Vitrium.prototype.getUniqueDocs = async function(docCode, userName, customField, callback) {
+
+    await this._initialized;
+
+    // TODO: we assume, custom field has value all the time.
+
+    // build the query, for simple query
+    const queryParams = {
+        "docCode": docCode,
+        "username": userName,
+        "customField": customField
+    };
+
+    // get ready the request.
+    let itemsReq =
+        this.buildGetRequest(this.docApiBaseUrl, '/Version/GetUniqueDocuments', 
+                             queryParams);
+
+    console.log(itemsReq);
+    this.generalApiCall(itemsReq, callback);
+};
+
+/**
  * utility class to build details payload for a document.
  * Here is sample of the doc request.
  *
