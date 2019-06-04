@@ -504,7 +504,7 @@ Vitrium.prototype.buildDocDetails = async function(docRequest) {
         uniqueId = uuidv4();
         logger.debug("Create new unique id: ", uniqueId);
     } else {
-        uniqueId = uniqueRes.data[0];
+        uniqueId = uniqueRes.data[0].Id;
         logger.debug("Return existing unique id: ", uniqueId);
     }
 
