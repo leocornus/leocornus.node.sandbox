@@ -366,7 +366,16 @@ Vitrium.prototype.getSMultiItems = function(topic, params, callback) {
 Vitrium.prototype.getPolicies = async function(offset, limit, callback) {
 
     await this._initialized;
-    this.getMultiItems('Policy', {"offset":offset, "limit":limit}, callback);
+
+    // get reat the request param.
+    let queryParams = this.buildQueryParams({"offset":offset, "limit":limit});
+    let pReq = this.buildGetRequest(this.docApiBaseUrl, 'Policy', queryParams);
+
+    if( callback ) {
+        this.generalApiCall(pReq, callback);
+    } else {
+        return axios.request(pReq);
+    }
 };
 
 /**
@@ -494,7 +503,7 @@ Vitrium.prototype.getUniqueDocCopyId = function(docRequest) {
 Vitrium.prototype.buildDocDetails = async function(docRequest) {
 
     let self = this;
-    
+
     // try to get the unique copy id.
     let uniqueRes = await this.getUniqueDocs( docRequest.DocCode,
             docRequest.UserName,
