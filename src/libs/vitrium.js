@@ -439,7 +439,14 @@ Vitrium.prototype.getUniqueDocs = async function(docCode, userName, customField,
 
     //console.log(itemsReq);
     logger.debug('GetUniqueDocuments request: ', itemsReq);
-    this.generalApiCall(itemsReq, callback);
+    if( callback ) {
+
+        this.generalApiCall(itemsReq, callback);
+    } else {
+
+        // return the promise.
+        return axios.request(itemsReq);
+    }
 };
 
 /**
@@ -484,9 +491,22 @@ Vitrium.prototype.getUniqueDocCopyId = function(docRequest) {
  *    "IPAddressRange": null
  * }
  */
-Vitrium.prototype.buildDocDetails = function(docRequest) {
+Vitrium.prototype.buildDocDetails = async function(docRequest) {
 
     let self = this;
+    
+    // try to get the unique copy id.
+    let uniqueRes = await this.getUniqueDocs( docRequest.DocCode,
+            docRequest.UserName,
+            docRequest.CustomField );
+    let uniqueId = null;
+    if( uniqueRes.data.length < 1 ) {
+        uniqueId = uuidv4();
+        logger.debug("Create new unique id: ", uniqueId);
+    } else {
+        uniqueId = uniqueRes.data[0];
+        logger.debug("Return existing unique id: ", uniqueId);
+    }
 
     // the default doc policy override,
     let docPolicyOverride = {
@@ -584,7 +604,7 @@ Vitrium.prototype.buildDocDetails = function(docRequest) {
       "UserName": docRequest.UserName,
       "CustomField": docRequest.CustomField,
       // generate the uniqu doc copy id.
-      "UniqueDocCopyId": self.getUniqueDocCopyId( docRequest ),
+      "UniqueDocCopyId": uniqueId,
       "DocPolicyOverride": docPolicyOverride,
       "AccessPolicyOverride": accessPolicyOverride
     };
@@ -605,7 +625,7 @@ Vitrium.prototype.versionUnique = async function(docReq, callback) {
 
     await self._initialized;
 
-    let docDetails = self.buildDocDetails(docReq);
+    let docDetails = await self.buildDocDetails(docReq);
 
     // get ready the request.
     //console.log("get ready the request!");
