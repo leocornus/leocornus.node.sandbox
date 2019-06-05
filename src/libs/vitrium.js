@@ -314,17 +314,13 @@ Vitrium.prototype.generalApiCall = function(req, callback) {
 
     logger.debug("General API request: ", req);
 
-    axios.request(req).then(function(res) {
+    let promise = axios.request(req);
 
-        logger.debug("General API response: ", res.data);
-        //console.log(res.config);
-        //console.log(res.data);
-        callback(res);
-    }).catch(function(err) {
+    if( callback ) {
+        promise = promise.then(callback);
+    }
 
-        logger.error("Failed general API call: ", err);
-        callback(null, err);
-    });
+    return promise;
 };
 
 /**
@@ -340,7 +336,7 @@ Vitrium.prototype.getMultiItems = function(topic, params, callback) {
         this.buildGetRequest(this.docApiBaseUrl, topic, queryParams);
 
     //console.log(policyReq);
-    this.generalApiCall(itemsReq, callback);
+    return this.generalApiCall(itemsReq, callback);
 };
 
 /**
@@ -356,7 +352,7 @@ Vitrium.prototype.getSMultiItems = function(topic, params, callback) {
         this.buildGetRequest(this.securityApiBaseUrl, topic, queryParams);
 
     //console.log(policyReq);
-    this.generalApiCall(itemsReq, callback);
+    return this.generalApiCall(itemsReq, callback);
 };
 
 /**
@@ -371,11 +367,14 @@ Vitrium.prototype.getPolicies = async function(offset, limit, callback) {
     let queryParams = this.buildQueryParams({"offset":offset, "limit":limit});
     let pReq = this.buildGetRequest(this.docApiBaseUrl, 'Policy', queryParams);
 
-    if( callback ) {
-        this.generalApiCall(pReq, callback);
-    } else {
-        return axios.request(pReq);
-    }
+    //if( callback ) {
+    //    this.generalApiCall(pReq, callback);
+    //} else {
+    //    // return the axios promise if no callback function.
+    //    // add await to make sure the promise is resolved.
+    //    return axios.request(pReq);
+    //}
+    return this.generalApiCall(pReq, callback);
 };
 
 /**
@@ -384,8 +383,10 @@ Vitrium.prototype.getPolicies = async function(offset, limit, callback) {
 Vitrium.prototype.getReaders = async function(offset, limit, callback) {
 
     await this._initialized;
+
     // readers request.
-    this.getSMultiItems('Reader', {"offset":offset, "limit":limit}, callback);
+    return this.getSMultiItems('Reader', {"offset":offset, "limit":limit}, 
+                               callback);
 };
 
 /**
