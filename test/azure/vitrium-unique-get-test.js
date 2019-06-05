@@ -42,7 +42,7 @@ async function test() {
                 config.testData.users[0],
                 // using the empty customField for now.
                 config.testData.customFields[0]);
-        
+
         console.log( copyId.data.length );
         console.log( `Existing unique copy id: ${copyId.data[0].Id}` );
         return copyId;
