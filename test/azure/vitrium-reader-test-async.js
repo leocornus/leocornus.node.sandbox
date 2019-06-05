@@ -20,10 +20,17 @@ let vitrium = new Vitrium(
     config.vitrium.password,
 );
 
-// quick test to get all policies.
-vitrium.getReaders(1, 200, (res, err) => {
+async function testGetReaders() {
 
-    console.log(res.data.Results);
-    console.log(`Total Records: ${res.data.TotalRecords}`);
-    console.log(res.data.Results.length);
-});
+    let readersRes = await vitrium.getReaders(1, 50);
+    let readers = readersRes.data.Results.map( ( reader ) => {
+        return {
+            username: reader.Username,
+            customField: reader.CustomField
+        }
+    } );
+
+    console.log(readers);
+}
+
+testGetReaders();
