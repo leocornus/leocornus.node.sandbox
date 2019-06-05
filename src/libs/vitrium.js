@@ -395,7 +395,8 @@ Vitrium.prototype.getReaders = async function(offset, limit, callback) {
 Vitrium.prototype.getDocs = async function(offset, limit, callback) {
 
     await this._initialized;
-    this.getMultiItems('Doc', {"offset":offset, "limit":limit}, callback);
+
+    return this.getMultiItems('Doc', {"offset":offset, "limit":limit}, callback);
 };
 
 /**
@@ -409,7 +410,8 @@ Vitrium.prototype.getDocVersions = async function(docId, offset, limit, callback
         "offset": offset,
         "limit": limit
     }
-    this.getMultiItems('Version', params, callback);
+
+    return this.getMultiItems('Version', params, callback);
 };
 
 /**
@@ -418,8 +420,8 @@ Vitrium.prototype.getDocVersions = async function(docId, offset, limit, callback
 Vitrium.prototype.getFolders = async function(offset, limit, callback) {
 
     await this._initialized;
-    // readers request.
-    this.getMultiItems('Folder', {"offset":offset, "limit":limit}, callback);
+    // folders request.
+    return this.getMultiItems('Folder', {"offset":offset, "limit":limit}, callback);
 };
 
 /**
@@ -448,15 +450,7 @@ Vitrium.prototype.getUniqueDocs = async function(docCode, userName, customField,
                              queryParams);
 
     //console.log(itemsReq);
-    logger.debug('GetUniqueDocuments request: ', itemsReq);
-    if( callback ) {
-
-        this.generalApiCall(itemsReq, callback);
-    } else {
-
-        // return the promise.
-        return axios.request(itemsReq);
-    }
+    return this.generalApiCall(itemsReq, callback);
 };
 
 /**
