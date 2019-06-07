@@ -55,6 +55,11 @@ axios.get(sourceSelect, totalQuery)
 
     let amount = totalRes.data.response.numFound;
     console.log("Total Docs: " + amount);
+    if( amount < 1 ) {
+        console.log( now() + " No doc to process..." );
+        return;
+    }
+
     let bulk = Math.min(localConfig.endIndex, amount);
     console.log("Working on items from", localConfig.startIndex,
                 "to", bulk);
