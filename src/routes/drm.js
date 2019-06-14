@@ -18,7 +18,7 @@ module.exports = function(app) {
             config.vitrium.accountToken,
             config.vitrium.userName,
             config.vitrium.password,
-            config.Vitrium.formId
+            config.vitrium.formId
         );
 
         // the req.body will the payload.
