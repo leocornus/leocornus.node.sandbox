@@ -22,7 +22,7 @@ const fs = require('fs');
  *
  * This fuunction is actually works as a constructor.
  */
-const Vitrium = function Vitrium (account, username, password) {
+const Vitrium = function Vitrium (account, username, password, formId) {
 
     // base url to access Vitrium documents.
     this.docApiBaseUrl = 'https://docs-ca.vitrium.com/api/2.0/';
@@ -35,6 +35,7 @@ const Vitrium = function Vitrium (account, username, password) {
     this.sessionToken = '';
     this.username = username;
     this.password = password;
+    this.formId = formId;
 
     // local file to store the API session token.
     this.tokenFilePath = '/tmp/' + md5(username + password);
@@ -385,7 +386,7 @@ Vitrium.prototype.getReaders = async function(offset, limit, callback) {
     await this._initialized;
 
     // readers request.
-    return this.getSMultiItems('Reader', {"offset":offset, "limit":limit}, 
+    return this.getSMultiItems('Reader', {"offset":offset, "limit":limit},
                                callback);
 };
 
@@ -517,9 +518,10 @@ Vitrium.prototype.buildDocDetails = async function(docRequest) {
         "PrintType": "HighResolution",
         "DisableAnnotations": false,
         "AllowCopy": true,
-        "AllowBuildInLoginTemplate": true,
+        "AllowBuildInLoginTemplate": false,
         "AcroJsGosUnlimitedBehaviourType": "PromptAndCloseDocument",
-        "AcroJsGosBehaviorType": "PromptAndCloseDocument"
+        "AcroJsGosBehaviorType": "PromptAndCloseDocument",
+        "FormId": self.formId
     };
     //console.log(docPolicyOverride);
 
