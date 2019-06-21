@@ -31,11 +31,12 @@ axios.get(localConfig.loginUrl, {
 
 var authReq = {
     url: localConfig.loginUrl,
-    headers:{
-        "RETS-Version": "RETS/1.5",
-        "Accept": "*/*"
-        //'Authorization': 'Basic ' + token 
-    },
+    // no need this header.
+    //headers:{
+    //    "RETS-Version": "RETS/1.5",
+    //    "Accept": "*/*"
+    //    //'Authorization': 'Basic ' + token 
+    //},
     auth: {
         username: localConfig.username,
         password: localConfig.password,
