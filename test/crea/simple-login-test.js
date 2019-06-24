@@ -50,4 +50,5 @@ request.get(authReq, function(err, res, body) {
     console.log(err);
     console.log(res.headers);
     console.log(body);
+    console.log(res);
 });
