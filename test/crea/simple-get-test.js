@@ -12,19 +12,23 @@ console.log(localConfig.metadataUrl);
 
 var getMetadata = {
     params: {
-        Type: 'METADATA-CLASS', 
-        Format: 'Standard-XML',
-        ID: '*',
+        Type: 'METADATA-CLASS',
+        //Format: 'Standard-XML',
+        Format: 'COMPACT',
+        //ID: '*',
+        ID: '0',
     },
     headers: {
-        Cookie: localConfig.sampleHeader['set-cookie'].join("; ")
+        Authorization: localConfig.sampleAuthorization,
+        //Cookie: localConfig.sampleHeader['set-cookie'].join("; ")
+        Cookie: localConfig.sampleHeader['cookie']
     }
 };
 
 axios.get(localConfig.metadataUrl, getMetadata)
     .then(function(response) {
 
-        //console.dir(response);
+        console.dir(response.data);
         console.log('Success');
     }).catch(function(error) {
         console.dir(error);
