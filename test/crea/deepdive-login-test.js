@@ -4,6 +4,8 @@
 
 const axios = require('axios');
 const request = require('request');
+const md5 = require('crypto-js/md5');
+const querystring = require('querystring');
 
 // load configuration
 const config = require('./../../src/config');
@@ -28,4 +30,9 @@ axios.get(localConfig.loginUrl).then(function(response) {
     // we expect error here.
     //console.dir(error.response);
     console.dir(error.response.headers);
+
+    // get the authentication params
+    var authHeaders = error.response.headers['www-authenticate'];
+    var authParams = querystring.parse( authHeaders.substr(7), ', ' );
+    console.dir(authParams);
 });
