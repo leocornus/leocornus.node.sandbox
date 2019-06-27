@@ -40,7 +40,7 @@ axios.get(localConfig.loginUrl).then(function(response) {
         }, {} );
     console.dir(challengeParams);
 
-    // TODO: calculate Authenticate digest string.
+    // calculate Authorization digest string.
     var ha1 = md5(localConfig.username + ':' + 
                   challengeParams.realm + ':' + localConfig.password)
     var ha2 = md5('GET:' + localConfig.loginUrl)
