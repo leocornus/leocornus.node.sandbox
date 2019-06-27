@@ -74,7 +74,7 @@ axios.get(localConfig.loginUrl).then(function(response) {
         console.dir(response.headers);
         var authCookie = response.headers['set-cookie'][0].split('; ')[0];
         console.dir(response.data);
-        console.dir(authCookie);
+        console.dir(challengeCookie + '; ' + authCookie);
     }).catch(function(error) {
         console.log("Failed!");
     });
