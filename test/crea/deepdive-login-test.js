@@ -5,7 +5,6 @@
 const axios = require('axios');
 const request = require('request');
 const md5 = require('crypto-js/md5');
-const querystring = require('querystring');
 
 // load configuration
 const config = require('./../../src/config');
@@ -33,6 +32,18 @@ axios.get(localConfig.loginUrl).then(function(response) {
 
     // get the authentication params
     var authHeaders = error.response.headers['www-authenticate'];
-    var authParams = querystring.parse( authHeaders.substr(7), ', ' );
+    var authParams = authHeaders.substring(7).split( ', ' ).
+        // convert an arry to a Object.
+        reduce( (params, item) => {
+            var parts = item.split('=');
+            params[parts[0]] = parts[1].replace(/"/g, '');
+            return params;
+        }, {} );
     console.dir(authParams);
+
+    // stringify the params:
+    var authParamStr = Object.keys(authParams).reduce( (paramStr, key) => {
+        return paramStr + ', ' + key + '="' + authParams[key] + '"';
+    }, '' );
+    console.log('Digest ' + authParamStr.substring(2));
 });
