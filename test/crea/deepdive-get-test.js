@@ -13,9 +13,9 @@ console.log(localConfig.metadataUrl);
 
 // get ready the Authorization digest string.
 var ha1 = md5(localConfig.username + ':' + 
-              localConfig.sampleDigest.realm + ':' + localConfig.password)
-var ha2 = md5('GET:' + localConfig.metadataUrl)
-var response = md5(ha1 + ':' + localConfig.sampleDigest.nonce + ':1::auth:' + ha2)
+              localConfig.sampleDigest.realm + ':' + localConfig.password);
+var ha2 = md5('GET:' + localConfig.metadataUrl);
+var response = md5(ha1 + ':' + localConfig.sampleDigest.nonce + ':1::auth:' + ha2);
 var authParams = {
   username : localConfig.username,
   realm : localConfig.sampleDigest.realm,

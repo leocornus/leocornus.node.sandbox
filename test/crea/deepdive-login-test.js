@@ -62,13 +62,14 @@ axios.get(localConfig.loginUrl).then(function(response) {
     }, '' );
     authParamStr = 'Digest ' + authParamStr.substring(2);
     console.log(authParamStr);
-
-    axios.get(localConfig.loginUrl, {
+    var authOptions = {
         headers: {
             "Authorization": authParamStr,
             "Cookie": challengeCookie
         }
-    }).then(function(response) {
+    };
+
+    axios.get(localConfig.loginUrl, authOptions).then(function(response) {
         console.log("Success!");
         //console.dir(response);
         console.dir(response.headers);
