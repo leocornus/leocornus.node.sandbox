@@ -12,15 +12,7 @@ const localConfig = config.crea;
 
 console.log(localConfig.loginUrl);
 
-// CREA using basic digest auth to do authentication:
-var token = Buffer.from(localConfig.username + ':' + localConfig.password)
-            .toString('base64');
-var options = {
-    headers:{
-        'Authorization': 'Basic ' + token 
-    }
-};
-
+// CREA using digest auth to do authentication:
 // issue the challendge request
 axios.get(localConfig.loginUrl).then(function(response) {
     //console.dir(response.response);
@@ -32,6 +24,7 @@ axios.get(localConfig.loginUrl).then(function(response) {
 
     // get the authentication params
     var challengeHeaders = error.response.headers['www-authenticate'];
+    var challengeCookie = error.response.headers['set-cookie'][0].split('; ')[0];
     var challengeParams = challengeHeaders.substring(7).split( ', ' ).
         // convert an arry to a Object.
         reduce( (params, item) => {
@@ -72,13 +65,16 @@ axios.get(localConfig.loginUrl).then(function(response) {
 
     axios.get(localConfig.loginUrl, {
         headers: {
-            "Authorization": authParamStr
+            "Authorization": authParamStr,
+            "Cookie": challengeCookie
         }
     }).then(function(response) {
         console.log("Success!");
         //console.dir(response);
         console.dir(response.headers);
+        var authCookie = response.headers['set-cookie'][0].split('; ')[0];
         console.dir(response.data);
+        console.dir(authCookie);
     }).catch(function(error) {
         console.log("Failed!");
     });
