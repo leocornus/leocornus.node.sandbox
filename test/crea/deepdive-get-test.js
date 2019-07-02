@@ -4,6 +4,7 @@
 
 const axios = require('axios');
 const md5 = require('crypto-js/md5');
+const parseXml = require('xml2js').parseString;
 
 // load configuration
 const config = require('./../../src/config');
@@ -37,8 +38,8 @@ authParamStr = 'Digest ' + authParamStr.substring(2);
 var getMetadata = {
     params: {
         Type: 'METADATA-CLASS',
-        //Format: 'Standard-XML',
-        Format: 'COMPACT',
+        Format: 'Standard-XML',
+        //Format: 'COMPACT',
         //ID: '*',
         ID: '0',
     },
@@ -53,6 +54,11 @@ axios.get(localConfig.metadataUrl, getMetadata)
 
         console.dir(response.headers);
         console.dir(response.data);
+        parseXml(response.data, function(err, result) {
+
+            console.log(result);
+            console.log(JSON.stringify(result, null, 2));
+        });
         console.log('Success');
     }).catch(function(error) {
         console.dir(error);
