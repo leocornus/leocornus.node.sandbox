@@ -19,7 +19,8 @@ console.log(cookie);
 async function testLogin() {
 
     try {
-        let challengeRes = await axios.get(localConfig.loginUrl);
+        // we expect it will fail!
+        await axios.get(localConfig.loginUrl);
     } catch (error) {
 
         console.log(error.response.headers);
