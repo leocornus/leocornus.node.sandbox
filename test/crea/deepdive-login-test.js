@@ -5,6 +5,7 @@
 const axios = require('axios');
 const request = require('request');
 const md5 = require('crypto-js/md5');
+const parseXml = require('xml2js').parseString;
 
 // load configuration
 const config = require('./../../src/config');
@@ -76,6 +77,12 @@ axios.get(localConfig.loginUrl).then(function(response) {
         var authCookie = response.headers['set-cookie'][0].split('; ')[0];
         console.dir(response.data);
         console.dir(challengeCookie + '; ' + authCookie);
+
+        // parse the result to JSON format.
+        parseXml( response.data, function( err, result ) {
+
+            console.log(result);
+        } );
     }).catch(function(error) {
         console.log("Failed!");
     });
