@@ -107,10 +107,69 @@ Crea.prototype.authorize = async function() {
  */
 Crea.prototype.getCookie = async function() {
 
-    return {
-        realm: 'CREA.Distribution',
-        nonce: 'NjM2OTc2NjkwNDg1NzYuMzo5YWZkMzNlZTRjZmZmYjJlNmE5MzNmNmZmODllZjdmYQ==',
-        qop: 'auth',
-        cookie: 'ASP.NET_SessionId=wlyeqx20x03rra0jpmdyryhc; X-SESSIONID=471835de-8583-4111-b815-a7c12de807de'
-    };
+    let self = this;
+
+    try {
+        await axios.get(self.apiUrls.Login);
+    } catch (error) {
+
+        logger.debug('401 response headers: ', error.response.headers);
+        // get the authentication params
+        var challengeHeaders = error.response.headers['www-authenticate'];
+        var challengeCookie = error.response.headers['set-cookie'][0].split('; ')[0];
+        var challengeParams = challengeHeaders.substring(7).split( ', ' ).
+            // convert an arry to a Object.
+            reduce( (params, item) => {
+
+                if( item.startsWith('nonce') ) {
+                    var parts = item.split('nonce=');
+                    params['nonce'] = parts[1].replace(/"/g, '');
+                } else {
+                    var parts = item.split('=');
+                    params[parts[0]] = parts[1].replace(/"/g, '');
+                }
+                return params;
+            }, {} );
+        logger.debug('The challenge params: ', challengeParams);
+
+        // calculate Authorization digest string.
+        var ha1 = md5(self.username + ':' + 
+                      challengeParams.realm + ':' + self.password)
+        var ha2 = md5('GET:' + self.apiUrls.Login)
+        var response = md5(ha1 + ':' + challengeParams.nonce + ':1::auth:' + ha2)
+        var authParams = {
+          username : self.username,
+          realm : challengeParams.realm,
+          nonce : challengeParams.nonce,
+          uri : self.apiUrls.Login, 
+          qop : challengeParams.qop,
+          response : response,
+          nc : '1',
+          cnonce : '',
+        };
+
+        // stringify the params:
+        var authParamStr = Object.keys(authParams).reduce( (paramStr, key) => {
+            return paramStr + ', ' + key + '="' + authParams[key] + '"';
+        }, '' );
+        authParamStr = 'Digest ' + authParamStr.substring(2);
+        logger.debug("Digest String: ", authParamStr);
+        var authOptions = {
+            headers: {
+                "Authorization": authParamStr,
+                "Cookie": challengeCookie
+            }
+        };
+
+        try {
+            let authRes = await axios.get(self.apiUrls.Login, authOptions);
+            let authCookie = authRes.headers['set-cookie'][0].split('; ')[0];
+            challengeParams['cookie'] = challengeCookie + "; " + authCookie;
+            logger.debug('The authorize params: ', challengeParams);
+            return challengeParams;
+        } catch( authErr ) {
+            console.error(authErr);
+            throw Error(authErr);
+        }
+    }
 };
