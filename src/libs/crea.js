@@ -138,28 +138,13 @@ Crea.prototype.getCookie = async function() {
         logger.debug('The challenge params: ', challengeParams);
 
         // calculate Authorization digest string.
-        var ha1 = md5(self.username + ':' + 
-                      challengeParams.realm + ':' + self.password)
-        var ha2 = md5('GET:' + self.apiUrls.Login)
-        var response = md5(ha1 + ':' + challengeParams.nonce + ':1::auth:' + ha2)
-        var authParams = {
-          username : self.username,
-          realm : challengeParams.realm,
-          nonce : challengeParams.nonce,
-          uri : self.apiUrls.Login, 
-          qop : challengeParams.qop,
-          response : response,
-          nc : '1',
-          cnonce : '',
-        };
-
-        // stringify the params:
-        var authParamStr = Object.keys(authParams).reduce( (paramStr, key) => {
-            return paramStr + ', ' + key + '="' + authParams[key] + '"';
-        }, '' );
-        authParamStr = 'Digest ' + authParamStr.substring(2);
+        var authParamStr =
+            self.calcDigestString(challengeParams.realm, challengeParams.nonce,
+                challengeParams.qop, self.username, self.password,
+                self.apiUrls.Login);
         logger.debug("Login digest String: ", authParamStr);
 
+        // get ready the request headers.
         var authOptions = {
             headers: {
                 "Authorization": authParamStr,
@@ -184,4 +169,27 @@ Crea.prototype.getCookie = async function() {
  * calculate the digest string.
  */
 Crea.prototype.calcDigestString = function(realm, nonce, qop, username, password, url) {
+
+    // calculate Authorization digest string.
+    var ha1 = md5(username + ':' + realm + ':' + password);
+    // TODO: other request type? POST, PUT?
+    var ha2 = md5('GET:' + url);
+    var response = md5(ha1 + ':' + nonce + ':1::auth:' + ha2);
+    var authParams = {
+      username : username,
+      realm : realm,
+      nonce : nonce,
+      uri : url,
+      qop : qop,
+      response : response,
+      nc : '1',
+      cnonce : '',
+    };
+
+    // stringify the params:
+    var authParamStr = Object.keys(authParams).reduce( (paramStr, key) => {
+        return paramStr + ', ' + key + '="' + authParams[key] + '"';
+    }, '' );
+
+    return 'Digest ' + authParamStr.substring(2);
 };
