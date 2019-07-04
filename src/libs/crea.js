@@ -199,3 +199,34 @@ Crea.prototype.calcDigestString = function(realm, nonce, qop, username, password
 
     return 'Digest ' + authParamStr.substring(2);
 };
+
+/**
+ * utility class to get metadata.
+ */
+Crea.prototype.getMetadata = async function(params, callback) {
+
+    let self = this;
+    await self._authorized;
+
+    let authString = self.calcDigestString(self.cookie.realm, self.cookie.nonce,
+            self.cookie.qop, self.username, self.password,
+            self.apiUrls.GetMetadata);
+
+    // get ready the GET request.
+    let mReq = {
+        url: self.apiUrls.GetMetadata,
+        method: 'get',
+        params: params,
+        headers: {
+            Authorization: authString,
+            Cookie: self.cookie.cookie
+        }
+    };
+
+    let promise = axios.request(mReq);
+    if( callback ) {
+        promise = promise.then(callback);
+    }
+
+    return promise;
+}
