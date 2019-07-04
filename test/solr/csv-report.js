@@ -14,6 +14,10 @@ const reportSettings = config.reports[config.reportIndex];
 // the update endpoint.
 const solrEndpoint = reportSettings.baseUrl + "select";
 
+// get started.
+console.log(`Report endpoint: ${solrEndpoint}`);
+console.log(`Output file: ${reportSettings.csvFile}`);
+
 // set the stream body:
 let reportQuery = {
     params: reportSettings.queryParams
@@ -24,7 +28,7 @@ let reportQuery = {
 axios.get(solrEndpoint, reportQuery)
 .then(function(res) {
     //console.log(res);
-    //console.log(res.data.response.docs);
+    console.log('Total docs found: ' + res.data.response.numFound);
 
     let fileStream = fs.createWriteStream(reportSettings.csvFile);
     stringify(res.data.response.docs, {
