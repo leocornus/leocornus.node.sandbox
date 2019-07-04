@@ -15,9 +15,11 @@ console.log(crea.apiUrls);
 
 async function testGetCookie() {
 
-    let cookie = await crea.authorize();
+    // wait the authorization to complete.
+    await crea._authorized;
 
-    console.log(cookie);
+    //console.log(cookie);
+    console.log(crea.cookie);
 }
 
 testGetCookie();
