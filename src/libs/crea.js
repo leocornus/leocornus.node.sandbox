@@ -67,7 +67,6 @@ Crea.prototype.authorize = async function() {
         // check the local cookie file
         if(fs.existsSync( self.cookieFilePath )) {
             // check the modified time to calculate the age.
-            // the stat function will update the timestamp for the file.
             let stats = fs.statSync(self.cookieFilePath);
             let age = (new Date()).getTime() - stats.mtimeMs;
             // if age is less than 1 hour, it is still valid.
@@ -81,7 +80,7 @@ Crea.prototype.authorize = async function() {
         // no cookie exists
         if( self.cookie === null ) {
             logger.info( "Trying to authenticate for account: " +
-                         self.username);
+                         self.username );
             // set cookie;
             self.cookie = await self.getCookie();
         }
@@ -92,7 +91,9 @@ Crea.prototype.authorize = async function() {
             const cookie = await self.getCookie();
         } else {
             logger.info("Successfully authenticated!");
-            // write the same tokens to update modified time.
+            // Write the same cookie to update modified time.
+            // This includes the case that we get
+            // the existing cookie from the same file.
             fs.writeFileSync(self.cookieFilePath,
                              JSON.stringify(self.cookie), 'utf8');
         }
@@ -153,10 +154,15 @@ Crea.prototype.getCookie = async function() {
         };
 
         try {
+            // wait for the success response!
             let authRes = await axios.get(self.apiUrls.Login, authOptions);
             let authCookie = authRes.headers['set-cookie'][0].split('; ')[0];
             challengeParams['cookie'] = challengeCookie + "; " + authCookie;
             logger.debug('The authorize params: ', challengeParams);
+
+            // TODO: add all digest strings to the cookie.
+
+            // return to fullfill the promise.
             return challengeParams;
         } catch( authErr ) {
             console.error(authErr);
