@@ -55,6 +55,8 @@ module.exports = Crea;
 
 /**
  * Challenge the server and get authorized.
+ *
+ * We will store the cookie and nonce in local file to reuse it.
  */
 Crea.prototype.authorize = async function() {
 
@@ -65,6 +67,7 @@ Crea.prototype.authorize = async function() {
         // check the local cookie file
         if(fs.existsSync( self.cookieFilePath )) {
             // check the modified time to calculate the age.
+            // the stat function will update the timestamp for the file.
             let stats = fs.statSync(self.cookieFilePath);
             let age = (new Date()).getTime() - stats.mtimeMs;
             // if age is less than 1 hour, it is still valid.
@@ -103,7 +106,9 @@ Crea.prototype.authorize = async function() {
 };
 
 /**
- * get cookie
+ * Challenge the server and get the 401 unauthorized error.
+ * The 401 error response will have the nonce from server side.
+ * The nonce will be used to calculate the client nonce for each request.
  */
 Crea.prototype.getCookie = async function() {
 
@@ -153,7 +158,8 @@ Crea.prototype.getCookie = async function() {
             return paramStr + ', ' + key + '="' + authParams[key] + '"';
         }, '' );
         authParamStr = 'Digest ' + authParamStr.substring(2);
-        logger.debug("Digest String: ", authParamStr);
+        logger.debug("Login digest String: ", authParamStr);
+
         var authOptions = {
             headers: {
                 "Authorization": authParamStr,
@@ -172,4 +178,10 @@ Crea.prototype.getCookie = async function() {
             throw Error(authErr);
         }
     }
+};
+
+/**
+ * calculate the digest string.
+ */
+Crea.prototype.calcDigestString = function(realm, nonce, qop, username, password, url) {
 };
