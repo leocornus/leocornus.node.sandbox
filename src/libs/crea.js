@@ -157,11 +157,22 @@ Crea.prototype.getCookie = async function() {
             // wait for the success response!
             let authRes = await axios.get(self.apiUrls.Login, authOptions);
             let authCookie = authRes.headers['set-cookie'][0].split('; ')[0];
+
+            // store all cookies here.
             challengeParams['cookie'] = challengeCookie + "; " + authCookie;
             logger.debug('The authorize params: ', challengeParams);
 
-            // TODO: add all digest strings to the cookie.
+            // add all digest strings to the cookie.
+            challengeParams =
+            ['Search', 'GetMetadata', 'GetObject'].reduce(( params, item ) => {
 
+                params[item] =  self.calcDigestString( challengeParams.realm,
+                        challengeParams.nonce, challengeParams.qop,
+                        self.username, self.password, self.apiUrls[item] );
+                return params;
+            }, challengeParams );
+
+            logger.debug('The authorize params: ', challengeParams);
             // return to fullfill the promise.
             return challengeParams;
         } catch( authErr ) {
@@ -208,17 +219,13 @@ Crea.prototype.getMetadata = async function(params, callback) {
     let self = this;
     await self._authorized;
 
-    let authString = self.calcDigestString(self.cookie.realm, self.cookie.nonce,
-            self.cookie.qop, self.username, self.password,
-            self.apiUrls.GetMetadata);
-
     // get ready the GET request.
     let mReq = {
         url: self.apiUrls.GetMetadata,
         method: 'get',
         params: params,
         headers: {
-            Authorization: authString,
+            Authorization: self.cookie.GetMetadata,
             Cookie: self.cookie.cookie
         }
     };
