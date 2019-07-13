@@ -11,7 +11,17 @@ var fileName = localConfig.xmlFileFolder + '/products_0001_2570_to_430420.xml';
 fs.readFile(fileName, function(err, data) {
     parser.parseString(data, function(err, result) {
 
-        console.dir(result.products.product[0]);
-        console.dir(result.products.product[0].details[0].detail[0]);
+        console.log('Found ' + result.products.product.length + ' products');
+        let docs = result.products.product.map( item => {
+
+            return localConfig.prepareSolrDoc(item);
+        });
+
+        console.log(docs.length);
+        console.dir(docs[0]);
+        //console.dir(result.products.product[0]);
+        //console.dir(result.products.product[0].details[0].detail[0]);
+
+        // post to Solr collection
     });
 });
