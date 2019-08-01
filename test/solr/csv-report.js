@@ -17,6 +17,7 @@ const solrEndpoint = reportSettings.baseUrl + "select";
 // get started.
 console.log(`Report endpoint: ${solrEndpoint}`);
 console.log(`Output file: ${reportSettings.csvFile}`);
+console.log(`Query String: ${reportSettings.queryParams.q}`);
 
 // set the stream body:
 let reportQuery = {
