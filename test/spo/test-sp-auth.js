@@ -10,7 +10,7 @@
  */
 
 // we have to use the ./ as current foler.
-const config = require('./../src/config');
+const config = require('./../../src/config');
 const spo = require('node-sp-auth');
 const request = require('request');
 //const request = require('request-promise');
@@ -31,7 +31,7 @@ spo.getAuth(config.spoUrl, {username: config.username,
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
 
-    filePath = config.samplePathes[0];
+    filePath = config.samplePathes[1];
     // construct the URL.
     let theUrl = config.spoUrl + config.spoSite + filePath;
     console.log(theUrl);
@@ -46,7 +46,7 @@ spo.getAuth(config.spoUrl, {username: config.username,
     //}).then(function(error, response, body) {
         //process data
         //console.dir(response);
-        console.dir(body);
-        //console.dir(JSON.parse(body));
+        //console.dir(body);
+        console.dir(JSON.parse(body));
     });
 });
