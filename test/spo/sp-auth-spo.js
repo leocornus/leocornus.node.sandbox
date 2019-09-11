@@ -8,8 +8,8 @@
 
 const spoAuth = require('node-sp-auth');
 // we have to use the ./ as current foler.
-const config = require('./../src/config');
-const spo = require('./../src/spo');
+const config = require('./../../src/config');
+const spo = require('./../../src/spo');
 
 spoAuth.getAuth(config.spoUrl, 
             {username: config.username, password: config.password})
