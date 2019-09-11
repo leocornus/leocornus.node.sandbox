@@ -7,7 +7,7 @@
  */
 
 // we have to use the ./ as current foler.
-const config = require('./../src/config');
+const config = require('./../../src/config');
 // the 
 const spoAuth = require('node-sp-auth');
 const axios = require('axios');
