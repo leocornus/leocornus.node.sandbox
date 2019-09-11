@@ -15,10 +15,11 @@ const spo = require('node-sp-auth');
 const request = require('request');
 //const request = require('request-promise');
 
-console.log(JSON.stringify(config, null, 2));
+//console.log(JSON.stringify(config, null, 2));
+const configSPO = config.spo;
 
-spo.getAuth(config.spoUrl, {username: config.username, 
-                            password: config.password})
+spo.getAuth(configSPO.spoUrl, {username: configSPO.username,
+                            password: configSPO.password})
 .then(options => {
     // let's check the options.
     // it only contains a cookie which will have the
@@ -31,9 +32,9 @@ spo.getAuth(config.spoUrl, {username: config.username,
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
 
-    filePath = config.samplePathes[1];
+    filePath = configSPO.samplePathes[1];
     // construct the URL.
-    let theUrl = config.spoUrl + config.spoSite + filePath;
+    let theUrl = configSPO.spoUrl + configSPO.spoSite + filePath;
     console.log(theUrl);
 
     request.get({
