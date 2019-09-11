@@ -12,10 +12,11 @@ const config = require('./../../src/config');
 const spoAuth = require('node-sp-auth');
 const axios = require('axios');
 
-console.log(JSON.stringify(config, null, 2));
+//console.log(JSON.stringify(config, null, 2));
+const configSPO = config.spo;
 
-spoAuth.getAuth(config.spoUrl, 
-            {username: config.username, password: config.password})
+spoAuth.getAuth(configSPO.spoUrl, 
+            {username: configSPO.username, password: configSPO.password})
 .then(options => {
 
     // let's check the options.
@@ -29,8 +30,8 @@ spoAuth.getAuth(config.spoUrl,
     headers['Accept'] = 'application/json';
 
     // try to get properties for a file.
-    let filePath = config.samplePathes[1];
-    let theUrl = config.spoUrl + config.spoSite + filePath;
+    let filePath = configSPO.samplePathes[1];
+    let theUrl = configSPO.spoUrl + configSPO.spoSite + filePath;
     //console.log(theUrl);
 
     // prepare the axios request config.
