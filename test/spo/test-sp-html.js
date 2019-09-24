@@ -9,6 +9,7 @@ const config = require('./../../src/config');
 // the 
 const spoAuth = require('node-sp-auth');
 const axios = require('axios');
+const striptags = require('striptags');
 
 //console.log(JSON.stringify(config, null, 2));
 const configSPO = config.spo;
@@ -55,6 +56,12 @@ spoAuth.getAuth(configSPO.spoUrl,
         // process the first file.
         // the Files('filename')/$Value API will return the file binary
         // in response.data.
+        console.log("Processing file: " + files[0].Name);
+
+        // TODO: extract the file number and class number from file name.
+        //
+ 
+        console.log("File content:");
         let reqGetFile = {
             url: theUrl + "('" + files[0].Name + "')/$Value",
             method: "get",
@@ -64,6 +71,8 @@ spoAuth.getAuth(configSPO.spoUrl,
         axios.request(reqGetFile).then(function(fileRes) {
 
             console.dir(fileRes.data);
+            console.log("Striped file content:");
+            console.dir(striptags(fileRes.data));
         });
     });
 });
