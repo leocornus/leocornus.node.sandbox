@@ -54,7 +54,7 @@ spoAuth.getAuth(configSPO.spoUrl,
         console.log("Got " + files.length + " files");
 
         // quick test for one file.
-        processOneFile(headers, theUrl, files[1].Name);
+        processOneFile(headers, folderName, theUrl, files[1].Name);
 
         //files.forEach((file) => {
         //    processOneFile(headers, theUrl, file.Name);
@@ -65,7 +65,12 @@ spoAuth.getAuth(configSPO.spoUrl,
 /**
  * utility function to process one file a time.
  */
-function processOneFile(headers, folderUrl, fileName) {
+function processOneFile(headers, folderName, folderUrl, fileName) {
+
+    let meta = {};
+
+    meta['file_name'] = fileName;
+    meta['file_path'] = folderName + "/" + fileName;
 
     // process one file a time.
     // the Files('filename')/$Value API will return the file binary
@@ -73,7 +78,7 @@ function processOneFile(headers, folderUrl, fileName) {
     console.log("Processing file: " + fileName);
 
     // STEP one: extract the file number and class number from file name.
-    let meta = configSPO.extractFileName(fileName);
+    meta = Object.assign(meta, configSPO.extractFileName(fileName));
     console.log("Metadata: ");
     console.dir(meta);
 
