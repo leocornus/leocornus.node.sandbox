@@ -15,6 +15,8 @@ const striptags = require('striptags');
 const configSPO = config.spo;
 const configSolr = config.solr;
 
+const targetUpdate = configSolr.targetBaseUrl + "update/json/docs?commit=true";
+
 spoAuth.getAuth(configSPO.spoUrl, 
             {username: configSPO.username, password: configSPO.password})
 .then(options => {
@@ -76,8 +78,8 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
 
     // STEP one: extract the file number and class number from file name.
     meta = Object.assign(meta, configSPO.extractFileName(fileName));
-    console.log("Metadata: ");
-    console.dir(meta);
+    //console.log("Metadata: ");
+    //console.dir(meta);
 
     // STEP two: get file property.
     let reqGetProp = {
@@ -94,7 +96,7 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
         //console.dir(meta);
 
     // STEP three: get file content.
-        console.log("File content:");
+        //console.log("File content:");
         let reqGetFile = {
             url: folderUrl + "('" + fileName + "')/$Value",
             method: "get",
@@ -110,6 +112,14 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
 
             console.log("Updated metadata: ");
             console.dir(meta);
+
+            // update Solr.
+            axios.post( targetUpdate, meta,
+                // default limit is 10MB, set to 1GB for now.
+                {maxContentLength: 1073741824} )
+            .then(function(postRes) {
+                console.log(postRes);
+            });
         });
     });
 }
