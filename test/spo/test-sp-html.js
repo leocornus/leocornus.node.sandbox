@@ -53,7 +53,12 @@ spoAuth.getAuth(configSPO.spoUrl,
         //console.dir(response.data.value);
         console.log("Got " + files.length + " files");
 
-        processOneFile(headers, theUrl, files[17].Name);
+        // quick test for one file.
+        processOneFile(headers, theUrl, files[1].Name);
+
+        //files.forEach((file) => {
+        //    processOneFile(headers, theUrl, file.Name);
+        //});
     });
 });
 
@@ -67,23 +72,38 @@ function processOneFile(headers, folderUrl, fileName) {
     // in response.data.
     console.log("Processing file: " + fileName);
 
-    // TODO: extract the file number and class number from file name.
-    //
+    // STEP one: extract the file number and class number from file name.
     let meta = configSPO.extractFileName(fileName);
     console.log("Metadata: ");
     console.dir(meta);
- 
-    console.log("File content:");
-    let reqGetFile = {
-        url: folderUrl + "('" + fileName + "')/$Value",
+
+    // STEP two: get file property.
+    let reqGetProp = {
+        url: folderUrl + "('" + fileName + "')/Properties",
         method: "get",
         headers: headers
     };
+    axios.request(reqGetProp).then(function(propRes) {
+        //console.dir(propRes.data);
+        // extract SPO properties.
+        meta = Object.assign(meta, configSPO.extractSPOMetadata(propRes.data));
 
-    axios.request(reqGetFile).then(function(fileRes) {
+        console.log("Updated metadata: ");
+        console.dir(meta);
 
-        console.dir(fileRes.data);
-        console.log("Striped file content:");
-        console.dir(striptags(fileRes.data));
+    // STEP three: get file content.
+        //console.log("File content:");
+        //let reqGetFile = {
+        //    url: folderUrl + "('" + fileName + "')/$Value",
+        //    method: "get",
+        //    headers: headers
+        //};
+
+        //axios.request(reqGetFile).then(function(fileRes) {
+
+        //    console.dir(fileRes.data);
+        //    console.log("Striped file content:");
+        //    console.dir(striptags(fileRes.data));
+        //});
     });
 }
