@@ -90,22 +90,26 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
         // extract SPO properties.
         meta = Object.assign(meta, configSPO.extractSPOMetadata(propRes.data));
 
-        console.log("Updated metadata: ");
-        console.dir(meta);
+        //console.log("Updated metadata: ");
+        //console.dir(meta);
 
     // STEP three: get file content.
-        //console.log("File content:");
-        //let reqGetFile = {
-        //    url: folderUrl + "('" + fileName + "')/$Value",
-        //    method: "get",
-        //    headers: headers
-        //};
+        console.log("File content:");
+        let reqGetFile = {
+            url: folderUrl + "('" + fileName + "')/$Value",
+            method: "get",
+            headers: headers
+        };
 
-        //axios.request(reqGetFile).then(function(fileRes) {
+        axios.request(reqGetFile).then(function(fileRes) {
 
-        //    console.dir(fileRes.data);
-        //    console.log("Striped file content:");
-        //    console.dir(striptags(fileRes.data));
-        //});
+            //console.dir(fileRes.data);
+            //console.log("Striped file content:");
+            //console.dir(striptags(fileRes.data));
+            meta['file_content'] = striptags(fileRes.data);
+
+            console.log("Updated metadata: ");
+            console.dir(meta);
+        });
     });
 }
