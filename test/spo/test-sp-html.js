@@ -56,11 +56,11 @@ spoAuth.getAuth(configSPO.spoUrl,
         console.log("Got " + files.length + " files");
 
         // quick test for one file.
-        processOneFile(headers, folderName, theUrl, files[1].Name);
+        //processOneFile(headers, folderName, theUrl, files[1].Name);
 
-        //files.forEach((file) => {
-        //    processOneFile(headers, theUrl, file.Name);
-        //});
+        files.forEach((file) => {
+            processOneFile(headers, folderName, theUrl, file.Name);
+        });
     });
 });
 
