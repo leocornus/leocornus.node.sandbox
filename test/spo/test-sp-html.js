@@ -56,14 +56,17 @@ spoAuth.getAuth(configSPO.spoUrl,
         // process the first file.
         // the Files('filename')/$Value API will return the file binary
         // in response.data.
-        console.log("Processing file: " + files[0].Name);
+        console.log("Processing file: " + files[16].Name);
 
         // TODO: extract the file number and class number from file name.
         //
+        let meta = configSPO.extractFileName(files[16].Name);
+        console.log("Metadata: ");
+        console.dir(meta);
  
         console.log("File content:");
         let reqGetFile = {
-            url: theUrl + "('" + files[0].Name + "')/$Value",
+            url: theUrl + "('" + files[16].Name + "')/$Value",
             method: "get",
             headers: headers
         };
