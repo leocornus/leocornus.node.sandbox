@@ -53,29 +53,37 @@ spoAuth.getAuth(configSPO.spoUrl,
         //console.dir(response.data.value);
         console.log("Got " + files.length + " files");
 
-        // process the first file.
-        // the Files('filename')/$Value API will return the file binary
-        // in response.data.
-        console.log("Processing file: " + files[16].Name);
-
-        // TODO: extract the file number and class number from file name.
-        //
-        let meta = configSPO.extractFileName(files[16].Name);
-        console.log("Metadata: ");
-        console.dir(meta);
- 
-        console.log("File content:");
-        let reqGetFile = {
-            url: theUrl + "('" + files[16].Name + "')/$Value",
-            method: "get",
-            headers: headers
-        };
-
-        axios.request(reqGetFile).then(function(fileRes) {
-
-            console.dir(fileRes.data);
-            console.log("Striped file content:");
-            console.dir(striptags(fileRes.data));
-        });
+        processOneFile(headers, theUrl, files[17].Name);
     });
 });
+
+/**
+ * utility function to process one file a time.
+ */
+function processOneFile(headers, folderUrl, fileName) {
+
+    // process one file a time.
+    // the Files('filename')/$Value API will return the file binary
+    // in response.data.
+    console.log("Processing file: " + fileName);
+
+    // TODO: extract the file number and class number from file name.
+    //
+    let meta = configSPO.extractFileName(fileName);
+    console.log("Metadata: ");
+    console.dir(meta);
+ 
+    console.log("File content:");
+    let reqGetFile = {
+        url: folderUrl + "('" + fileName + "')/$Value",
+        method: "get",
+        headers: headers
+    };
+
+    axios.request(reqGetFile).then(function(fileRes) {
+
+        console.dir(fileRes.data);
+        console.log("Striped file content:");
+        console.dir(striptags(fileRes.data));
+    });
+}
