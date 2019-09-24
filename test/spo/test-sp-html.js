@@ -1,9 +1,7 @@
 /**
  * quick test to use node-sp-auth to connect to SPO
  * using axios to call REST APIs.
- * 
- * STATUS:
- * passed test...
+ * and load HTML file.
  */
 
 // we have to use the ./ as current foler.
@@ -14,6 +12,7 @@ const axios = require('axios');
 
 //console.log(JSON.stringify(config, null, 2));
 const configSPO = config.spo;
+const configSolr = config.solr;
 
 spoAuth.getAuth(configSPO.spoUrl, 
             {username: configSPO.username, password: configSPO.password})
@@ -29,9 +28,12 @@ spoAuth.getAuth(configSPO.spoUrl,
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
 
-    // try to get properties for a file.
-    let filePath = configSPO.samplePathes[1];
-    let theUrl = configSPO.spoUrl + configSPO.spoSite + filePath;
+    // try to get files for a given folder..
+    let folderName = configSPO.testData.folders[0];
+    //console.log(folderName);
+    let theUrl = configSPO.spoUrl + configSPO.spoSite + 
+        "/_api/web/GetFolderByServerRelativeUrl('" +
+        encodeURIComponent(folderName) + "')/Files";
     //console.log(theUrl);
 
     // prepare the axios request config.
@@ -45,7 +47,23 @@ spoAuth.getAuth(configSPO.spoUrl,
     axios.request(reqConfig).then(function(response) {
         // dir will show up proper indention for a JSON
         // object
-        console.dir(response.data);
-        // TODO: process data
+        // all files will be list in array named value.
+        let files = response.data.value;
+        //console.dir(response.data.value);
+        console.log("Got " + files.length + " files");
+
+        // process the first file.
+        // the Files('filename')/$Value API will return the file binary
+        // in response.data.
+        let reqGetFile = {
+            url: theUrl + "('" + files[0].Name + "')/$Value",
+            method: "get",
+            headers: headers
+        };
+
+        axios.request(reqGetFile).then(function(fileRes) {
+
+            console.dir(fileRes.data);
+        });
     });
 });
