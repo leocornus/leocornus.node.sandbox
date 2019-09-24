@@ -67,10 +67,7 @@ spoAuth.getAuth(configSPO.spoUrl,
  */
 function processOneFile(headers, folderName, folderUrl, fileName) {
 
-    let meta = {};
-
-    meta['file_name'] = fileName;
-    meta['file_path'] = folderName + "/" + fileName;
+    let meta = configSPO.extractFolderName(folderName, fileName);
 
     // process one file a time.
     // the Files('filename')/$Value API will return the file binary
