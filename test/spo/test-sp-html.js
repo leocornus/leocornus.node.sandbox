@@ -91,6 +91,8 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
         //console.dir(propRes.data);
         // extract SPO properties.
         meta = Object.assign(meta, configSPO.extractSPOMetadata(propRes.data));
+        // set the ID.
+        meta['id'] = configSPO.calcId(meta);
 
         //console.log("Updated metadata: ");
         //console.dir(meta);
