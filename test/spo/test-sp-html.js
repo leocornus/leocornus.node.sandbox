@@ -110,7 +110,8 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
             //console.dir(fileRes.data);
             //console.log("Striped file content:");
             //console.dir(striptags(fileRes.data));
-            meta['file_content'] = striptags(fileRes.data);
+            //meta['file_content'] = striptags(fileRes.data);
+            meta = Object.assign(meta, configSPO.extractContent(fileRes.data, striptags));
 
             console.log("Updated metadata: ");
             console.dir(meta);
@@ -120,7 +121,7 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
                 // default limit is 10MB, set to 1GB for now.
                 {maxContentLength: 1073741824} )
             .then(function(postRes) {
-                console.log(postRes);
+                //console.log(postRes);
             });
         });
     });
