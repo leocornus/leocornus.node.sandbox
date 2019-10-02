@@ -32,7 +32,12 @@ spo.getAuth(configSPO.spoUrl, {username: configSPO.username,
     //headers['Accept'] = 'application/json;odata=verbose';
     headers['Accept'] = 'application/json';
 
-    filePath = configSPO.samplePathes[1];
+    // this is the sample to show hte /Folders API.
+    filePath = configSPO.samplePathes[4];
+    // this is the sample to show hte /Properites API.
+    //filePath = configSPO.samplePathes[1];
+    // this is the sample to show the /Files API.
+    //filePath = configSPO.samplePathes[3];
     // construct the URL.
     let theUrl = configSPO.spoUrl + configSPO.spoSite + filePath;
     console.log(theUrl);
