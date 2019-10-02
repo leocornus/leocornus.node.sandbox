@@ -24,7 +24,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
 
     let headers = options.headers;
     headers['Accept'] = 'application/json';
-    console.log(headers);
+    //console.log(headers);
 
     // root folder
     let reqRoot = {
@@ -41,7 +41,11 @@ spoAuth.getAuth(spoConfig.spoUrl,
         // TODO: what's the limit of the Folders API?
         let folders = response.data.value;
 
-        console.log(folders[0]);
+        //console.log(folders[0]);
+        console.log('Found Folders: ' + folders.length);
+        folders.forEach((folder) => {
+            console.log(folder.Name);
+        });
         // level 1
         // level 2
     });
