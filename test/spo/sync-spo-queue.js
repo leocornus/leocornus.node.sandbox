@@ -122,13 +122,16 @@ spoAuth.getAuth(configSPO.spoUrl,
                     console.log(filePath);
                     if(filePath.folder.endsWith('Certified Products')) {
 
+                        // get ready the base URL for /Files API.
                         let theUrl = configSPO.spoUrl + configSPO.spoSite + 
                             "/_api/web/GetFolderByServerRelativeUrl('" +
                             encodeURIComponent(filePath.folder) + "')/Files";
+                        // pass the report to function, which will process one file.
+                        // report done once it is complete the process.
                         processOneFile(headers, filePath.folder, theUrl,
                                        filePath.file, report);
                     } else {
-
+                        // report done to the iterateOver.
                         report();
                     }
                 }, function() {
