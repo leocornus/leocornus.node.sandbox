@@ -42,9 +42,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
         let folders = response.data.value;
 
         //console.log(folders[0]);
-        console.log('Found Folders: ' + folders.length);
+        //console.log('Found Folders: ' + folders.length);
         folders.forEach((folder) => {
-            console.log(folder.Name);
+            //console.log(folder.Name);
 
             // processing level 1 folder [CUSTOMER FOLDER]
             let reqOne = {
@@ -56,13 +56,32 @@ spoAuth.getAuth(spoConfig.spoUrl,
             };
             axios.request(reqOne).then(function(oneRes) {
 
+                // processing level 2 folder [PROJECT FOLDER]
                 let pFolders = oneRes.data.value;
-                console.log('Found Folders: ' + pFolders.length);
+                //console.log('Found Folders: ' + pFolders.length);
                 pFolders.forEach((folder) => {
-                    console.log("-- " + folder.Name);
+                    //console.log("-- " + folder.Name);
+                    if(folder.Name === "Certified Products") {
+
+                        let reqFiles = {
+                            url: spoConfig.spoUrl + spoConfig.spoSite +
+                                 "/_api/web/getfolderbyserverrelativeurl('" +
+                                 encodeURIComponent(folder.ServerRelativeUrl) + "')/Files",
+                            method: "get",
+                            headers: headers
+                        };
+
+                        axios.request(reqFiles).then(function(filesRes) {
+
+                            let files = filesRes.data.value;
+                            files.forEach( file => {
+                                console.log(file.Name);
+                            });
+                        });
+                    }
                 });
             });
         });
-        console.log(folders[0]);
+        //console.log(folders[0]);
     });
 });
