@@ -45,8 +45,24 @@ spoAuth.getAuth(spoConfig.spoUrl,
         console.log('Found Folders: ' + folders.length);
         folders.forEach((folder) => {
             console.log(folder.Name);
+
+            // processing level 1 folder [CUSTOMER FOLDER]
+            let reqOne = {
+                url: spoConfig.spoUrl + spoConfig.spoSite +
+                     "/_api/web/getfolderbyserverrelativeurl('" +
+                     encodeURIComponent(folder.ServerRelativeUrl) + "')/Folders",
+                method: "get",
+                headers: headers
+            };
+            axios.request(reqOne).then(function(oneRes) {
+
+                let pFolders = oneRes.data.value;
+                console.log('Found Folders: ' + pFolders.length);
+                pFolders.forEach((folder) => {
+                    console.log("-- " + folder.Name);
+                });
+            });
         });
-        // level 1
-        // level 2
+        console.log(folders[0]);
     });
 });
