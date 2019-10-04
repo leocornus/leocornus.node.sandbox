@@ -26,11 +26,21 @@ spoAuth.getAuth(spoConfig.spoUrl,
     headers['Accept'] = 'application/json';
     //console.log(headers);
 
-    // root folder
+    processRootFolder(headers, spoConfig.startFolder[0]);
+
+});
+
+/**
+ * process the root folder
+ * the folder right under the site.
+ */
+function processRootFolder(headers, rootFolder) {
+
+    // root folder group folder.
     let reqRoot = {
         url: spoConfig.spoUrl + spoConfig.spoSite +
              "/_api/web/getfolderbyserverrelativeurl('" +
-             encodeURIComponent(spoConfig.startFolder[0]) + "')/Folders",
+             encodeURIComponent(rootFolder) + "')/Folders",
         method: "get",
         headers: headers
     };
@@ -84,4 +94,4 @@ spoAuth.getAuth(spoConfig.spoUrl,
         });
         //console.log(folders[0]);
     });
-});
+}
