@@ -108,11 +108,23 @@ function processRootFolder(headers, rootFolder) {
                             files.forEach( file => {
                                 console.log(file.Name);
                             });
+                        })
+                        .catch(function(fileErr) {
+                            console.log("Failed to process file!");
+                            console.dir(fileErr);
                         });
                     }
                 });
+            })
+            .catch(function(oneErr) {
+                console.log("Failed to process customer folder!");
+                console.dir(oneErr);
             });
         });
         //console.log(folders[0]);
+    })
+    .catch(function(rootErr) {
+        console.log("Failed to process root folder!");
+        console.dir(rootErr);
     });
 }
