@@ -34,12 +34,16 @@ spoAuth.getAuth(spoConfig.spoUrl,
         headers: headers
     }
 
+    //processRootFolder(headers, spoConfig.startFolder[0]);
     axios.request(reqSite).then(function(siteRes) {
 
         let rootFolders = siteRes.data.value;
         rootFolders.forEach( (root) => {
-            console.log(root.Name);
-            //processRootFolder(headers, spoConfig.startFolder[0]);
+            if(root.Name.startsWith( 'Customer' )) {
+                //console.log(root.Name);
+                //console.log(`-- ${root.ServerRelativeUrl}`);
+                processRootFolder(headers, root.ServerRelativeUrl);
+            }
         });
     })
     .catch(function(siteError) {
