@@ -26,8 +26,25 @@ spoAuth.getAuth(spoConfig.spoUrl,
     headers['Accept'] = 'application/json';
     //console.log(headers);
 
-    processRootFolder(headers, spoConfig.startFolder[0]);
+    let reqSite = {
+        url: spoConfig.spoUrl + spoConfig.spoSite +
+             "/_api/web/getfolderbyserverrelativeurl('" +
+             encodeURIComponent(spoConfig.spoSite) + "')/Folders",
+        method: "get",
+        headers: headers
+    }
 
+    axios.request(reqSite).then(function(siteRes) {
+
+        let rootFolders = siteRes.data.value;
+        rootFolders.forEach( (root) => {
+            console.log(root.Name);
+            //processRootFolder(headers, spoConfig.startFolder[0]);
+        });
+    })
+    .catch(function(siteError) {
+        console.dir(siteError);
+    });
 });
 
 /**
