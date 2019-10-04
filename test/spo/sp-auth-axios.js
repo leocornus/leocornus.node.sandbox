@@ -30,7 +30,11 @@ spoAuth.getAuth(configSPO.spoUrl,
     headers['Accept'] = 'application/json';
 
     // try to get properties for a file.
-    let filePath = configSPO.samplePathes[1];
+    //let filePath = configSPO.samplePathes[1];
+    // this is the sample to show hte /Folders API.
+    filePath = configSPO.samplePathes[4];
+    // this is the sample to get all root folders.
+    filePath = configSPO.samplePathes[5];
     let theUrl = configSPO.spoUrl + configSPO.spoSite + filePath;
     //console.log(theUrl);
 
