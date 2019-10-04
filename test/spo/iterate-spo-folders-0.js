@@ -1,5 +1,7 @@
 /**
  * testing the strategy to iterate through SPO folders.
+ * --- 0
+ *  this version is using forEach to iterate eadh folder async.
  *
  * SPO folder structure:
  * [SPO SITE] [https://corp.sharepoint.com/sites/mysite]
