@@ -13,6 +13,7 @@
 
 const spoAuth = require('node-sp-auth');
 const axios = require('axios');
+const strategy = require('./../../src/libs/strategy');
 // we have to use the ./ as current foler.
 const config = require('./../../src/config');
 const spoConfig = config.spo;
@@ -38,15 +39,28 @@ spoAuth.getAuth(spoConfig.spoUrl,
     axios.request(reqSite).then(function(siteRes) {
 
         let rootFolders = siteRes.data.value;
-        rootFolders.forEach( (root) => {
-            if(root.Name.startsWith( 'Customer' )) {
-                //console.log(root.Name);
-                //console.log(`-- ${root.ServerRelativeUrl}`);
-                processRootFolder(headers, root.ServerRelativeUrl);
+
+        // set up the iterator.
+        let iterator = function(folder, report) {
+            if( folder.Name.startsWith("Customer") ){
+                processRootFolder(headers, folder.Name);
+            } else {
+                report(folder.Name, 'Skip');
             }
-        });
+        };
+
+        strategy.iterateOver(rootFolders, iterator, 
+            /**
+             * the report funciton.
+             * 
+             */
+            function(folderName, action, result) {
+                console.log(`Folder: ${folder.Name} - ${action} - ${result}`);
+            }
+        );
     })
     .catch(function(siteError) {
+        console.log("Failed to process site!");
         console.dir(siteError);
     });
 });
@@ -106,25 +120,26 @@ function processRootFolder(headers, rootFolder) {
 
                             let files = filesRes.data.value;
                             files.forEach( file => {
-                                console.log(file.Name);
+                                //console.log(file.Name);
+                                console.log(file.ServerRelativeUrl);
                             });
                         })
                         .catch(function(fileErr) {
-                            console.log("Failed to process file!");
-                            console.dir(fileErr);
+                            console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
+                            //console.dir(fileErr);
                         });
                     }
                 });
             })
             .catch(function(oneErr) {
-                console.log("Failed to process customer folder!");
-                console.dir(oneErr);
+                console.log(`Failed to process customer folder: ${folder.ServerRelativeUrl}`);
+                //console.dir(oneErr);
             });
         });
         //console.log(folders[0]);
     })
     .catch(function(rootErr) {
-        console.log("Failed to process root folder!");
-        console.dir(rootErr);
+        console.log(`Failed to process root folder: ${folder.ServerRelativeUrl}`);
+        //console.dir(rootErr);
     });
 }
