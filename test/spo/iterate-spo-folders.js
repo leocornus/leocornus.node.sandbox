@@ -136,9 +136,9 @@ function processCFolder(headers, folder, report) {
         );
     })
     .catch(function(oneErr) {
-        //console.log(`Failed to process c folder: ${folder.ServerRelativeUrl}`);
+        console.log(`Failed to process c folder: ${folder.ServerRelativeUrl}`);
         //console.dir(oneErr);
-        console.log(oneErr.Error);
+        console.log(oneErr.response.data);
         report();
     });
 }
@@ -179,9 +179,9 @@ function processPFolder(headers, folder, report) {
             );
         })
         .catch(function(fileErr) {
-            //console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
+            console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
             //console.dir(fileErr);
-            console.log(fileErr.Error);
+            console.log(fileErr.respose.data);
             report();
         });
     } else {
