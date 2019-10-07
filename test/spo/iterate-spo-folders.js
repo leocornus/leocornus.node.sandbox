@@ -17,6 +17,10 @@ const strategy = require('./../../src/libs/strategy');
 // we have to use the ./ as current foler.
 const config = require('./../../src/config');
 const spoConfig = config.spo;
+const log4js = require('log4js');
+// configure log4js
+log4js.configure(config.log4jsConfig);
+const logger = log4js.getLogger("spo");
 
 // try to get access headers
 spoAuth.getAuth(spoConfig.spoUrl, 
@@ -57,8 +61,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
         );
     })
     .catch(function(siteError) {
-        console.log("Failed to process site!");
-        console.log(siteError.Error);
+        //console.log("Failed to process site!");
+        //console.log(siteError.Error);
+        logger.error("Failed to process site!", siteError);
     });
 });
 
@@ -99,7 +104,8 @@ function processRootFolder(headers, rootFolder, report) {
     .catch(function(rootErr) {
         //console.log(`Failed to process root folder: ${folder.ServerRelativeUrl}`);
         //console.dir(rootErr);
-        console.log(rootErr.Error);
+        //console.log(rootErr.Error);
+        logger.error(`Failed to process root folder: ${folder.ServerRelativeUrl}`, rootErr);
         report();
     });
 }
@@ -136,9 +142,10 @@ function processCFolder(headers, folder, report) {
         );
     })
     .catch(function(oneErr) {
-        console.log(`Failed to process c folder: ${folder.ServerRelativeUrl}`);
+        //console.log(`Failed to process c folder: ${folder.ServerRelativeUrl}`);
         //console.dir(oneErr);
-        console.log(oneErr.response.data);
+        //console.log(oneErr.response.data);
+        logger.error(`Failed to process c folder: ${folder.ServerRelativeUrl}`, oneErr);
         report();
     });
 }
@@ -166,7 +173,8 @@ function processPFolder(headers, folder, report) {
             // set iterator.
             let fIterator = function(file, fReport) {
                 //console.log(file.Name);
-                console.log(file.ServerRelativeUrl);
+                //console.log(file.ServerRelativeUrl);
+                logger.info(file.ServerRelativeUrl);
                 fReport();
             }
 
@@ -179,9 +187,10 @@ function processPFolder(headers, folder, report) {
             );
         })
         .catch(function(fileErr) {
-            console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
+            //console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
             //console.dir(fileErr);
-            console.log(fileErr.respose.data);
+            //console.log(fileErr.respose.data);
+            logger.error(`Failed to process files: ${folder.ServerRelativeUrl}`, fileErr);
             report();
         });
     } else {
