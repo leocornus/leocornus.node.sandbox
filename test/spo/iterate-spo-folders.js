@@ -13,6 +13,8 @@
 
 const spoAuth = require('node-sp-auth');
 const axios = require('axios');
+const prettyMs = require('pretty-ms');
+
 const strategy = require('./../../src/libs/strategy');
 // we have to use the ./ as current foler.
 const config = require('./../../src/config');
@@ -22,6 +24,8 @@ const log4js = require('log4js');
 log4js.configure(config.log4jsConfig);
 const logger = log4js.getLogger("spo");
 
+// set start time.
+const startTime = new Date();
 // try to get access headers
 spoAuth.getAuth(spoConfig.spoUrl, 
             {username: spoConfig.username, password: spoConfig.password})
@@ -44,26 +48,44 @@ spoAuth.getAuth(spoConfig.spoUrl,
 
         let rootFolders = siteRes.data.value;
 
-        // set up the iterator.
-        let iterator = function(folder, report) {
+        // set up the waterfall over iterator.
+        // we will process one by one.
+        let iterator = function(index, rReport) {
+
+            let folder = rootFolders[index];
+
             if( folder.Name.startsWith("Customer") ){
-                processRootFolder(headers, folder.Name, report);
+
+                //logger.info(`processing R folder: ${folder.Name}`);
+                console.log(`processing R folder: ${folder.Name}`);
+                processRootFolder(headers, folder.Name, rReport);
+                //rReport(1);
             } else {
-                report();
+
+                //logger.info(`skip R folder: ${folder.Name}`);
+                console.log(`skip R folder: ${folder.Name}`);
+                rReport(1);
             }
         };
 
-        strategy.iterateOver(rootFolders, iterator, 
-            // complete callback.
-            function() {
-                //console.log(`Root folder complete!`);
+        // the start, 0 here, will be used to start the iterator.
+        strategy.waterfallOver(0, rootFolders.length, iterator,
+            // waterfall over iteration callback
+            function () {
+                //logger.info("All Done");
+                console.log("All Done");
+                // calculate how long it takes.
+                let endTime = new Date();
+                //logger.info(`Running time: ${prettyMs(endTime - startTime)}`);
+                console.log(`Running time: ${prettyMs(endTime - startTime)}`);
             }
         );
     })
     .catch(function(siteError) {
         //console.log("Failed to process site!");
         //console.log(siteError.Error);
-        logger.error("Failed to process site!", siteError);
+        //logger.error("Failed to process site!", siteError);
+        console.log("Failed to process site!", siteError);
     });
 });
 
@@ -71,7 +93,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
  * process the root folder
  * the folder right under the site.
  */
-function processRootFolder(headers, rootFolder, report) {
+function processRootFolder(headers, rootFolder, reportR) {
 
     // root folder group folder.
     let reqRoot = {
@@ -89,15 +111,22 @@ function processRootFolder(headers, rootFolder, report) {
         let cFolders = response.data.value;
 
         // set the iterator.
-        let cIterator = function(cFolder, cReport) {
+        let cIterator = function(index, cReport) {
+
+            let cFolder = cFolders[index];
+            //logger.info(`processiong C folder: ${cFolder.Name}`);
+            console.log(`processiong C folder: ${cFolder.Name}`);
             processCFolder(headers, cFolder, cReport);
+            //cReport();
         };
 
-        strategy.iterateOver(cFolders, cIterator,
+        strategy.waterfallOver(0, cFolders.length, cIterator,
             // complete call back..
             function() {
                 //console.log(`cFolders complete!`);
-                report();
+                //logger.info(`complete folder: ${rootFolder}`);
+                console.log(`complete folder: ${rootFolder}`);
+                reportR(1);
             }
         );
     })
@@ -105,15 +134,15 @@ function processRootFolder(headers, rootFolder, report) {
         //console.log(`Failed to process root folder: ${folder.ServerRelativeUrl}`);
         //console.dir(rootErr);
         //console.log(rootErr.Error);
-        logger.error(`Failed to process root folder: ${folder.ServerRelativeUrl}`, rootErr);
-        report();
+        logger.error(`Failed to process root folder: ${rootFolder.ServerRelativeUrl}`, rootErr);
+        reportR(1);
     });
 }
 
 /**
  * process c folder.
  */
-function processCFolder(headers, folder, report) {
+function processCFolder(headers, folder, reportC) {
 
     // processing level 1 folder [CUSTOMER FOLDER]
     let reqOne = {
@@ -130,14 +159,17 @@ function processCFolder(headers, folder, report) {
 
         // set the iterator.
         let pIterator = function(pFolder, pReport) {
-            processPFolder(headers, pFolder, pReport);
+            //logger.info(`processiong P folder: ${pFolder.Name}`);
+            //console.log(`processiong P folder: ${pFolder.Name}`);
+            //processPFolder(headers, pFolder, pReport);
+            pReport();
         };
 
         strategy.iterateOver(pFolders, pIterator,
-            // complete call back..
+            // complete callback..
             function() {
                 //console.log(`pFolders complete!`);
-                report();
+                reportC(1);
             }
         );
     })
@@ -145,15 +177,16 @@ function processCFolder(headers, folder, report) {
         //console.log(`Failed to process c folder: ${folder.ServerRelativeUrl}`);
         //console.dir(oneErr);
         //console.log(oneErr.response.data);
-        logger.error(`Failed to process c folder: ${folder.ServerRelativeUrl}`, oneErr);
-        report();
+        logger.error(`Failed to process C folder: ${folder.ServerRelativeUrl}`, oneErr);
+        //console.error(`Failed to process c folder: ${folder.ServerRelativeUrl}`, oneErr);
+        reportC();
     });
 }
 
 /**
  * process p folder.
  */
-function processPFolder(headers, folder, report) {
+function processPFolder(headers, folder, reportP) {
 
     //console.log("-- " + folder.Name);
     if(folder.Name === "Certified Products") {
@@ -172,9 +205,10 @@ function processPFolder(headers, folder, report) {
 
             // set iterator.
             let fIterator = function(file, fReport) {
+                //logger.info(`processiong File: ${file.Name}`);
                 //console.log(file.Name);
-                //console.log(file.ServerRelativeUrl);
-                logger.info(file.ServerRelativeUrl);
+                console.log(file.ServerRelativeUrl);
+                //logger.info(file.ServerRelativeUrl);
                 fReport();
             }
 
@@ -182,7 +216,7 @@ function processPFolder(headers, folder, report) {
                 // complet call back,
                 function() {
                     //console.log(`Files complete: ${folder.ServerRelativeUrl}`);
-                    report();
+                    reportP();
                 }
             );
         })
@@ -190,11 +224,10 @@ function processPFolder(headers, folder, report) {
             //console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
             //console.dir(fileErr);
             //console.log(fileErr.respose.data);
-            logger.error(`Failed to process files: ${folder.ServerRelativeUrl}`, fileErr);
-            report();
+            reportP();
         });
     } else {
         //console.log(`Skip folder: ${folder.ServerRelativeUrl}`);
-        report();
+        reportP();
     }
 }
