@@ -31,6 +31,7 @@ var strategy = {
          */
         function reportDone(subTotal) {
 
+            //logger.info(`Done sub total: ${subTotal}`);
             // keep tracking how many items are done work.
             doneCount = doneCount + subTotal;
             logger.info("Processed: " + doneCount);
