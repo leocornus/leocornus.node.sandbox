@@ -1,5 +1,10 @@
 /**
  * testing the strategy to iterate through SPO folders.
+ * version ?
+ *   try to mix waterfallOver and iteratorOver,
+ *   nest sync call nad async calls!
+ *   It seems only work for 2 level of depth!
+ *   need more testing.
  *
  * SPO folder structure:
  * [SPO SITE] [https://corp.sharepoint.com/sites/mysite]
