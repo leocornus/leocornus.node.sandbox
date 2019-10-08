@@ -22,18 +22,33 @@ let batchSize = localConfig.batchSize;
 
 //var fileName = localConfig.xmlFileFolder + '/products_0001_2570_to_430420.xml';
 strategy.waterfallOver(0, rows.length,
-// the iterator.
-// it will start with 0.
-function(start, reportDone) {
+    // the iterator.
+    // it will start with 0.
+    function(start, reportDone) {
+    
+        console.log(`Processing Rows: ${start} - ${start + batchSize}`);
+        // slice will include begin and exclude end.
+        let theRows = rows.slice(start, start + batchSize);
+        let docs = localConfig.prepareSolrDocs(theRows);
+    
+        // post to Solr collection
+        axios.post(solrEndPoint, docs
+        ).then(function(postRes) {
+            console.log(`${now()}: ${start} - ${start + batchSize} Post Success!`);
+            //console.dir(postRes);
+            reportDone(batchSize);
+        }).catch(function(postError) {
+            console.log(`${now()}: ${start} - ${start + batchSize} Post Fail!`);
+            //console.dir(postError.response.data);
+            reportDone(batchSize);
+        });
+    
+    },
+    // the complete call back.
+    function() {
 
-    console.log(`Processing Rows: ${start} - ${start + batchSize}`);
-    // slice will include begin and exclude end.
-    let theRows = rows.slice(start, start + batchSize);
-    reportDone(batchSize);
-}, function() {
-
-    let endTime = new Date();
-    // the differenc will be in ms
-    let totalTime = endTime - startTime;
-    console.log("Running time: " + prettyMs(totalTime));
-});
+        let endTime = new Date();
+        // the differenc will be in ms
+        let totalTime = endTime - startTime;
+        console.log("Running time: " + prettyMs(totalTime));
+    });
