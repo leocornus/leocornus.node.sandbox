@@ -77,7 +77,7 @@ axios.get(solrEndpoint, totalQuery)
                 return localConfig.tweakDoc(doc);
             });
 
-            // async call
+            // async call to send payload to target.
             strategy.iterateOver(payload, function(doc, report) {
                 axios.post(targetEndPoint, doc
                 ).then(function(postRes) {
@@ -91,7 +91,7 @@ axios.get(solrEndpoint, totalQuery)
                     report();
                 });
             }, function() {
-                console.log(now() + " Async post done!");
+                console.log(`${now()} Async post done! - ${start + batchSize}`);
                 reportDone(payload.length);
             });
         })
@@ -99,6 +99,8 @@ axios.get(solrEndpoint, totalQuery)
             // handle errors here.
             console.log("ERROR!");
             console.dir(error);
+            // we should still call reportDone and call next bulk.
+            reportDone(batchSize);
         });
 
     }, function() {
