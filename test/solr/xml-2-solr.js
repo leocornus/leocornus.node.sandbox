@@ -1,4 +1,6 @@
-
+/**
+ * import XML files to solr collection.
+ */
 const axios = require('axios');
 const prettyMs = require('pretty-ms');
 const xml2js = require('xml2js');
