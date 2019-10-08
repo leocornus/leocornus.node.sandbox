@@ -134,7 +134,8 @@ function processCFolder(headers, folder, report) {
 
         // set the iterator.
         let pIterator = function(pFolder, pReport) {
-            processPFolder(headers, pFolder, pReport);
+            //processPFolder(headers, pFolder, pReport);
+            processProjectFolder(headers, pFolder, pReport);
         };
 
         strategy.iterateOver(pFolders, pIterator,
@@ -155,7 +156,7 @@ function processCFolder(headers, folder, report) {
 }
 
 /**
- * process p folder.
+ * process products folder.
  */
 function processPFolder(headers, folder, report) {
 
@@ -200,5 +201,58 @@ function processPFolder(headers, folder, report) {
     } else {
         //console.log(`Skip folder: ${folder.ServerRelativeUrl}`);
         report();
+    }
+}
+
+/**
+ * process project folder.
+ */
+function processProjectFolder(headers, folder, report) {
+
+    //console.log("-- " + folder.Name);
+    if(folder.Name === "Certified Products") {
+        
+        //console.log(`Skip folder: ${folder.ServerRelativeUrl}`);
+        report();
+
+    } else {
+
+        // certi
+        let folderPath = `${folder.ServerRelativeUrl}/Shared Documents/Certificate`;
+        let reqFiles = {
+            url: spoConfig.spoUrl + spoConfig.spoSite +
+                 "/_api/web/getfolderbyserverrelativeurl('" +
+                 encodeURIComponent(folderPath) + "')/Files",
+            method: "get",
+            headers: headers
+        };
+
+        axios.request(reqFiles).then(function(filesRes) {
+
+            let files = filesRes.data.value;
+
+            // set iterator.
+            let fIterator = function(file, fReport) {
+                //console.log(file.Name);
+                //console.log(file.ServerRelativeUrl);
+                logger.info(file.ServerRelativeUrl);
+                fReport();
+            }
+
+            strategy.iterateOver(files, fIterator, 
+                // complet call back,
+                function() {
+                    //console.log(`Files complete: ${folder.ServerRelativeUrl}`);
+                    report();
+                }
+            );
+        })
+        .catch(function(fileErr) {
+            //console.log(`Failed to process files: ${folder.ServerRelativeUrl}`);
+            //console.dir(fileErr);
+            //console.log(fileErr.respose.data);
+            logger.error(`Failed to process files: ${folder.ServerRelativeUrl}`, fileErr);
+            report();
+        });
     }
 }
