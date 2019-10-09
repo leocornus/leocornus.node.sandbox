@@ -36,7 +36,7 @@ spoAuth.getAuth(configSPO.spoUrl,
     headers['Accept'] = 'application/json';
 
     // try to get files for a given folder..
-    let folderName = configSPO.testData.folders[2];
+    let folderName = configSPO.testData.folders[3];
 
     console.log(`Scan file on folder: ${configSPO.spoSite}/${folderName}`);
     console.log(`Indexing into Solr: ${targetUpdate}`);
@@ -77,12 +77,22 @@ spoAuth.getAuth(configSPO.spoUrl,
  */
 function processOneFile(headers, folderName, folderUrl, fileName) {
 
+    if( fileName.endsWith("docx") ||
+        fileName.endsWith("xml") ||
+        fileName.endsWith("doc") ||
+        fileName.endsWith("txt") ) {
+
+        console.log("Skip file: " + fileName);
+        return;
+    }
+
+    console.log("Processing file: " + fileName);
+
     let meta = configSPO.extractFolderName(folderName, fileName);
 
     // process one file a time.
     // the Files('filename')/$Value API will return the file binary
     // in response.data.
-    console.log("Processing file: " + fileName);
 
     // STEP one: extract the file number and class number from file name.
     meta = Object.assign(meta, configSPO.extractFileName(fileName));
@@ -121,8 +131,8 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
             //meta['file_content'] = striptags(fileRes.data);
             meta = Object.assign(meta, configSPO.extractContent(fileRes.data, striptags));
 
-            console.log("Updated metadata: ");
-            console.dir(meta);
+            //console.log("Updated metadata: ");
+            //console.dir(meta);
 
             // update Solr.
             axios.post( targetUpdate, meta,
@@ -130,6 +140,7 @@ function processOneFile(headers, folderName, folderUrl, fileName) {
                 {maxContentLength: 1073741824} )
             .then(function(postRes) {
                 //console.log(postRes);
+                //console.log(
             });
         });
     });
