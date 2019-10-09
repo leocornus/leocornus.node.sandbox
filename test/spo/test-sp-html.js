@@ -2,6 +2,10 @@
  * quick test to use node-sp-auth to connect to SPO
  * using axios to call REST APIs.
  * and load HTML file.
+ *
+ * The first version to process the text format files.
+ *   - it is different from the binary format files.
+ *     We do NOT need use Tika to convert it to text format.
  */
 
 // we have to use the ./ as current foler.
@@ -32,7 +36,11 @@ spoAuth.getAuth(configSPO.spoUrl,
     headers['Accept'] = 'application/json';
 
     // try to get files for a given folder..
-    let folderName = configSPO.testData.folders[0];
+    let folderName = configSPO.testData.folders[2];
+
+    console.log(`Scan file on folder: ${configSPO.spoSite}/${folderName}`);
+    console.log(`Indexing into Solr: ${targetUpdate}`);
+
     //console.log(folderName);
     let theUrl = configSPO.spoUrl + configSPO.spoSite + 
         "/_api/web/GetFolderByServerRelativeUrl('" +
