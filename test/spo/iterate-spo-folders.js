@@ -62,7 +62,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
             if( folder.Name.startsWith("Customer") ){
 
                 //logger.info(`processing R folder: ${folder.Name}`);
-                console.log(`processing R folder: ${folder.Name}`);
+                //console.log(`processing R folder: ${folder.Name}`);
                 processRootFolder(headers, folder.Name, rReport);
                 //rReport(1);
             } else {
@@ -120,9 +120,10 @@ function processRootFolder(headers, rootFolder, reportR) {
 
             let cFolder = cFolders[index];
             //logger.info(`processiong C folder: ${cFolder.Name}`);
-            console.log(`processiong C folder: ${cFolder.Name}`);
-            processCFolder(headers, cFolder, cReport);
-            //cReport();
+            //console.log(`processiong C folder: ${cFolder.Name}`);
+            console.log(`${cFolder.ServerRelativeUrl}`);
+            //processCFolder(headers, cFolder, cReport);
+            cReport(1);
         };
 
         strategy.waterfallOver(0, cFolders.length, cIterator,
