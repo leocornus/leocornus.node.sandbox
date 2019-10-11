@@ -63,9 +63,13 @@ spoAuth.getAuth(configSPO.spoUrl,
         //console.dir(response.data.value);
         console.log("Got " + files.length + " files");
 
+        // --- for quick test
         // quick test for one file.
         //processOneFile(headers, folderName, theUrl, files[1].Name);
 
+        // --- option one.
+        // forEach will send the requests all at once!
+        // it will be overwhelmed for large dataset.
         files.forEach((file) => {
             processOneFile(headers, folderName, theUrl, file.Name);
         });
