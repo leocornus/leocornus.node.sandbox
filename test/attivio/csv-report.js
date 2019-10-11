@@ -43,6 +43,7 @@ axios.post(attivioEndpoint, reportQuery)
 
     // calculate the files needed
     let fileAmount = Math.ceil(total / reportSettings.itemsPerFile);
+    console.log(`Working on generate ${fileAmount} files...`);
 
     strategy.waterfallOver(0, fileAmount,
         // the iterator function.
@@ -55,7 +56,7 @@ axios.post(attivioEndpoint, reportQuery)
             reportQuery.offset = index * reportSettings.itemsPerFile;
             reportQuery.rows = reportSettings.itemsPerFile;
 
-            console.log(`report query: ${reportQuery}`);
+            //console.log(`report query: ${reportQuery}`);
 
             // query and generate the CSV file.
             axios.post(attivioEndpoint, reportQuery)
