@@ -38,8 +38,14 @@ axios.post(attivioEndpoint, reportQuery)
     //console.log(res);
     console.log('Total docs found: ' + res.data.totalHits);
 
+    let payload = res.data.documents.map(function(doc) {
+
+        // final touch for each doc.
+        return doc.fields;
+    });
+
     let fileStream = fs.createWriteStream(reportSettings.csvFile);
-    stringify(res.data.documents, {
+    stringify(payload, {
         header: true,
         columns: reportSettings.csvColumns
     }).pipe(fileStream);
