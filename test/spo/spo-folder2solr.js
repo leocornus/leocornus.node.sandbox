@@ -22,6 +22,7 @@ const strategy = require('./../../src/libs/strategy');
 const config = require('./../../src/config');
 const spoConfig = config.spo;
 const solrConfig = config.folder2Solr;
+const targetQEndPoint = solrConfig.targetBaseUrl + "select";
 const targetEndPoint = solrConfig.targetBaseUrl + "update/json/docs?commit=true";
 
 const log4js = require('log4js');
@@ -123,15 +124,39 @@ function processRootFolder(headers, rootFolder, reportR) {
 
             //console.log(`${folderPath}`);
             let solrDoc = solrConfig.prepareSolrFolderDoc(folderPath);
-            axios.post(targetEndPoint, solrDoc
-            ).then(function(postRes) {
-                console.log(`Post Success ${index}: ${folderPath}`);
-                cReport(1);
-                //console.dir(postRes);
-            }).catch(function(postError) {
-                console.log(`Post Failed ${index}! - ${folderPath}`);
-                //console.dir(postError.data);
-                // log the erorr and then report the copy is done!
+
+            // query to check if the solr doc exist.
+            let existQ = {
+                params: {
+                    q: `${solrConfig.idField}:${solrDoc[solrConfig.idField]}`,
+                    fl: `${solrConfig.idField}`
+                }
+            }
+            axios.get(targetQEndPoint, existQ)
+            .then(function(getRes) {
+
+                if(getRes.data.response.numFound > 0) {
+                    // Solr doc exist, skip.
+                    console.log(`Skip exist folder ${index}: ${folderPath}`);
+                    cReport(1);
+                } else {
+
+                    // Solr doc NOT exist.
+                    axios.post(targetEndPoint, solrDoc
+                    ).then(function(postRes) {
+                        console.log(`Post Success ${index}: ${folderPath}`);
+                        cReport(1);
+                        //console.dir(postRes);
+                    }).catch(function(postError) {
+                        console.log(`Post Failed ${index}! - ${folderPath}`);
+                        //console.dir(postError.data);
+                        // log the erorr and then report the copy is done!
+                        cReport(1);
+                    });
+                }
+            })
+            .catch(function(getErr) {
+                console.log(`Failed to query folder: ${folderPath}`);
                 cReport(1);
             });
         };
