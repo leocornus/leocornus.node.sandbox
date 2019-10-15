@@ -122,8 +122,8 @@ function processRootFolder(headers, rootFolder, reportR) {
             //logger.info(`processiong C folder: ${cFolder.Name}`);
             //console.log(`processiong C folder: ${cFolder.Name}`);
             console.log(`${cFolder.ServerRelativeUrl}`);
-            //processCFolder(headers, cFolder, cReport);
             cReport(1);
+            //processCFolder(headers, cFolder, cReport);
         };
 
         strategy.waterfallOver(0, cFolders.length, cIterator,
@@ -167,8 +167,9 @@ function processCFolder(headers, folder, reportC) {
         let pIterator = function(pFolder, pReport) {
             //logger.info(`processiong P folder: ${pFolder.Name}`);
             //console.log(`processiong P folder: ${pFolder.Name}`);
-            //processPFolder(headers, pFolder, pReport);
+            console.log(`${pFolder.ServerRelativeUrl}`);
             pReport();
+            //processPFolder(headers, pFolder, pReport);
         };
 
         strategy.iterateOver(pFolders, pIterator,
@@ -185,7 +186,7 @@ function processCFolder(headers, folder, reportC) {
         //console.log(oneErr.response.data);
         logger.error(`Failed to process C folder: ${folder.ServerRelativeUrl}`, oneErr);
         //console.error(`Failed to process c folder: ${folder.ServerRelativeUrl}`, oneErr);
-        reportC();
+        reportC(1);
     });
 }
 
