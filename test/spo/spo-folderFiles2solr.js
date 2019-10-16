@@ -28,6 +28,7 @@ console.log("To: " + targetEndPoint);
 let totalQuery = {
     params: {
         q: localConfig.selectQuery,
+        start: localConfig.startIndex,
         rows: localConfig.selectRows,
         sort: localConfig.selectSort,
         fl: localConfig.selectFieldList
