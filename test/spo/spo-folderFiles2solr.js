@@ -3,6 +3,7 @@
  */
 
 const axios = require('axios');
+const spoAuth = require('node-sp-auth');
 const prettyMs = require('pretty-ms');
 
 const strategy = require('./../../src/libs/strategy');
@@ -13,6 +14,7 @@ const startTime = new Date();
 
 const config = require('./../../src/config');
 const localConfig = config.folderFiles2Solr;
+const spoConfig = config.spo;
 
 // solr endpoint.
 const solrEndpoint = localConfig.baseUrl + "select";
@@ -41,9 +43,70 @@ axios.get(solrEndpoint, totalQuery)
 
     let docs = totalRes.data.response.docs;
     let iterator = function(index, reportOne) {
-        let oneDoc = docs[index];
-        console.log(oneDoc['folder_path']);
-        reportOne(1);
+        let theFolder = localConfig.getFolder(docs[index]);
+
+        console.log(theFolder);
+
+        // load all files for the folder from SPO site.
+        spoAuth.getAuth(spoConfig.spoUrl,
+                    {username: spoConfig.username,
+                     password: spoConfig.password})
+        .then(options => {
+
+            // let's check the options.
+            // it only contains a cookie which will have the
+            // access token.
+            //console.dir(options);
+
+            // get ready header.
+            let headers = options.headers;
+            //headers['Accept'] = 'application/json;odata=verbose';
+            headers['Accept'] = 'application/json';
+
+            let theUrl = spoConfig.spoUrl + spoConfig.spoSite +
+                "/_api/web/GetFolderByServerRelativeUrl('" +
+                encodeURIComponent(theFolder) + "')/Files";
+            //console.log(theUrl);
+
+            // prepare the axios request config.
+            let reqConfig = {
+              url: theUrl,
+              method: "get",
+              headers: headers,
+            };
+
+            // call the API to get response.
+            axios.request(reqConfig).then(function(response) {
+                // dir will show up proper indention for a JSON
+                // object
+                // all files will be list in array named value.
+                let files = response.data.value;
+                //console.dir(response.data.value);
+                console.log("Got " + files.length + " files");
+
+                // --- for quick test
+                // quick test for one file.
+                //processOneFile(headers, folderName, theUrl, files[1].Name);
+
+                // --- option one.
+                // forEach will send the requests all at once!
+                // it will be overwhelmed for large dataset.
+                files.forEach((file) => {
+                    console.log(file.ServerRelativeUrl);
+                });
+
+                // report one folder complete.
+                reportOne(1);
+            })
+            .catch(function(resErr) {
+                console.log(`Failed to get files for folder ${theFolder}`);
+                // report folder complete.
+                reportOne(1);
+            });
+        }).catch(error => {
+            console.dir(error);
+        });
+
     };
     strategy.waterfallOver(0, docs.length, iterator,
         // all complete!
