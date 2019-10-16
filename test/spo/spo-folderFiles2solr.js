@@ -18,6 +18,7 @@ const spoConfig = config.spo;
 
 // solr endpoint.
 const solrEndpoint = localConfig.baseUrl + "select";
+const targetQEndPoint = localConfig.targetBaseUrl + "select";
 const targetEndPoint = localConfig.targetBaseUrl + "update/json/docs?commit=true";
 
 // the basic informaiton.
@@ -100,20 +101,63 @@ axios.get(solrEndpoint, totalQuery)
                 } else {
                     // -- preparing payload for solr.
                     let docs = localConfig.prepareSolrDocs(files);
-                    axios.post(targetEndPoint, docs
-                    ).then(function(postRes) {
-                        console.log(`Post Success: ${theFolder}`);
+
+                    // TODO: check if the files are exist or not.
+                    let sourceIds = docs.map(doc => {
+                        return doc[localConfig.idField];
+                    });
+                    //console.log(sourceIds.join('","'));
+
+                    let queryExist = {
+                        params: {
+                            // we need the "" for list of ids.
+                            q: localConfig.idField + ":(\"" + sourceIds.join('\",\"') + "\")",
+                            rows: docs.length,
+                            fl: localConfig.idField
+                        }
+                    }
+                    //console.log(queryExist);
+
+                    axios.get(targetQEndPoint, queryExist)
+                    .then(function(existRes) {
+
+                        let existDocs = existRes.data.response.docs;
+                        if(existDocs.length === docs.length) {
+                            console.log(` - All files are exist, SKIP!`);
+                            reportOne(1);
+                        } else {
+                            let existIds = existDocs.map(doc => {
+                                return doc[localConfig.idField];
+                            });
+                            // remove found ids.
+                            let payload = docs.map(doc => {
+                                if(! existIds.includes(doc[localConfig.idField])) {
+                                    // return not exist ids.
+                                    return doc;
+                                }
+                            });
+                            axios.post(targetEndPoint, payload
+                            ).then(function(postRes) {
+                                console.log(` - Post Success: ${payload.length} ${theFolder}`);
+                                // report one folder complete.
+                                reportOne(1);
+                                //console.dir(postRes);
+                            
+                            }).catch(function(postError) {
+                                console.log(` - Post Failed! ${payload.length} ${theFolder}`);
+                                //console.dir(postError.data);
+                                // log the erorr and then report the copy is done!
+                                reportOne(1);
+                            });
+                        }
+                    })
+                    .catch(function(existErr) {
+                        console.log("Exist Query Failed!");
+                        console.error(existErr);
                         // report one folder complete.
-                        reportOne(1);
-                        //console.dir(postRes);
-                    }).catch(function(postError) {
-                        console.log(`Post Failed! - ${theFolder}`);
-                        //console.dir(postError.data);
-                        // log the erorr and then report the copy is done!
                         reportOne(1);
                     });
                 }
-
             })
             .catch(function(resErr) {
                 console.log(`Failed to get files for folder ${theFolder}`);
