@@ -109,16 +109,16 @@ axios.get(solrEndpoint, totalQuery)
                     //console.log(sourceIds.join('","'));
 
                     let queryExist = {
+                        query: localConfig.idField + ":(\"" + sourceIds.join('\",\"') + "\")",
                         params: {
                             // we need the "" for list of ids.
-                            q: localConfig.idField + ":(\"" + sourceIds.join('\",\"') + "\")",
                             rows: docs.length,
-                            fl: localConfig.idField
+                            fl: [localConfig.idField]
                         }
                     }
                     //console.log(queryExist);
 
-                    axios.get(targetQEndPoint, queryExist)
+                    axios.post(targetQEndPoint, queryExist)
                     .then(function(existRes) {
 
                         let existDocs = existRes.data.response.docs;
