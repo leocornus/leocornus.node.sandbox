@@ -44,8 +44,7 @@ axios.get(solrEndpoint, totalQuery)
     let docs = totalRes.data.response.docs;
     let iterator = function(index, reportOne) {
         let theFolder = localConfig.getFolder(docs[index]);
-
-        console.log(theFolder);
+        //console.log(theFolder);
 
         // load all files for the folder from SPO site.
         spoAuth.getAuth(spoConfig.spoUrl,
@@ -82,21 +81,38 @@ axios.get(solrEndpoint, totalQuery)
                 // all files will be list in array named value.
                 let files = response.data.value;
                 //console.dir(response.data.value);
-                console.log("Got " + files.length + " files");
+                console.log(`Got ${files.length} files for folder ${theFolder}` );
 
                 // --- for quick test
                 // quick test for one file.
                 //processOneFile(headers, folderName, theUrl, files[1].Name);
 
-                // --- option one.
+                // --- pring all file's ServerRelativeUrl for testing..
                 // forEach will send the requests all at once!
                 // it will be overwhelmed for large dataset.
-                files.forEach((file) => {
-                    console.log(file.ServerRelativeUrl);
-                });
+                //files.forEach((file) => {
+                //    console.log(file.ServerRelativeUrl);
+                //});
 
-                // report one folder complete.
-                reportOne(1);
+                if(files.length < 1) {
+                    reportOnde(1);
+                } else {
+                    // -- preparing payload for solr.
+                    let docs = localConfig.prepareSolrDocs(files);
+                    axios.post(targetEndPoint, docs
+                    ).then(function(postRes) {
+                        console.log(`Post Success: ${theFolder}`);
+                        // report one folder complete.
+                        reportOne(1);
+                        //console.dir(postRes);
+                    }).catch(function(postError) {
+                        console.log(`Post Failed! - ${theFolder}`);
+                        //console.dir(postError.data);
+                        // log the erorr and then report the copy is done!
+                        reportOne(1);
+                    });
+                }
+
             })
             .catch(function(resErr) {
                 console.log(`Failed to get files for folder ${theFolder}`);
