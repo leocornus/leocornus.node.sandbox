@@ -108,7 +108,7 @@ var strategy = {
             // batch size of items to work on and report function
             // slice takes begine and end index,
             // the begin index is include and end index is NOT included.
-            iterator(items.slice(i, batchSize), report);
+            iterator(items.slice(i, i + batchSize), report);
         }
 
         /**
