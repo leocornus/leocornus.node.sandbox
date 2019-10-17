@@ -2,12 +2,10 @@
  * This is to scan SPO site and store the file information into Solr.
  *
  * NOTE:
- *   The whole funciton is working fine here.
- *   Except:
- *   - if there are lots of IDs to verify exist, it will exceed the 
- *     solr query limit.
- *
- *   We hae newer version to handle it.
+ *   This version introduced the iterateOverBatch to execute
+ *   exist query in batch mode.
+ *   The older version is stored as file:
+ *   - spo-folderFiles2Solr-0.js
  */
 
 const axios = require('axios');
@@ -107,6 +105,7 @@ axios.get(solrEndpoint, totalQuery)
             //});
 
             if(files.length < 1) {
+                // no file found, report done.
                 reportOnde(1);
             } else {
                 // -- preparing payload for solr.
@@ -118,20 +117,43 @@ axios.get(solrEndpoint, totalQuery)
                 });
                 //console.log(sourceIds.join('","'));
 
-                let queryExist = {
-                    query: localConfig.idField + ":(\"" + sourceIds.join('\",\"') + "\")",
-                    params: {
-                        // we need the "" for list of ids.
-                        rows: docs.length,
-                        fl: [localConfig.idField]
+                // using the iterate over batch mode to avoid 
+                let existDocs = [];
+                // define the query iterator.
+                let existQuery = function(ids, queryDone) {
+
+                    // the query to find exist ids.
+                    let queryExist = {
+                        query: localConfig.idField + ":(\"" + ids.join('\",\"') + "\")",
+                        params: {
+                            // we need the "" for list of ids.
+                            rows: ids.length,
+                            fl: [localConfig.idField]
+                        }
                     }
-                }
-                //console.log(queryExist);
+                    console.log(queryExist);
 
-                axios.post(targetQEndPoint, queryExist)
-                .then(function(existRes) {
+                    axios.post(targetQEndPoint, queryExist)
+                    .then(function(existRes) {
 
-                    let existDocs = existRes.data.response.docs;
+                        // store the exist docs.
+                        existDocs = existDocs.concat(existRes.data.response.docs);
+                        queryDone(ids.length);
+                    })
+                    .catch(function(existErr) {
+                        console.log("Exist Query Failed!");
+                        console.log(existErr);
+                        console.dir(existErr);
+                        // report even there is error!
+                        queryDone(ids.length);
+                    });
+                };
+
+                strategy.iterateOverBatch(sourceIds, 
+                    localConfig.iterateOverBatchSize, existQuery,
+                // the iteration complete call back.
+                function() {
+
                     if(existDocs.length === docs.length) {
                         console.log(` - All files are exist, SKIP!`);
                         reportOne(1);
@@ -159,13 +181,6 @@ axios.get(solrEndpoint, totalQuery)
                             reportOne(1);
                         });
                     }
-                })
-                .catch(function(existErr) {
-                    console.log("Exist Query Failed!");
-                    console.log(existErr);
-                    console.dir(existErr);
-                    // report one folder complete.
-                    reportOne(1);
                 });
             }
         })
