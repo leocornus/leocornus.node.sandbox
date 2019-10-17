@@ -83,6 +83,50 @@ var strategy = {
                 }
             }
         }
+    },
+
+    /**
+     * Asynchronous iterate over a set of items in batch mode.
+     * Compare to iterateOver (interate item by item),
+     * this strategy will iterrate batch by batch.
+     *
+     * items is the collections of item we want to iterate over
+     * batchSize is to set how many items to process for each iteraion.
+     * iterator is a function representing the job when want done on each item
+     * callback is the function we want to call when all iterations are over
+     *
+     */
+    iterateOverBatch: function(items, batchSize, iterator, callback) {
+
+        // here we'll keep track of how many reports we've got
+        var doneCount = 0;
+
+        // here we give each iteration its job
+        // += is the addition assignment, x += y => x = x + Y
+        for(var i = 0; i < items.length; i += batchSize) {
+            // iterator takes 2 arguments,
+            // batch size of items to work on and report function
+            // slice takes begine and end index,
+            // the begin index is include and end index is NOT included.
+            iterator(items.slice(i, batchSize), report);
+        }
+
+        /**
+         * The report function will count actual size.
+         */
+        function report(actualSize) {
+            // this function resembles the phone number in the analogy above
+            // given to each call of the iterator so it can report its completion
+            doneCount += actualSize;
+
+            // if doneCount equals the number of items in list, then we're done
+            if (doneCount === items.length) {
+                // just check to make sure callback is exist.
+                if (callback) {
+                    callback();
+                }
+            }
+        }
     }
 }; 
 
