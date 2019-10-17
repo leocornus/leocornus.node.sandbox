@@ -1,5 +1,13 @@
 /**
- * This is to copy docs from Solr to Solr.
+ * This is to scan SPO site and store the file information into Solr.
+ *
+ * NOTE:
+ *   The whole funciton is working fine here.
+ *   Except:
+ *   - if there are lots of IDs to verify exist, it will exceed the 
+ *     solr query limit.
+ *
+ *   We hae newer version to handle it.
  */
 
 const axios = require('axios');
@@ -133,7 +141,7 @@ axios.get(solrEndpoint, totalQuery)
                         });
                         // remove found ids.
                         let payload = docs.map(doc => {
-                            if(! existIds.includes(doc[localConfig.idField])) {
+                            if(!existIds.includes(doc[localConfig.idField])) {
                                 // return not exist ids.
                                 return doc;
                             }
