@@ -131,7 +131,7 @@ axios.get(solrEndpoint, totalQuery)
                             fl: [localConfig.idField]
                         }
                     }
-                    console.log(queryExist);
+                    //console.log(queryExist);
 
                     axios.post(targetQEndPoint, queryExist)
                     .then(function(existRes) {
