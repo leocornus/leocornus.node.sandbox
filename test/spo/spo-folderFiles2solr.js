@@ -67,6 +67,7 @@ axios.get(solrEndpoint, totalQuery)
     let docs = totalRes.data.response.docs;
 
     // define the iterator to go through each folder.
+    // the waterfall over strategy (sync)
     let iterator = function(index, reportOne) {
 
         let theFolder = localConfig.getFolder(docs[index]);
@@ -168,6 +169,7 @@ axios.get(solrEndpoint, totalQuery)
                                 return doc;
                             }
                         });
+                        // only post the new items to Solr
                         axios.post(targetEndPoint, payload
                         ).then(function(postRes) {
                             console.log(` - Post Success: ${payload.length} ${theFolder}`);
@@ -205,7 +207,7 @@ axios.get(solrEndpoint, totalQuery)
 })
 .catch(function(totalErr) {
 
-    console.log("Total Query Error!");
+    console.log("Query total rror!");
     console.dir(totalErr);
 });
 
