@@ -89,7 +89,7 @@ axios.get(solrEndpoint, totalQuery)
         axios.request(reqConfig).then(function(response) {
             // dir will show up proper indention for a JSON
             // object
-            // all files will be list in array named value.
+            // all folders will be list in array named value.
             let folders = response.data.value;
             //console.dir(response.data.value);
             console.log(`Got ${folders.length} folders for folder ${theFolder}` );
@@ -97,94 +97,102 @@ axios.get(solrEndpoint, totalQuery)
             // --- pring all file's ServerRelativeUrl for testing..
             // forEach will send the requests all at once!
             // it will be overwhelmed for large dataset.
-            folders.forEach((folder) => {
-                console.log(folder.ServerRelativeUrl);
-            });
+            //folders.forEach((folder) => {
+            //    console.log(folder.ServerRelativeUrl);
+            //});
 
-            reportOne(1);
+            if(folders.length < 1) {
+                // no folder found, report done.
+                reportOne(1);
+            } else {
+                // -- preparing payload for solr.
+                let docs = localConfig.prepareSolrDocs(folders);
 
-            //if(files.length < 1) {
-            //    // no file found, report done.
-            //    reportOne(1);
-            //} else {
-            //    // -- preparing payload for solr.
-            //    let docs = localConfig.prepareSolrDocs(files);
+                let sourceIds = docs.map(doc => {
+                    return doc[localConfig.idField];
+                });
+                //console.log(sourceIds.join('","'));
 
-            //    let sourceIds = docs.map(doc => {
-            //        return doc[localConfig.idField];
-            //    });
-            //    //console.log(sourceIds.join('","'));
+                // using the iterate over batch mode to avoid
+                let existDocs = [];
+                // define the query iterator.
+                let existQuery = function(ids, queryDone) {
 
-            //    // using the iterate over batch mode to avoid 
-            //    let existDocs = [];
-            //    // define the query iterator.
-            //    let existQuery = function(ids, queryDone) {
+                    // the query to find exist ids.
+                    let queryExist = {
+                        query: localConfig.idField + ":(\"" + ids.join('\",\"') + "\")",
+                        params: {
+                            // we need the "" for list of ids.
+                            rows: ids.length,
+                            fl: [localConfig.idField]
+                        }
+                    }
+                    //console.log(queryExist);
 
-            //        // the query to find exist ids.
-            //        let queryExist = {
-            //            query: localConfig.idField + ":(\"" + ids.join('\",\"') + "\")",
-            //            params: {
-            //                // we need the "" for list of ids.
-            //                rows: ids.length,
-            //                fl: [localConfig.idField]
-            //            }
-            //        }
-            //        //console.log(queryExist);
+                    axios.post(targetQEndPoint, queryExist)
+                    .then(function(existRes) {
 
-            //        axios.post(targetQEndPoint, queryExist)
-            //        .then(function(existRes) {
+                        // store the exist docs.
+                        existDocs = existDocs.concat(existRes.data.response.docs);
+                        queryDone(ids.length);
+                    })
+                    .catch(function(existErr) {
+                        console.log("Exist Query Failed!");
+                        console.log(existErr);
+                        console.dir(existErr);
+                        // report even there is error!
+                        queryDone(ids.length);
+                    });
+                };
 
-            //            // store the exist docs.
-            //            existDocs = existDocs.concat(existRes.data.response.docs);
-            //            queryDone(ids.length);
-            //        })
-            //        .catch(function(existErr) {
-            //            console.log("Exist Query Failed!");
-            //            console.log(existErr);
-            //            console.dir(existErr);
-            //            // report even there is error!
-            //            queryDone(ids.length);
-            //        });
-            //    };
+                strategy.iterateOverBatch(sourceIds,
+                    localConfig.iterateOverBatchSize, existQuery,
+                // the iteration complete call back.
+                function() {
 
-            //    strategy.iterateOverBatch(sourceIds, 
-            //        localConfig.iterateOverBatchSize, existQuery,
-            //    // the iteration complete call back.
-            //    function() {
+                    let payload = [];
 
-            //        if(existDocs.length === docs.length) {
-            //            console.log(` - All files are exist, SKIP!`);
-            //            reportOne(1);
-            //        } else {
-            //            let existIds = existDocs.map(doc => {
-            //                return doc[localConfig.idField];
-            //            });
-            //            // remove found ids.
-            //            let payload = docs.map(doc => {
-            //                if(!existIds.includes(doc[localConfig.idField])) {
-            //                    // return not exist ids.
-            //                    return doc;
-            //                }
-            //            });
-            //            // only post the new items to Solr
-            //            axios.post(targetEndPoint, payload
-            //            ).then(function(postRes) {
-            //                console.log(` - Post Success: ${payload.length} ${theFolder}`);
-            //                // report one folder complete.
-            //                reportOne(1);
-            //                //console.dir(postRes);
-            //            }).catch(function(postError) {
-            //                console.log(` - Post Failed! ${payload.length} ${theFolder}`);
-            //                //console.dir(postError.data);
-            //                // log the erorr and then report the copy is done!
-            //                reportOne(1);
-            //            });
-            //        }
-            //    });
-            //}
+                    if(existDocs.length === docs.length) {
+
+                        console.log(` - All folders are exist, SKIP!`);
+                        reportOne(1);
+                        return;
+
+                    } else if(existDocs.length > 1) {
+
+                        let existIds = existDocs.map(doc => {
+                            return doc[localConfig.idField];
+                        });
+                        // remove found ids.
+                        payload = docs.map(doc => {
+                            if(!existIds.includes(doc[localConfig.idField])) {
+                                // return not exist ids.
+                                return doc;
+                            }
+                        });
+
+                    } else {
+                        payload = docs;
+                    }
+
+                    // only post the new items to Solr
+                    axios.post(targetEndPoint, payload
+                    ).then(function(postRes) {
+                        console.log(` - Post Success: ${payload.length} ${theFolder}`);
+                        // report one folder complete.
+                        reportOne(1);
+                        //console.dir(postRes);
+                    }).catch(function(postError) {
+                        console.log(` - Post Failed! ${payload.length} ${theFolder}`);
+                        //console.dir(postError.data);
+                        // log the erorr and then report the copy is done!
+                        reportOne(1);
+                    });
+                });
+            }
         })
         .catch(function(resErr) {
-            console.log(`Failed to get files for folder ${theFolder}`);
+            console.log(`Failed to get folders for folder ${theFolder}`);
             // report folder complete.
             reportOne(1);
         });
