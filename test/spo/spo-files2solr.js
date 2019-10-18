@@ -117,7 +117,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
         // extract SPO properties.
         meta = Object.assign(meta, spoConfig.extractSPOMetadata(propRes.data));
         // set the ID.
-        meta['id'] = spoConfig.calcId(meta);
+        meta[localConfig.idField] = spoConfig.calcId(meta);
 
     // STEP three: get file content.
         //console.log("File content:");
