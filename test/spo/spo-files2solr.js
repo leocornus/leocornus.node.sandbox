@@ -11,6 +11,7 @@
 const axios = require('axios');
 const spoAuth = require('node-sp-auth');
 const prettyMs = require('pretty-ms');
+const striptags = require('striptags');
 
 const strategy = require('./../../src/libs/strategy');
 
@@ -90,8 +91,81 @@ spoAuth.getAuth(spoConfig.spoUrl,
 
                     // quick test.
                     //console.log(oneFile);
-                    asyncReport();
-                };
+                    let [folderName, fileName] =
+                        Object.values(spoConfig.getFilePath(oneFile));
+                    let folderUrl = spoConfig.spoUrl + spoConfig.spoSite +
+                        "/_api/web/GetFolderByServerRelativeUrl('" +
+                        encodeURIComponent(folderName) + "')/Files";
+
+                    // get metadata from the folder.
+                    let meta = spoConfig.extractFolderName(folderName, fileName,
+                                                           oneFile);
+                    // STEP one: extract the file number and
+                    // class number from file name.
+                    meta = Object.assign(meta, spoConfig.extractFileName(fileName));
+
+                    //console.log(meta);
+    // ======================================================
+    // query SPO to get metadata.
+    let reqGetProp = {
+        url: folderUrl + "('" + fileName + "')/Properties",
+        method: "get",
+        headers: headers
+    };
+    axios.request(reqGetProp).then(function(propRes) {
+        //console.dir(propRes.data);
+        // extract SPO properties.
+        meta = Object.assign(meta, spoConfig.extractSPOMetadata(propRes.data));
+        // set the ID.
+        meta['id'] = spoConfig.calcId(meta);
+
+    // STEP three: get file content.
+        //console.log("File content:");
+        let reqGetFile = {
+            url: folderUrl + "('" + fileName + "')/$Value",
+            method: "get",
+            headers: headers
+        };
+
+        axios.request(reqGetFile).then(function(fileRes) {
+
+            //console.dir(fileRes.data);
+            //console.log("Striped file content:");
+            //console.dir(striptags(fileRes.data));
+            //meta['file_content'] = striptags(fileRes.data);
+            meta = Object.assign(meta,
+                spoConfig.extractContent(fileRes.data, striptags));
+
+            //console.log("Updated metadata: ");
+            //console.dir(meta);
+
+            // update Solr.
+            axios.post( targetEndPoint, meta,
+                // default limit is 10MB, set to 1GB for now.
+                {maxContentLength: 1073741824} )
+            .then(function(postRes) {
+                // post success!
+                //console.log(postRes);
+                asyncReport();
+            })
+            .catch(function(postErr) {
+                console.log("Failed to post:", fileName);
+                console.log(postErr);
+                asyncReport();
+            });
+        })
+        .catch(function(fileErr) {
+            console.log("Failed to get file content:", fileName);
+            console.log(fileErr);
+            asyncReport();
+        });
+    })
+    .catch(function(propErr) {
+        console.log("Failed to get file properties:", fileName);
+        asyncReport();
+    });
+    // =======================================================================
+                }; // END asyncIterator!
 
                 // process the batch of files in parallel!
                 strategy.iterateOver(files, asyncIterator,
