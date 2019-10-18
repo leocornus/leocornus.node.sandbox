@@ -100,6 +100,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
                     // get metadata from the folder.
                     let meta = spoConfig.extractFolderName(folderName, fileName,
                                                            oneFile);
+                    //console.dir(meta);
                     // STEP one: extract the file number and
                     // class number from file name.
                     meta = Object.assign(meta, spoConfig.extractFileName(fileName));
