@@ -107,7 +107,7 @@ axios.get(solrEndpoint, totalQuery)
 
             if(files.length < 1) {
                 // no file found, report done.
-                reportOnde(1);
+                reportOne(1);
             } else {
                 // -- preparing payload for solr.
                 let docs = localConfig.prepareSolrDocs(files);
