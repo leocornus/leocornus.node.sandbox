@@ -1,5 +1,6 @@
 /**
- * This is to scan SPO site and store the file information into Solr.
+ * This is to scan SPO site and store the document collection (Ps)
+ * information into Solr.
  *
  * NOTE:
  *   This version introduced the iterateOverBatch to execute
@@ -76,7 +77,7 @@ axios.get(solrEndpoint, totalQuery)
         let theUrl = spoConfig.spoUrl + spoConfig.spoSite +
             "/_api/web/GetFolderByServerRelativeUrl('" +
             encodeURIComponent(theFolder) + "')/Folders";
-        console.log(theUrl);
+        //console.log(theUrl);
 
         // prepare the axios request config.
         let reqConfig = {
@@ -163,7 +164,7 @@ axios.get(solrEndpoint, totalQuery)
                         let existIds = existDocs.map(doc => {
                             return doc[localConfig.idField];
                         });
-                        // remove found ids.
+                        // remove found docs by existing ids.
                         payload = docs.map(doc => {
                             if(!existIds.includes(doc[localConfig.idField])) {
                                 // return not exist ids.
@@ -172,6 +173,7 @@ axios.get(solrEndpoint, totalQuery)
                         });
 
                     } else {
+                        // no docs exist in Solr, we will handle all of them.
                         payload = docs;
                     }
 
