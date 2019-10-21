@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/leocornus/leocornus-node-sandbox#readme",
   "dependencies": {
+    "array.prototype.flat": "^1.2.2",
     "axios": "^0.18.0",
     "azure-storage": "^2.10.2",
     "body-parser": "^1.18.3",
