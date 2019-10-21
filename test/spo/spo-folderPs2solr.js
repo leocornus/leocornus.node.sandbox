@@ -12,6 +12,7 @@
 const axios = require('axios');
 const spoAuth = require('node-sp-auth');
 const prettyMs = require('pretty-ms');
+const flat = require('array.prototype.flat');
 
 const strategy = require('./../../src/libs/strategy');
 
@@ -107,7 +108,8 @@ axios.get(solrEndpoint, totalQuery)
                 reportOne(1);
             } else {
                 // -- preparing payload for solr.
-                let docs = localConfig.prepareSolrDocs(folders);
+                let docs = localConfig.prepareSolrDocs(flat, folders,
+                    localConfig.pFolders);
 
                 let sourceIds = docs.map(doc => {
                     return doc[localConfig.idField];
@@ -195,6 +197,7 @@ axios.get(solrEndpoint, totalQuery)
         })
         .catch(function(resErr) {
             console.log(`Failed to get folders for folder ${theFolder}`);
+            console.log(resErr);
             // report folder complete.
             reportOne(1);
         });
