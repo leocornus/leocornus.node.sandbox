@@ -1,11 +1,5 @@
 /**
  * This is to scan SPO site and store the file information into Solr.
- *
- * NOTE:
- *   This version introduced the iterateOverBatch to execute
- *   exist query in batch mode.
- *   The older version is stored as file:
- *   - spo-folderFiles2Solr-0.js
  */
 
 const axios = require('axios');
@@ -68,54 +62,67 @@ axios.get(solrEndpoint, totalQuery)
     let docs = totalRes.data.response.docs;
     console.log(`Processing from ${localConfig.startIndex} to ${localConfig.startIndex + docs.length - 1}`);
 
-    // define the iterator to go through each folder.
+    // define the iterator to go through folders batch by batch.
     // the waterfall over strategy (sync)
-    let iterator = function(index, reportOne) {
+    let iterator = function(index, reportBatch) {
 
-        let theFolder = localConfig.getFolder(docs[index]);
-        //console.log(theFolder);
+        // Define:
+        // the files array.
+        let files = [];
+        // the async iterator to get all files for a folder.
+        let folderFiles = function(folder, reportFolder) {
 
-        let theUrl = spoConfig.spoUrl + spoConfig.spoSite +
-            "/_api/web/GetFolderByServerRelativeUrl('" +
-            encodeURIComponent(theFolder) + "')/Files";
-        //console.log(theUrl);
+            let theFolder = localConfig.getFolder(folder);
+            //console.log(theFolder);
 
-        // prepare the axios request config.
-        let reqConfig = {
-          url: theUrl,
-          method: "get",
-          headers: headers,
+            let theUrl = spoConfig.spoUrl + spoConfig.spoSite +
+                "/_api/web/GetFolderByServerRelativeUrl('" +
+                encodeURIComponent(theFolder) + "')/Files";
+            //console.log(theUrl);
+
+            // prepare the axios request config.
+            let reqConfig = {
+              url: theUrl,
+              method: "get",
+              headers: headers,
+            };
+            // call the API to get response.
+            axios.request(reqConfig).then(function(filesRes) {
+
+                // dir will show up proper indention for a JSON
+                // object
+                // all files will be list in array named value.
+                let oneFiles = filesRes.data.value;
+                //console.dir(response.data.value);
+                //console.log(`Got ${oneFiles.length} files for folder ${theFolder}` );
+                files = files.concat(oneFiles);
+                reportFolder();
+            }).catch(function(filesErr) {
+                console.log(`Failed to get files for folder ${theFolder}`);
+                console.log(filesErr);
+                reportFolder();
+            });
         };
 
-        // call the API to get response.
-        axios.request(reqConfig).then(function(response) {
-            // dir will show up proper indention for a JSON
-            // object
-            // all files will be list in array named value.
-            let files = response.data.value;
-            //console.dir(response.data.value);
-            console.log(`Got ${files.length} files for folder ${theFolder}` );
+        // calculate the batch size.
+        let batchSize = (index + localConfig.batchSize) < docs.length ?
+            localConfig.batchSize : docs.length - index;
 
-            // --- for quick test
-            // quick test for one file.
-            //processOneFile(headers, folderName, theUrl, files[1].Name);
-
-            // --- pring all file's ServerRelativeUrl for testing..
-            // forEach will send the requests all at once!
-            // it will be overwhelmed for large dataset.
-            //files.forEach((file) => {
-            //    console.log(file.ServerRelativeUrl);
-            //});
+        strategy.iterateOver(docs.slice(index, index + batchSize), folderFiles,
+        /**
+         * process all files at once.
+         */
+        function() {
 
             if(files.length < 1) {
                 // no file found, report done.
-                reportOne(1);
+                reportBatch(batchSize);
             } else {
                 // -- preparing payload for solr.
-                let docs = localConfig.prepareSolrDocs(files);
+                let solrDocs = localConfig.prepareSolrDocs(files);
 
                 // TODO: check if the files are exist or not.
-                let sourceIds = docs.map(doc => {
+                let sourceIds = solrDocs.map(doc => {
                     return doc[localConfig.idField];
                 });
                 //console.log(sourceIds.join('","'));
@@ -146,7 +153,7 @@ axios.get(solrEndpoint, totalQuery)
                     .catch(function(existErr) {
                         console.log("Exist Query Failed!");
                         console.log(existErr);
-                        console.dir(existErr);
+                        //console.dir(existErr);
                         // report even there is error!
                         queryDone(ids.length);
                     });
@@ -157,15 +164,15 @@ axios.get(solrEndpoint, totalQuery)
                 // the iteration complete call back.
                 function() {
 
-                    if(existDocs.length === docs.length) {
-                        console.log(` - All files are exist, SKIP!`);
-                        reportOne(1);
+                    if(existDocs.length === solrDocs.length) {
+                        console.log(` - ${existDocs.length} files are exist, SKIP!`);
+                        reportBatch(batchSize);
                     } else {
                         let existIds = existDocs.map(doc => {
                             return doc[localConfig.idField];
                         });
                         // remove found ids.
-                        let payload = docs.map(doc => {
+                        let payload = solrDocs.map(doc => {
                             if(!existIds.includes(doc[localConfig.idField])) {
                                 // return not exist ids.
                                 return doc;
@@ -174,28 +181,23 @@ axios.get(solrEndpoint, totalQuery)
                         // only post the new items to Solr
                         axios.post(targetEndPoint, payload
                         ).then(function(postRes) {
-                            console.log(` - Post Success: ${payload.length} ${theFolder}`);
+                            console.log(` - Post Success: ${payload.length}`);
                             // report one folder complete.
-                            reportOne(1);
+                            reportBatch(batchSize);
                             //console.dir(postRes);
                         }).catch(function(postError) {
-                            console.log(` - Post Failed! ${payload.length} ${theFolder}`);
+                            console.log(` - Post Failed! ${payload.length}`);
                             //console.dir(postError.data);
                             // log the erorr and then report the copy is done!
-                            reportOne(1);
+                            reportBatch(batchSize);
                         });
                     }
                 });
             }
-        })
-        .catch(function(resErr) {
-            console.log(`Failed to get files for folder ${theFolder}`);
-            // report folder complete.
-            reportOne(1);
         });
     };
 
-    strategy.waterfallOver(0, docs.length, iterator,
+    strategy.waterfallOver(localConfig.startIndex, docs.length, iterator,
         // all complete!
         function() {
             console.log(now() + " All Done");
