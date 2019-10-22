@@ -64,6 +64,7 @@ axios.get(solrEndpoint, totalQuery)
 
     // define the iterator to go through folders batch by batch.
     // the waterfall over strategy (sync)
+    // for strategy.waterfallOver
     let iterator = function(index, reportBatch) {
 
         // Define:
@@ -108,6 +109,7 @@ axios.get(solrEndpoint, totalQuery)
         let batchSize = (index + localConfig.batchSize) < docs.length ?
             localConfig.batchSize : docs.length - index;
 
+        console.log(`Procession ${localConfig.startIndex + index} - ${localConfig.startIndex + index + batchSize - 1}`);
         strategy.iterateOver(docs.slice(index, index + batchSize), folderFiles,
         /**
          * process all files at once.
@@ -116,6 +118,7 @@ axios.get(solrEndpoint, totalQuery)
 
             if(files.length < 1) {
                 // no file found, report done.
+                console.log(" - No file found!");
                 reportBatch(batchSize);
             } else {
                 // -- preparing payload for solr.
@@ -197,7 +200,7 @@ axios.get(solrEndpoint, totalQuery)
         });
     };
 
-    strategy.waterfallOver(localConfig.startIndex, docs.length, iterator,
+    strategy.waterfallOver(0, docs.length, iterator,
         // all complete!
         function() {
             console.log(now() + " All Done");
