@@ -109,7 +109,7 @@ axios.get(solrEndpoint, totalQuery)
         let batchSize = (index + localConfig.batchSize) < docs.length ?
             localConfig.batchSize : docs.length - index;
 
-        console.log(`Procession ${localConfig.startIndex + index} - ${localConfig.startIndex + index + batchSize - 1}`);
+        console.log(`Processing ${localConfig.startIndex + index} - ${localConfig.startIndex + index + batchSize - 1}`);
         strategy.iterateOver(docs.slice(index, index + batchSize), folderFiles,
         /**
          * process all files at once.
