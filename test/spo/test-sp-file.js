@@ -18,7 +18,63 @@ const axios = require('axios');
 //console.log(JSON.stringify(config, null, 2));
 const configSPO = config.spo;
 
-requestStream();
+// Call the test on request lib.
+//requestStream();
+
+// call the test on axios to handle binary stream.
+axiosStream();
+
+/**
+ * using axios to handle binary stream from SPO
+ */
+function axiosStream() {
+
+    let localFile = '/tmp/test-axios.pdf';
+    let output = fs.createWriteStream(localFile);
+
+    spo.getAuth(configSPO.spoUrl, {username: configSPO.username,
+                                password: configSPO.password})
+    .then(options => {
+        // let's check the options.
+        // it only contains a cookie which will have the
+        // access token.
+        //console.dir(options);
+
+        // perform request with any http-enabled library
+        // (request-promise in a sample below):
+        let headers = options.headers;
+        //headers['Accept'] = 'application/json;odata=verbose';
+        headers['Accept'] = 'application/json';
+
+        // this is the sample to show hte /Folders API.
+        filePath = configSPO.samplePathes[0];
+        let theUrl = configSPO.spoUrl + configSPO.spoSite + filePath;
+        console.log(theUrl);
+
+        // construct the request
+        let reqStream = {
+            url: theUrl,
+            method: "get",
+            headers: headers,
+            responseType: 'stream'
+        };
+        // issue the request.
+        axios.request(reqStream).then((response) => {
+            // the data will be a stream.
+            const fileStream = response.data;
+            fileStream.on('data', (chunk /* chunk is an ArrayBuffer */) => {
+
+                output.write(new Buffer(chunk));
+            });
+
+            fileStream.on('end', () => {
+
+                output.end();
+            });
+        }).catch((error) => {
+        });
+    });
+}
 
 /**
  * using request lib to handle binary file as stream.
