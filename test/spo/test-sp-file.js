@@ -64,7 +64,7 @@ function axiosStream() {
             const fileStream = response.data;
             fileStream.on('data', (chunk /* chunk is an ArrayBuffer */) => {
 
-                output.write(new Buffer(chunk));
+                output.write(Buffer.from(chunk));
             });
 
             fileStream.on('end', () => {
