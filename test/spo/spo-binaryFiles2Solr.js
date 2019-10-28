@@ -9,7 +9,9 @@
  */
 
 const fs = require('fs');
+const crypto = require('crypto');
 const axios = require('axios');
+const request = require('request');
 const spoAuth = require('node-sp-auth');
 const prettyMs = require('pretty-ms');
 
@@ -180,7 +182,7 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
         meta = Object.assign(meta, localConfig.extractSPOMetadata(propRes.data));
         // set the ID.
         meta[localConfig.idField] = spoConfig.calcId(meta);
-        console.log(meta);
+        //console.log(meta);
 
     // STEP three: get file content.
         //console.log("File content:");
@@ -196,8 +198,11 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
             //console.dir(fileRes.data);
             const fileStream = fileRes.data;
             let output = fs.createWriteStream(localFile);
+            let md5 = crypto.createHash('md5');
             fileStream.on('data', (chunk /* chunk is an ArrayBuffer */) => {
 
+                // calculate MD5 has from a stream.
+                md5.update(chunk);
                 output.write(Buffer.from(chunk));
             });
 
@@ -205,7 +210,10 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
             fileStream.on('end', () => {
 
                 output.end();
-                console.log('Write to file', localFile);
+                let fileHash = md5.digest('hex');
+                console.log('Write to file', localFile, "file hash:", fileHash);
+                // index the finary file.
+                //indexingOneBinaryFile();
                 reportFile();
             });
 
