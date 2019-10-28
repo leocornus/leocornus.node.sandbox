@@ -1,5 +1,5 @@
 /**
- * This is to scan SPO site and store binary file information into Solr.
+ * This is to scan SPO site and store the file information into Solr.
  *
  * NOTE:
  *   This version introduced the iterateOverBatch to execute
@@ -8,10 +8,10 @@
  *   - spo-folderFiles2Solr-0.js
  */
 
+const fs = require('fs');
 const axios = require('axios');
 const spoAuth = require('node-sp-auth');
 const prettyMs = require('pretty-ms');
-const striptags = require('striptags');
 
 const strategy = require('./../../src/libs/strategy');
 
@@ -20,7 +20,7 @@ const now = () => new Date().toUTCString()
 const startTime = new Date();
 
 const config = require('./../../src/config');
-const localConfig = config.files2Solr;
+const localConfig = config.binaryFiles2Solr;
 const spoConfig = config.spo;
 
 // solr endpoint.
@@ -66,6 +66,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
         console.log("Working on files from", localConfig.startIndex,
                     "to", bulk);
 
+        // ============= the waterfall iterator.
         // define the sync iterator.
         const syncIterator = function(startIndex, syncReport) {
 
@@ -86,100 +87,31 @@ spoAuth.getAuth(spoConfig.spoUrl,
                 // Got a batch of files:
                 let files = batchRes.data.response.docs;
 
+                // ==== The Iterator!
                 // defind the asyncIterator, how we process each file.
-                let asyncIterator = function(oneFile, asyncReport) {
+                const asyncIterator = function(oneFile, asyncReport) {
 
                     // quick test.
                     //console.log(oneFile);
-                    let [folderName, fileName] =
-                        Object.values(spoConfig.getFilePath(oneFile));
-                    let folderUrl = spoConfig.spoUrl + spoConfig.spoSite +
-                        "/_api/web/GetFolderByServerRelativeUrl('" +
-                        encodeURIComponent(folderName) + "')/Files";
+                    // process one file.
+                    processOneBinaryFile(headers, oneFile, asyncReport);
 
-                    // get metadata from the folder.
-                    let meta = spoConfig.extractFolderName(folderName, fileName,
-                                                           oneFile);
-                    // check the metadata from the folder path
-                    //console.dir(meta);
-
-                    // STEP one: extract the file number and
-                    // class number from file name.
-                    meta = Object.assign(meta, spoConfig.extractFileName(fileName));
-
-                    //console.log(meta);
-    // ======================================================
-    // query SPO to get metadata.
-    let reqGetProp = {
-        url: folderUrl + "('" + fileName + "')/Properties",
-        method: "get",
-        headers: headers
-    };
-    axios.request(reqGetProp).then(function(propRes) {
-        //console.dir(propRes.data);
-        // extract SPO properties.
-        meta = Object.assign(meta, spoConfig.extractSPOMetadata(propRes.data));
-        // set the ID.
-        meta[localConfig.idField] = spoConfig.calcId(meta);
-
-    // STEP three: get file content.
-        //console.log("File content:");
-        let reqGetFile = {
-            url: folderUrl + "('" + fileName + "')/$Value",
-            method: "get",
-            headers: headers
-        };
-
-        axios.request(reqGetFile).then(function(fileRes) {
-
-            //console.dir(fileRes.data);
-            //console.log("Striped file content:");
-            //console.dir(striptags(fileRes.data));
-            //meta['file_content'] = striptags(fileRes.data);
-            meta = Object.assign(meta,
-                spoConfig.extractContent(fileRes.data, striptags));
-
-            //console.log("Updated metadata: ");
-            //console.dir(meta);
-
-            // update Solr.
-            axios.post( targetEndPoint, meta,
-                // default limit is 10MB, set to 1GB for now.
-                {maxContentLength: 1073741824} )
-            .then(function(postRes) {
-                // post success!
-                //console.log(postRes);
-                asyncReport();
-            })
-            .catch(function(postErr) {
-                console.log("Failed to post:", fileName);
-                console.log(postErr);
-                asyncReport();
-            });
-        })
-        .catch(function(fileErr) {
-            console.log("Failed to get file content:", fileName);
-            console.log(fileErr);
-            asyncReport();
-        });
-    })
-    .catch(function(propErr) {
-        console.log("Failed to get file properties:", fileName);
-        asyncReport();
-    });
-    // =======================================================================
                 }; // END asyncIterator!
 
-                // process the batch of files in parallel!
-                strategy.iterateOver(files, asyncIterator,
-                /**
-                 * iterate over complete callback.
-                 */
-                function() {
-                    console.log(now() + " Async post:", files.length, "files");
+                // ==== The call back
+                // define the async interate complete callback function.
+                const asyncCallback = function() {
+
+                    // log the summary
+                    console.log(now() + " Async post files from", startIndex, 
+                                "to" , (startIndex + files.length - 1));
                     // report sync iterator.
                     syncReport(files.length);
-                });
+                };
+
+                // process the batch of files in parallel!
+                strategy.iterateOver(files, asyncIterator, asyncCallback);
+
             }).catch(function(batchErr) {
 
                 // batch query failed.
@@ -215,3 +147,96 @@ spoAuth.getAuth(spoConfig.spoUrl,
     // failed to authenticated from SPO.
     console.dir(error);
 });
+
+/**
+ * utitlity function to process one binary file.
+ */
+function processOneBinaryFile(spoHeaders, theFile, reportFile) {
+
+    let [folderName, fileName, localFile] =
+        Object.values(localConfig.getFilePath(theFile));
+
+    // get metadata from the folder.
+    let meta = spoConfig.extractFolderName(folderName, fileName,
+                                           theFile);
+    // check the metadata from the folder path
+    //console.dir(meta);
+
+    // TODO: check if the file exist in the target solr collection
+
+    let folderUrl = spoConfig.spoUrl + spoConfig.spoSite +
+        "/_api/web/GetFolderByServerRelativeUrl('" +
+        encodeURIComponent(folderName) + "')/Files";
+    // query SPO to get metadata.
+    let reqGetProp = {
+        url: folderUrl + "('" + fileName + "')/Properties",
+        method: "get",
+        headers: spoHeaders
+    };
+    axios.request(reqGetProp).then(function(propRes) {
+        //console.dir(propRes.data);
+        // extract SPO properties.
+        meta = Object.assign(meta, spoConfig.extractSPOMetadata(propRes.data));
+        meta = Object.assign(meta, localConfig.extractSPOMetadata(propRes.data));
+        // set the ID.
+        meta[localConfig.idField] = spoConfig.calcId(meta);
+        console.log(meta);
+
+    // STEP three: get file content.
+        //console.log("File content:");
+        let reqGetFile = {
+            url: folderUrl + "('" + fileName + "')/$Value",
+            method: "get",
+            headers: spoHeaders,
+            responseType: 'stream'
+        };
+
+        axios.request(reqGetFile).then(function(fileRes) {
+
+            //console.dir(fileRes.data);
+            const fileStream = fileRes.data;
+            let output = fs.createWriteStream(localFile);
+            fileStream.on('data', (chunk /* chunk is an ArrayBuffer */) => {
+
+                output.write(Buffer.from(chunk));
+            });
+
+            // handle the write end stream event.
+            fileStream.on('end', () => {
+
+                output.end();
+                console.log('Write to file', localFile);
+                reportFile();
+            });
+
+            //console.log("Updated metadata: ");
+            //console.dir(meta);
+
+            // update Solr.
+            //axios.post( targetEndPoint, meta,
+            //    // default limit is 10MB, set to 1GB for now.
+            //    {maxContentLength: 1073741824} )
+            //.then(function(postRes) {
+            //    // post success!
+            //    //console.log(postRes);
+            //    reportFile();
+            //})
+            //.catch(function(postErr) {
+            //    console.log("Failed to post:", fileName);
+            //    console.log(postErr);
+            //    reportFile();
+            //});
+        })
+        .catch(function(fileErr) {
+            console.log("Failed to get file content:", fileName);
+            console.log(fileErr);
+            reportFile();
+        });
+    })
+    .catch(function(propErr) {
+        console.log("Failed to get file properties:", fileName);
+        console.error(propErr);
+        reportFile();
+    });
+    // =======================================================================
+}
