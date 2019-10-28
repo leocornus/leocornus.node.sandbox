@@ -200,8 +200,11 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
             const fileStream = fileRes.data;
             let output = fs.createWriteStream(localFile);
             let md5 = crypto.createHash('md5');
+            let fileSize = 0;
             fileStream.on('data', (chunk /* chunk is an ArrayBuffer */) => {
 
+                // calculate file size.
+                fileSize += chunk.length;
                 // calculate MD5 has from a stream.
                 md5.update(chunk);
                 output.write(Buffer.from(chunk));
@@ -214,10 +217,9 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
                 let fileHash = md5.digest('hex');
                 //console.log('Write to file', localFile, "file hash:", fileHash);
                 // index the finary file.
-                indexingOneBinaryFile(meta, localFile, fileHash, reportFile);
+                indexingOneBinaryFile(meta, localFile, fileHash, fileSize, reportFile);
                 //reportFile();
             });
-
         })
         .catch(function(fileErr) {
             console.log("Failed to get file content:", fileName);
@@ -236,7 +238,7 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
 /**
  * untility function to process binary file indexing.
  */
-function indexingOneBinaryFile(fileMeta, localPath, fileHash, reportBinary) {
+function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBinary) {
 
     // the request to get metadata.
     let metaReq = {
@@ -281,7 +283,8 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, reportBinary) {
 
             //=========================================================
             // get ready the payload for target collection.
-            let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body, fileHash );
+            let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body,
+                                                fileHash, fileSize );
 
             if( payload === null ) {
 
