@@ -253,7 +253,13 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, reportBinary) {
 
         //console.dir(body);
         //console.log("type of body: " + typeof(body));
-        let tikaMeta = JSON.parse( body );
+        let tikaMeta = {};
+        try {
+            tikaMeta = JSON.parse( body );
+        } catch(parseError) {
+            console.log('Failed to parse tikaMeta:', parseError);
+            console.log(body);
+        }
 
         // the request to get content text
         let tikaReq = {
