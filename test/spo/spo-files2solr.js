@@ -86,8 +86,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
                 // Got a batch of files:
                 let files = batchRes.data.response.docs;
 
+                // ==== The Iterator!
                 // defind the asyncIterator, how we process each file.
-                let asyncIterator = function(oneFile, asyncReport) {
+                const asyncIterator = function(oneFile, asyncReport) {
 
                     // quick test.
                     //console.log(oneFile);
@@ -96,16 +97,20 @@ spoAuth.getAuth(spoConfig.spoUrl,
 
                 }; // END asyncIterator!
 
-                // process the batch of files in parallel!
-                strategy.iterateOver(files, asyncIterator,
-                /**
-                 * iterate over complete callback.
-                 */
-                function() {
-                    console.log(now() + " Async post:", files.length, "files");
+                // ==== The call back
+                // define the async interate complete callback function.
+                const asyncCallback = function() {
+
+                    // log the summary
+                    console.log(now() + " Async post files from", startIndex, 
+                                "to" , (startIndex + files.length - 1));
                     // report sync iterator.
                     syncReport(files.length);
-                });
+                };
+
+                // process the batch of files in parallel!
+                strategy.iterateOver(files, asyncIterator, asyncCallback);
+
             }).catch(function(batchErr) {
 
                 // batch query failed.
