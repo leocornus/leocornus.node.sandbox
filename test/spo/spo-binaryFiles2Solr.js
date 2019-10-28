@@ -24,6 +24,7 @@ const startTime = new Date();
 const config = require('./../../src/config');
 const localConfig = config.binaryFiles2Solr;
 const spoConfig = config.spo;
+const tikaConfig = config.tika;
 
 // solr endpoint.
 const solrEndpoint = localConfig.baseUrl + "select";
@@ -211,29 +212,12 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
 
                 output.end();
                 let fileHash = md5.digest('hex');
-                console.log('Write to file', localFile, "file hash:", fileHash);
+                //console.log('Write to file', localFile, "file hash:", fileHash);
                 // index the finary file.
-                //indexingOneBinaryFile();
-                reportFile();
+                indexingOneBinaryFile(meta, localFile, fileHash, reportFile);
+                //reportFile();
             });
 
-            //console.log("Updated metadata: ");
-            //console.dir(meta);
-
-            // update Solr.
-            //axios.post( targetEndPoint, meta,
-            //    // default limit is 10MB, set to 1GB for now.
-            //    {maxContentLength: 1073741824} )
-            //.then(function(postRes) {
-            //    // post success!
-            //    //console.log(postRes);
-            //    reportFile();
-            //})
-            //.catch(function(postErr) {
-            //    console.log("Failed to post:", fileName);
-            //    console.log(postErr);
-            //    reportFile();
-            //});
         })
         .catch(function(fileErr) {
             console.log("Failed to get file content:", fileName);
@@ -247,4 +231,91 @@ function processOneBinaryFile(spoHeaders, theFile, reportFile) {
         reportFile();
     });
     // =======================================================================
+}
+
+/**
+ * untility function to process binary file indexing.
+ */
+function indexingOneBinaryFile(fileMeta, localPath, fileHash, reportBinary) {
+
+    // the request to get metadata.
+    let metaReq = {
+        url: tikaConfig.baseUrl + 'meta/form',
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "multipart/form-data"
+        },
+        formData: { file: fs.createReadStream( localPath ) } 
+    };
+
+    // form-data post to get meta data of the binary file..
+    request.post( metaReq, function(metaErr, metRes, body) {
+
+        //console.dir(body);
+        //console.log("type of body: " + typeof(body));
+        let tikaMeta = JSON.parse( body );
+
+        // the request to get content text
+        let tikaReq = {
+            url: tikaConfig.baseUrl + 'tika/form',
+            headers: {
+                "Accept": "text/plain",
+                "Content-Type": "multipart/form-data"
+            },
+            // we could not reuse the same form data object.
+            // we have to create a new read stream.
+            formData: {file: fs.createReadStream( localPath )}
+        };
+        // form-data post to get content in text format.
+        request.post( tikaReq, function(err, res, body) {
+
+            //console.dir(body);
+            //console.log("type of body: " + typeof(body) );
+            //console.log("Size of body: " + body.length );
+
+            //=========================================================
+            // get ready the payload for target collection.
+            let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body, fileHash );
+
+            if( payload === null ) {
+
+                // this is an identical file, skip.
+                //localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
+                //reportStatus(eventDoc);
+
+                // report async iteration.
+                reportBinary();
+
+            } else {
+
+                // post payload to target collection.
+                axios.post( targetEndPoint, payload,
+                    // default limit is 10MB, set to 1GB for now.
+                    {maxContentLength: 1073741824} )
+                .then(function(postRes) {
+                    console.log("Post Success! -", payload[localConfig.idField]);
+
+                    //console.dir(postRes);
+                    //localConfig.setupStatus(eventDoc, "TARGET_UPDATE_SUCCESS");
+                    // update the source document, process status and
+                    // process message.
+                    //reportStatus(eventDoc);
+
+                    // report async iteration.
+                    reportBinary();
+                }).catch(function(postError) {
+                    console.log("Post Failed! -", payload[localConfig.idField]);
+                    console.dir(postError);
+
+                    // log the erorr and then report the copy is done!
+                    //localConfig.setupStatus(eventDoc, "TARGET_UPDATE_FAIL");
+                    // update the source document.
+                    //reportStatus(eventDoc);
+
+                    // report async iteration.
+                    reportBinary();
+                });
+            }
+        } );
+    } );
 }
