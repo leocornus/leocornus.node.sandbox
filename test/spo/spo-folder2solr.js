@@ -120,10 +120,9 @@ function processRootFolder(headers, rootFolder, reportR) {
         let cIterator = function(index, cReport) {
 
             let cFolder = cFolders[index];
-            let folderPath = cFolder.ServerRelativeUrl;
 
             //console.log(`${folderPath}`);
-            let solrDoc = solrConfig.prepareSolrFolderDoc(folderPath);
+            let solrDoc = solrConfig.prepareSolrFolderDoc(cFolder);
 
             // query to check if the solr doc exist.
             let existQ = {
@@ -137,18 +136,18 @@ function processRootFolder(headers, rootFolder, reportR) {
 
                 if(getRes.data.response.numFound > 0) {
                     // Solr doc exist, skip.
-                    console.log(`Skip exist folder ${index}: ${folderPath}`);
+                    console.log(`Skip exist folder ${index}: ${cFolder}`);
                     cReport(1);
                 } else {
 
                     // Solr doc NOT exist.
                     axios.post(targetEndPoint, solrDoc
                     ).then(function(postRes) {
-                        console.log(`Post Success ${index}: ${folderPath}`);
+                        console.log(`Post Success ${index}: ${cFolder}`);
                         cReport(1);
                         //console.dir(postRes);
                     }).catch(function(postError) {
-                        console.log(`Post Failed ${index}! - ${folderPath}`);
+                        console.log(`Post Failed ${index}! - ${cFolder}`);
                         //console.dir(postError.data);
                         // log the erorr and then report the copy is done!
                         cReport(1);
