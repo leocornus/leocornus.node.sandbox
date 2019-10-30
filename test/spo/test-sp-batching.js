@@ -66,8 +66,20 @@ spoAuth.getAuth(spoConfig.spoUrl,
     });
 
     // add the ending.
-    batchContents.push('--' + batchUUID + '--');
+    //batchContents.push('--' + batchUUID + '--');
     let batchBody = batchContents.join("\r\n");
+
+    // build the batch request body.
+    let batchReqBody = [];
+
+    batchReqBody.push('Content-Type: multipart/mixed; boundary=' + batchUUID);
+    batchReqBody.push('Content-Length: ' + batchBody.length);
+    batchReqBody.push('Content-Transfer-Encoding: binary');
+    batchReqBody.push('');
+    batchReqBody.push(batchBody);
+    batchReqBody.push('');
+    batchReqBody.push('--' + batchUUID + '--');
+
     //console.log(batchBody);
 
     // prepare the axios request config.
@@ -78,7 +90,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
       // has to be POST for batching request.
       //method: "post",
       headers: headers,
-      data: batchBody
+      body: batchReqBody.join("\r\n"),
+      data: batchReqBody.join("\r\n"),
+      formData: batchReqBody.join("\r\n")
     };
     console.log(batchReq);
 
@@ -91,7 +105,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
     request.post( batchReq, function(batchErr, batchRes, body) {
 
         if(batchErr) {
-            console.dir(batchErr.response.data);
+            console.dir(batchErr);
         }
         //console.dir(batchRes);
         console.dir(body);
