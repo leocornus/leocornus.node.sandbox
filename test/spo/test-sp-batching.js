@@ -42,7 +42,8 @@ spoAuth.getAuth(spoConfig.spoUrl,
 //                encodeURIComponent(folderName) + "')/Files";
 
     // set the batching request endpoint
-    const batchEndpoint = spoConfig.spoUrl + spoConfig.spoSite + "/_api/$Batch";
+    const batchEndpoint = spoConfig.spoUrl + spoConfig.spoSite + "/_api/$batch";
+    //const batchEndpoint = spoConfig.spoUrl + spoConfig.spoSite + "/_api/web";
     //const batchEndpoint = spoConfig.spoUrl + "/_api/$batch";
 
     // set the multiple requests.
@@ -92,9 +93,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
       // has to be POST for batching request.
       //method: "post",
       headers: headers,
-      //body: batchReqBody.join("\r\n"),
-      //data: batchReqBody.join("\r\n"),
-      formData: batchReqBody.join("\r\n")
+      body: batchReqBody.join("\r\n")
+      //data: batchReqBody.join("\r\n")
+      //formData: batchReqBody.join("\r\n")
     };
     console.log(batchReq);
 
