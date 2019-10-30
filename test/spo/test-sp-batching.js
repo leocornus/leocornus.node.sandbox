@@ -42,8 +42,8 @@ spoAuth.getAuth(spoConfig.spoUrl,
 //                encodeURIComponent(folderName) + "')/Files";
 
     // set the batching request endpoint
-    //const batchEndpoint = spoConfig.spoUrl + spoConfig.spoSite + "/_api/$batch";
-    const batchEndpoint = spoConfig.spoUrl + "/_api/$batch";
+    const batchEndpoint = spoConfig.spoUrl + spoConfig.spoSite + "/_api/$Batch";
+    //const batchEndpoint = spoConfig.spoUrl + "/_api/$batch";
 
     // set the multiple requests.
     const folders = spoConfig.testData.folders.slice(4);
@@ -51,8 +51,8 @@ spoAuth.getAuth(spoConfig.spoUrl,
         // try to get files for each folder.
         let folderEndpoint = spoConfig.spoUrl + spoConfig.spoSite +
                 "/_api/web/GetFolderByServerRelativeUrl('" +
-                //encodeURIComponent(folder) + "')/Files";
-                folder + "')/Files";
+                encodeURIComponent(folder) + "')/Files";
+                //folder + "')/Files";
         let oneReq = [];
         oneReq.push('--' + batchUUID);
         oneReq.push('Content-Type: application/http');
@@ -72,8 +72,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
     // build the batch request body.
     let batchReqBody = [];
 
-    batchReqBody.push('Content-Type: multipart/mixed; boundary=' + batchUUID);
+    batchReqBody.push('Content-Type: multipart/mixed; boundary="' + batchUUID + '"');
     batchReqBody.push('Content-Length: ' + batchBody.length);
+    batchReqBody.push('Accept: application/json');
     batchReqBody.push('Content-Transfer-Encoding: binary');
     batchReqBody.push('');
     batchReqBody.push(batchBody);
@@ -83,15 +84,16 @@ spoAuth.getAuth(spoConfig.spoUrl,
     //console.log(batchBody);
 
     // prepare the axios request config.
-    headers['Content-Type'] = `multipart/mixed; boundary=${batchUUID}`;
+    headers['Content-Type'] = `multipart/mixed; boundary="${batchUUID}"`;
+    headers['Accept'] = "applicaiton/json";
     //console.log(headers);
     let batchReq = {
       url: batchEndpoint,
       // has to be POST for batching request.
       //method: "post",
       headers: headers,
-      body: batchReqBody.join("\r\n"),
-      data: batchReqBody.join("\r\n"),
+      //body: batchReqBody.join("\r\n"),
+      //data: batchReqBody.join("\r\n"),
       formData: batchReqBody.join("\r\n")
     };
     console.log(batchReq);
