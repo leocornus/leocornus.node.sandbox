@@ -226,7 +226,16 @@ function indexingFile(targetDoc, fullPath, md5Hash, eventDoc, report) {
 
         //console.dir(body);
         //console.log("type of body: " + typeof(body));
-        let metadata = JSON.parse( body );
+        let metadata = {};
+        try {
+            metadata = JSON.parse( body );
+        } catch (error) {
+            console.log("Failed to process file:", fullPath);
+            console.error(error);
+            localConfig.setupStatus(eventDoc, "PARSE_TIKA_METADATA_FAIL");
+            reportStatus(eventDoc);
+            report();
+        }
 
         // the request to get content text
         let tikaReq = {
