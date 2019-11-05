@@ -39,9 +39,12 @@ const targetUpdate = localConfig.targetBaseUrl + "update/json/docs?commit=true";
 // set batch size.
 const batchSize = localConfig.selectRows;
 
-console.log("Proecess Queue: " + sourceSelect);
-console.log("Store file on: " + targetUpdate);
-console.log("Process " + batchSize + " docs each time!");
+console.log(now(), "Proecess Queue: " + sourceSelect);
+console.log(now(), "Store file on: " + targetUpdate);
+console.log(now(), "Process " + batchSize + " docs each time!");
+if(localConfig.dryRun) {
+    console.log(now(), "---------------- Dry Run Mode -------------------");
+}
 
 // get authenticated to SPO
 spoAuth.getAuth(spoConfig.spoUrl, 
@@ -144,7 +147,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
             .catch(function(error) {
                 // handle errors here.
                 console.log(now(), "Batch Query ERROR!", batchQuery);
-                console.dir(error);
+                if(localConfig.debugMode) console.dir(error);
             });
     
         }, function() {
@@ -158,7 +161,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
     })
     .catch(function(totalError) {
         console.log(now(), "Total Query Error!", totalQuery);
-        console.dir(totalError);
+        if(localConfig.debugMode) console.dir(totalError);
     });
 
 // End of spoAuth.getAuth
@@ -175,7 +178,7 @@ function reportStatus(doc) {
         //console.log("Update status successfully: " + doc.id);
     }).catch(function(suErr) {
         // failed to update status.
-        console.log("Failed to update status: " + doc.id);
+        if(localConfig.debugMode) console.log("Failed to update status: " + doc.id);
     });
 }
 
@@ -189,7 +192,7 @@ function processOneFile(headers, folderName, folderUrl, fileName, report) {
     let meta = spoConfig.extractFolderName(folderName, fileName);
 
     // process one file a time.
-    console.log("Processing file: " + fileName);
+    //console.log("Processing file: " + fileName);
 
     // STEP one: extract the file number and class number from file name.
     meta = Object.assign(meta, spoConfig.extractFileName(fileName));
@@ -219,31 +222,34 @@ function processOneFile(headers, folderName, folderUrl, fileName, report) {
         axios.request(reqGetFile).then(function(fileRes) {
 
             meta = Object.assign(meta, spoConfig.extractContent(fileRes.data, striptags));
-            console.log(meta[localConfig.idField]);
-            report();
+            if(localConfig.dryRun) {
+                console.log(meta[localConfig.idField]);
+                report();
+            } else {
             // update Solr.
-            //axios.post( targetUpdate, meta,
-            //    // default limit is 10MB, set to 1GB for now.
-            //    {maxContentLength: 1073741824} )
-            //.then(function(postRes) {
-            //    // update status .
-            //    //console.log(postRes);
-            //    report();
-            //}).catch(function(postErr) {
-            //    console.log(now(), "Failed to post solr doc", meta[localConfig.idField]);
-            //    console.log(postErr);
-            //    report();
-            //});
+            axios.post( targetUpdate, meta,
+                // default limit is 10MB, set to 1GB for now.
+                {maxContentLength: 1073741824} )
+            .then(function(postRes) {
+                // update status .
+                //console.log(postRes);
+                report();
+            }).catch(function(postErr) {
+                console.log(now(), "Failed to post solr doc", meta[localConfig.idField]);
+                if(localConfig.debugMode) console.log(postErr);
+                report();
+            });
+            }
         }).catch(function(fileErr) {
             // report status.
             console.log(now(), "Failed to get file content", reqGetFile);
-            console.log(fileErr);
+            if(localConfig.debugMode) console.log(fileErr);
             report();
         });
     }).catch(function(propErr) {
         // report status.
         console.log(now(), "Failed to get file property", reqGetProp);
-        console.log(propErr);
+        if(localConfig.debugMode) console.log(propErr);
         report();
     });
 }
