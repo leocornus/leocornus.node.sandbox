@@ -27,7 +27,7 @@ const startTime = new Date();
 
 // we will re use the solrCopy configurations.
 const localConfig = config.solrQueueProcess;
-const spoConfig = config.spo;
+const spoConfig = localConfig.spo;
 const tikaConfig = config.tika;
 
 // solr endpoint.
@@ -170,14 +170,13 @@ function eventIterator(doc, report) {
     //console.log(filePath);
     switch(localConfig.getFileFormat(filePath)) {
         case "TEXT":
-            // get ready the base URL for /Files API.
-            let theUrl = spoConfig.spoUrl + spoConfig.spoSite +
-                "/_api/web/GetFolderByServerRelativeUrl('" +
-                encodeURIComponent(filePath.folder) + "')/Files";
             // pass the report to function, which will process one file.
             // report done once it is complete the process.
-            processOneFile(filePath.folder, theUrl, filePath.file, report);
+            processOneFile(filePath, report);
             break;
+        //case "BINARY":
+        //    processOneBinaryFile(filePath, report);
+        //    break;
         default:
             // do nothing here. Just report and iterate to next one.
             report();
@@ -204,21 +203,22 @@ function reportStatus(doc) {
  * utility function to process one file a time.
  * this is for a text format file stored in SharePoint Online site.
  */
-function processOneFile(folderName, folderUrl, fileName, report) {
+function processOneFile(theFile, report) {
 
     // process metadata from folder name.
-    let meta = spoConfig.extractFolderName(folderName, fileName);
+    let meta = 
+        spoConfig.extractFolderName(theFile.folder, theFile.file, theFile);
 
     // process one file a time.
     //console.log("Processing file: " + fileName);
 
     // STEP one: extract the file number and class number from file name.
-    meta = Object.assign(meta, spoConfig.extractFileName(fileName));
+    meta = Object.assign(meta, spoConfig.extractFileName(theFile.file));
     //console.log("Metadata: ", meta);
 
     // STEP two: get file property.
     let reqGetProp = {
-        url: folderUrl + "('" + fileName + "')/Properties",
+        url: spoConfig.getPropertiesEndpoint(theFile),
         method: "get",
         headers: spoHeaders, 
     };
@@ -233,7 +233,7 @@ function processOneFile(folderName, folderUrl, fileName, report) {
 
         // STEP three: get file content. this is a text file.
         let reqGetFile = {
-            url: folderUrl + "('" + fileName + "')/$Value",
+            url: spoConfig.getValueEndpoint(theFile),
             method: "get",
             headers: spoHeaders
         };
@@ -244,19 +244,7 @@ function processOneFile(folderName, folderUrl, fileName, report) {
                 console.log(meta[localConfig.idField]);
                 report();
             } else {
-            // update Solr.
-            axios.post( targetUpdate, meta,
-                // default limit is 10MB, set to 1GB for now.
-                {maxContentLength: 1073741824} )
-            .then(function(postRes) {
-                // update status .
-                //console.log(postRes);
-                report();
-            }).catch(function(postErr) {
-                console.log(now(), "Failed to post solr doc", meta[localConfig.idField]);
-                if(localConfig.debugMode) console.log(postErr);
-                report();
-            });
+                postSolrDoc(targetUpdate, meta, report);
             }
         }).catch(function(fileErr) {
             // report status.
@@ -273,16 +261,32 @@ function processOneFile(folderName, folderUrl, fileName, report) {
 }
 
 /**
+ * send the solr doc to target update endpoint.
+ */
+function postSolrDoc(updateEndpoint, solrDoc, report) {
+
+    // update Solr.
+    axios.post( updateEndpoint, solrDoc,
+        // default limit is 10MB, set to 1GB for now.
+        {maxContentLength: 1073741824} )
+    .then(function(postRes) {
+        // update status .
+        //console.log(postRes);
+        report();
+    }).catch(function(postErr) {
+        console.log(now(), "Failed to post solr doc", solrDoc[localConfig.idField]);
+        if(localConfig.debugMode) console.log(postErr);
+        report();
+    });
+}
+
+/**
  * utitlity function to process one binary file.
  */
-function processOneBinaryFile(spoHeaders, theFile, reportFile) {
-
-    let [folderName, fileName, localFile] =
-        Object.values(localConfig.getFilePath(theFile));
+function processOneBinaryFile(folderName, fileName, localFile, reportFile) {
 
     // get metadata from the folder.
-    let meta = spoConfig.extractFolderName(folderName, fileName,
-                                           theFile);
+    let meta = spoConfig.extractFolderName(folderName, fileName);
     // check the metadata from the folder path
     //console.dir(meta);
 
