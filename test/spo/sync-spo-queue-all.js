@@ -85,18 +85,20 @@ spoAuth.getAuth(spoConfig.spoUrl,
         console.log(now(), "Working on items from", localConfig.startIndex,
                     "to", bulk);
 
-        // sync interation to get docs from source 
+        // sync interation to get docs from source evetn queue
         // batch by batch...
-        strategy.waterfallOver(localConfig.startIndex, bulk, batchEventsIterator,
-        // the iterate over callback.
-        function() {
-            console.log(now(), "All Done");
-            // summary message:
-            let endTime = new Date();
-            // the differenc will be in ms
-            let totalTime = endTime - startTime;
-            console.log("Running time: " + prettyMs(totalTime));
-        });
+        strategy.waterfallOver(localConfig.startIndex, bulk,
+            batchEventsIterator,
+            // the iterate over callback.
+            function() {
+                console.log(now(), "All Done");
+                // summary message:
+                let endTime = new Date();
+                // the differenc will be in ms
+                let totalTime = endTime - startTime;
+                console.log("Running time: " + prettyMs(totalTime));
+            }
+        );
     })
     .catch(function(totalError) {
         console.log(now(), "Total Query Error!", totalQuery);
@@ -124,46 +126,15 @@ function batchEventsIterator(start, reportDone) {
     };
     axios.get(sourceSelect, batchQuery)
     .then(function(response) {
-        // handle response here.
-        //console.log("Got Response:");
+
         //console.dir(response.data.response.docs.length);
- 
+
         //===========================================================
         // async call to iterate each doc / event
         let events = response.data.response.docs;
-        strategy.iterateOver(events,
-        function(doc, report) {
-            // - get the file path
-            let filePath = localConfig.getFilePath(doc, spoConfig.spoSite);
-            if( filePath === null ) {
- 
-                localConfig.setupStatus(doc, "MISSING_FILE");
-                reportStatus(doc);
- 
-                // report async iteration.
-                report();
-                return;
-            }
- 
-            // process each file.
-            //console.log(filePath);
-            if(filePath.folder.endsWith('Certified Products')) {
- 
-                // get ready the base URL for /Files API.
-                let theUrl = spoConfig.spoUrl + spoConfig.spoSite + 
-                    "/_api/web/GetFolderByServerRelativeUrl('" +
-                    encodeURIComponent(filePath.folder) + "')/Files";
-                // pass the report to function, which will process one file.
-                // report done once it is complete the process.
-                processOneFile(filePath.folder, theUrl,
-                               filePath.file, report);
-            } else {
-                // report done to the iterateOver.
-                report();
-            }
-        }, function() {
-        //===========================================================
-        // End of interateOver
+        strategy.iterateOver(events, eventIterator, function() {
+            //===========================================================
+            // End of interateOver
             console.log(now(), "Async post done", events.length);
             reportDone(events.length);
         });
@@ -172,8 +143,44 @@ function batchEventsIterator(start, reportDone) {
         // handle errors here.
         console.log(now(), "Batch Query ERROR!", batchQuery);
         if(localConfig.debugMode) console.dir(error);
-        // TODO: report done, using the batch size.
+        // report done, using the batch size.
+        // this will keep the iteration going!
+        retportDone(batchSize);
     });
+}
+
+/**
+ * async iterator to process each event.
+ */
+function eventIterator(doc, report) {
+
+    // - get the file path
+    let filePath = localConfig.getFilePath(doc, spoConfig.spoSite);
+    if( filePath === null ) {
+
+        localConfig.setupStatus(doc, "MISSING_FILE");
+        reportStatus(doc);
+
+        // report async iteration.
+        report();
+        return;
+    }
+
+    // process each file.
+    //console.log(filePath);
+    if(filePath.folder.endsWith('Certified Products')) {
+
+        // get ready the base URL for /Files API.
+        let theUrl = spoConfig.spoUrl + spoConfig.spoSite + 
+            "/_api/web/GetFolderByServerRelativeUrl('" +
+            encodeURIComponent(filePath.folder) + "')/Files";
+        // pass the report to function, which will process one file.
+        // report done once it is complete the process.
+        processOneFile(filePath.folder, theUrl, filePath.file, report);
+    } else {
+        // report done to the iterateOver.
+        report();
+    }
 }
 
 /**
