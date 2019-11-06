@@ -241,7 +241,7 @@ function processOneFile(theFile, report) {
 
             meta = Object.assign(meta, spoConfig.extractContent(fileRes.data, striptags));
             if(localConfig.dryRun) {
-                console.log(meta[localConfig.idField]);
+                console.log("Text File:", meta[localConfig.idField]);
                 report();
             } else {
                 postSolrDoc(targetUpdate, meta, report);
@@ -303,7 +303,7 @@ function processOneBinaryFile(theFile, reportFile) {
         // extract SPO properties.
         meta = Object.assign(meta, spoConfig.extractSPOMetadata(propRes.data));
         meta = Object.assign(meta,
-            localConfig.extractSPOBinaryMetadata(propRes.data));
+            spoConfig.extractSPOBinaryMetadata(propRes.data));
         // set the ID.
         meta[localConfig.idField] = spoConfig.calcId(meta);
         //console.log(meta);
@@ -347,13 +347,13 @@ function processOneBinaryFile(theFile, reportFile) {
         })
         .catch(function(fileErr) {
             console.log("Failed to get file content:", theFile);
-            console.log(fileErr);
+            if(localConfig.debugMode) console.log(fileErr);
             reportFile();
         });
     })
     .catch(function(propErr) {
         console.log("Failed to get file properties:", theFile);
-        console.error(propErr);
+        if(localConfig.debugMode) console.error(propErr);
         reportFile();
     });
     // =======================================================================
@@ -379,11 +379,16 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
         //console.dir(body);
         //console.log("type of body: " + typeof(body));
         let tikaMeta = {};
-        try {
-            tikaMeta = JSON.parse( body );
-        } catch(parseError) {
-            console.log('Failed to parse tikaMeta:', parseError);
-            console.log(body);
+        if(metaErr) {
+            console.log('Failed to get tika metadata:', metaErr);
+        } else {
+            try {
+                tikaMeta = JSON.parse( body );
+            } catch(parseError) {
+                console.log('Failed to parse tikaMeta:', parseError, fileMeta);
+                //if(localConfig.debugMode) console.log(body);
+                // catch the error and keep it going...
+            }
         }
 
         // the request to get content text
@@ -420,8 +425,13 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
 
             } else {
 
-                // post payload to target collection.
-                postSolrDoc( targetEndPoint, payload, reportBinary);
+                if(localConfig.dryRun) {
+                    console.log("Binary File:", payload[localConfig.idField]);
+                    reportBinary();
+                } else {
+                    // post payload to target collection.
+                    postSolrDoc( targetUpdate, payload, reportBinary);
+                }
             }
         } );
     } );
