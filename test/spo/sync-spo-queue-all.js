@@ -46,6 +46,9 @@ if(localConfig.dryRun) {
     console.log(now(), "---------------- Dry Run Mode -------------------");
 }
 
+// set the headers:
+let spoHeaders = {};
+
 // get authenticated to SPO
 spoAuth.getAuth(spoConfig.spoUrl, 
             {username: spoConfig.username, password: spoConfig.password})
@@ -55,9 +58,9 @@ spoAuth.getAuth(spoConfig.spoUrl,
     //console.dir(options);
 
     // get ready header.
-    let headers = options.headers;
+    spoHeaders = options.headers;
     //headers['Accept'] = 'application/json;odata=verbose';
-    headers['Accept'] = 'application/json';
+    spoHeaders['Accept'] = 'application/json';
 
     // simple query to get total number:
     let totalQuery = {
@@ -76,81 +79,17 @@ spoAuth.getAuth(spoConfig.spoUrl,
             console.log( now() + " No doc to process..." );
             return;
         }
+
         console.log(now(), "Total Docs: " + amount);
-    
         let bulk = Math.min(localConfig.endIndex, amount);
         console.log(now(), "Working on items from", localConfig.startIndex,
                     "to", bulk);
-    
+
         // sync interation to get docs from source 
         // batch by batch...
-        strategy.waterfallOver(localConfig.startIndex,
-                               bulk, function(start, reportDone) {
-    
-            console.log(now(), "Start to process: ", start);
-            let batchQuery = {
-              params: {
-                q: localConfig.selectQuery,
-                // sort to make sure we are in the same sequence 
-                // for each batch load.
-                sort: localConfig.selectSort,
-                rows: batchSize,
-                start: start
-              }
-            };
-            axios.get(sourceSelect, batchQuery)
-            .then(function(response) {
-                // handle response here.
-                //console.log("Got Response:");
-                //console.dir(response.data.response.docs.length);
-    
-                //===========================================================
-                // async call to iterate each doc / event
-                let events = response.data.response.docs;
-                strategy.iterateOver(events,
-                function(doc, report) {
-                    // - get the file path
-                    let filePath = localConfig.getFilePath(doc, spoConfig.spoSite);
-                    if( filePath === null ) {
-    
-                        localConfig.setupStatus(doc, "MISSING_FILE");
-                        reportStatus(doc);
-    
-                        // report async iteration.
-                        report();
-                        return;
-                    }
-    
-                    // process each file.
-                    //console.log(filePath);
-                    if(filePath.folder.endsWith('Certified Products')) {
-
-                        // get ready the base URL for /Files API.
-                        let theUrl = spoConfig.spoUrl + spoConfig.spoSite + 
-                            "/_api/web/GetFolderByServerRelativeUrl('" +
-                            encodeURIComponent(filePath.folder) + "')/Files";
-                        // pass the report to function, which will process one file.
-                        // report done once it is complete the process.
-                        processOneFile(headers, filePath.folder, theUrl,
-                                       filePath.file, report);
-                    } else {
-                        // report done to the iterateOver.
-                        report();
-                    }
-                }, function() {
-                //===========================================================
-                // End of interateOver
-                    console.log(now(), "Async post done", events.length);
-                    reportDone(events.length);
-                });
-            })
-            .catch(function(error) {
-                // handle errors here.
-                console.log(now(), "Batch Query ERROR!", batchQuery);
-                if(localConfig.debugMode) console.dir(error);
-            });
-    
-        }, function() {
+        strategy.waterfallOver(localConfig.startIndex, bulk, batchEventsIterator,
+        // the iterate over callback.
+        function() {
             console.log(now(), "All Done");
             // summary message:
             let endTime = new Date();
@@ -166,6 +105,76 @@ spoAuth.getAuth(spoConfig.spoUrl,
 
 // End of spoAuth.getAuth
 });
+
+/**
+ * the batch events iterator, synchornous iterator.
+ */
+function batchEventsIterator(start, reportDone) {
+
+    console.log(now(), "Start to process from", start, "to", start + batchSize);
+    let batchQuery = {
+      params: {
+        q: localConfig.selectQuery,
+        // sort to make sure we are in the same sequence 
+        // for each batch load.
+        sort: localConfig.selectSort,
+        rows: batchSize,
+        start: start
+      }
+    };
+    axios.get(sourceSelect, batchQuery)
+    .then(function(response) {
+        // handle response here.
+        //console.log("Got Response:");
+        //console.dir(response.data.response.docs.length);
+ 
+        //===========================================================
+        // async call to iterate each doc / event
+        let events = response.data.response.docs;
+        strategy.iterateOver(events,
+        function(doc, report) {
+            // - get the file path
+            let filePath = localConfig.getFilePath(doc, spoConfig.spoSite);
+            if( filePath === null ) {
+ 
+                localConfig.setupStatus(doc, "MISSING_FILE");
+                reportStatus(doc);
+ 
+                // report async iteration.
+                report();
+                return;
+            }
+ 
+            // process each file.
+            //console.log(filePath);
+            if(filePath.folder.endsWith('Certified Products')) {
+ 
+                // get ready the base URL for /Files API.
+                let theUrl = spoConfig.spoUrl + spoConfig.spoSite + 
+                    "/_api/web/GetFolderByServerRelativeUrl('" +
+                    encodeURIComponent(filePath.folder) + "')/Files";
+                // pass the report to function, which will process one file.
+                // report done once it is complete the process.
+                processOneFile(filePath.folder, theUrl,
+                               filePath.file, report);
+            } else {
+                // report done to the iterateOver.
+                report();
+            }
+        }, function() {
+        //===========================================================
+        // End of interateOver
+            console.log(now(), "Async post done", events.length);
+            reportDone(events.length);
+        });
+    })
+    .catch(function(error) {
+        // handle errors here.
+        console.log(now(), "Batch Query ERROR!", batchQuery);
+        if(localConfig.debugMode) console.dir(error);
+        // TODO: report done, using the batch size.
+    });
+}
 
 /**
  * utility function to report status.
@@ -186,7 +195,7 @@ function reportStatus(doc) {
  * utility function to process one file a time.
  * this is for a text format file stored in SharePoint Online site.
  */
-function processOneFile(headers, folderName, folderUrl, fileName, report) {
+function processOneFile(folderName, folderUrl, fileName, report) {
 
     // process metadata from folder name.
     let meta = spoConfig.extractFolderName(folderName, fileName);
@@ -202,7 +211,7 @@ function processOneFile(headers, folderName, folderUrl, fileName, report) {
     let reqGetProp = {
         url: folderUrl + "('" + fileName + "')/Properties",
         method: "get",
-        headers: headers
+        headers: spoHeaders, 
     };
     axios.request(reqGetProp).then(function(propRes) {
         //console.dir(propRes.data);
@@ -217,7 +226,7 @@ function processOneFile(headers, folderName, folderUrl, fileName, report) {
         let reqGetFile = {
             url: folderUrl + "('" + fileName + "')/$Value",
             method: "get",
-            headers: headers
+            headers: spoHeaders
         };
         axios.request(reqGetFile).then(function(fileRes) {
 
