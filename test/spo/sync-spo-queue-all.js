@@ -174,9 +174,9 @@ function eventIterator(doc, report) {
             // report done once it is complete the process.
             processOneFile(filePath, report);
             break;
-        //case "BINARY":
-        //    processOneBinaryFile(filePath, report);
-        //    break;
+        case "BINARY":
+            processOneBinaryFile(filePath, report);
+            break;
         default:
             // do nothing here. Just report and iterate to next one.
             report();
@@ -283,21 +283,18 @@ function postSolrDoc(updateEndpoint, solrDoc, report) {
 /**
  * utitlity function to process one binary file.
  */
-function processOneBinaryFile(folderName, fileName, localFile, reportFile) {
+function processOneBinaryFile(theFile, reportFile) {
 
     // get metadata from the folder.
-    let meta = spoConfig.extractFolderName(folderName, fileName);
+    let meta = spoConfig.extractFolderName(theFile.folder, theFile.file, theFile);
     // check the metadata from the folder path
     //console.dir(meta);
 
     // TODO: check if the file exist in the target solr collection
 
-    let folderUrl = spoConfig.spoUrl + spoConfig.spoSite +
-        "/_api/web/GetFolderByServerRelativeUrl('" +
-        encodeURIComponent(folderName) + "')/Files";
     // query SPO to get metadata.
     let reqGetProp = {
-        url: folderUrl + "('" + fileName + "')/Properties",
+        url: spoConfig.getPropertiesEndpoint(theFile),
         method: "get",
         headers: spoHeaders
     };
@@ -305,7 +302,8 @@ function processOneBinaryFile(folderName, fileName, localFile, reportFile) {
         //console.dir(propRes.data);
         // extract SPO properties.
         meta = Object.assign(meta, spoConfig.extractSPOMetadata(propRes.data));
-        meta = Object.assign(meta, localConfig.extractSPOMetadata(propRes.data));
+        meta = Object.assign(meta,
+            localConfig.extractSPOBinaryMetadata(propRes.data));
         // set the ID.
         meta[localConfig.idField] = spoConfig.calcId(meta);
         //console.log(meta);
@@ -313,7 +311,7 @@ function processOneBinaryFile(folderName, fileName, localFile, reportFile) {
     // STEP three: get file content.
         //console.log("File content:");
         let reqGetFile = {
-            url: folderUrl + "('" + fileName + "')/$Value",
+            url: spoConfig.getValueEndpoint(theFile),
             method: "get",
             headers: spoHeaders,
             responseType: 'stream'
@@ -323,7 +321,7 @@ function processOneBinaryFile(folderName, fileName, localFile, reportFile) {
 
             //console.dir(fileRes.data);
             const fileStream = fileRes.data;
-            let output = fs.createWriteStream(localFile);
+            let output = fs.createWriteStream(theFile.localName);
             let md5 = crypto.createHash('md5');
             let fileSize = 0;
             fileStream.on('data', (chunk /* chunk is an ArrayBuffer */) => {
@@ -342,18 +340,19 @@ function processOneBinaryFile(folderName, fileName, localFile, reportFile) {
                 let fileHash = md5.digest('hex');
                 //console.log('Write to file', localFile, "file hash:", fileHash);
                 // index the finary file.
-                indexingOneBinaryFile(meta, localFile, fileHash, fileSize, reportFile);
+                indexingOneBinaryFile(meta, theFile.localName, 
+                    fileHash, fileSize, reportFile);
                 //reportFile();
             });
         })
         .catch(function(fileErr) {
-            console.log("Failed to get file content:", fileName);
+            console.log("Failed to get file content:", theFile);
             console.log(fileErr);
             reportFile();
         });
     })
     .catch(function(propErr) {
-        console.log("Failed to get file properties:", fileName);
+        console.log("Failed to get file properties:", theFile);
         console.error(propErr);
         reportFile();
     });
@@ -374,7 +373,6 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
         },
         formData: { file: fs.createReadStream( localPath ) } 
     };
-
     // form-data post to get meta data of the binary file..
     request.post( metaReq, function(metaErr, metRes, body) {
 
@@ -423,32 +421,7 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
             } else {
 
                 // post payload to target collection.
-                axios.post( targetEndPoint, payload,
-                    // default limit is 10MB, set to 1GB for now.
-                    {maxContentLength: 1073741824} )
-                .then(function(postRes) {
-                    console.log("Post Success! -", payload[localConfig.idField]);
-
-                    //console.dir(postRes);
-                    //localConfig.setupStatus(eventDoc, "TARGET_UPDATE_SUCCESS");
-                    // update the source document, process status and
-                    // process message.
-                    //reportStatus(eventDoc);
-
-                    // report async iteration.
-                    reportBinary();
-                }).catch(function(postError) {
-                    console.log("Post Failed! -", payload[localConfig.idField]);
-                    console.dir(postError);
-
-                    // log the erorr and then report the copy is done!
-                    //localConfig.setupStatus(eventDoc, "TARGET_UPDATE_FAIL");
-                    // update the source document.
-                    //reportStatus(eventDoc);
-
-                    // report async iteration.
-                    reportBinary();
-                });
+                postSolrDoc( targetEndPoint, payload, reportBinary);
             }
         } );
     } );
