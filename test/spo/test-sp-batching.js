@@ -73,7 +73,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
     // build the batch request body.
     let batchReqBody = [];
 
-    batchReqBody.push('Content-Type: multipart/mixed; boundary="' + batchUUID + '"');
+    batchReqBody.push('Content-Type: multipart/mixed;boundary="' + batchUUID + '"');
     batchReqBody.push('Content-Length: ' + batchBody.length);
     batchReqBody.push('Accept: application/json');
     batchReqBody.push('Content-Transfer-Encoding: binary');
@@ -85,7 +85,7 @@ spoAuth.getAuth(spoConfig.spoUrl,
     //console.log(batchBody);
 
     // prepare the axios request config.
-    headers['Content-Type'] = `multipart/mixed; boundary="${batchUUID}"`;
+    headers['Content-Type'] = `multipart/mixed;boundary=${batchUUID}`;
     headers['Accept'] = "applicaiton/json";
     //console.log(headers);
     let batchReq = {

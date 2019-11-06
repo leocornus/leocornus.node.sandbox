@@ -33,7 +33,7 @@ spo.getAuth(configSPO.spoUrl, {username: configSPO.username,
     headers['Accept'] = 'application/json';
 
     // this is the sample to show hte /Folders API.
-    filePath = configSPO.samplePathes[4];
+    filePath = configSPO.samplePathes[6];
     // this is the sample to show hte /Properites API.
     //filePath = configSPO.samplePathes[1];
     // this is the sample to show the /Files API.
