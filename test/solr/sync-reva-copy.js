@@ -98,7 +98,8 @@ axios.post(revaEndpoint, totalQuery)
                     report();
                 });
             }, function() {
-                logger.info("Async post done! Subtotal: " + payload.length);
+                logger.info("Async post done! from", start,
+                            "to", start + payload.length - 1);
                 reportDone(payload.length);
             });
         })
