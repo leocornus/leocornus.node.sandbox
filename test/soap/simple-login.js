@@ -23,6 +23,28 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
 
     client.login(loginCred, function(err, result) {
 
+        // here is the full callback function.
+        // function(err, result, rawResponse, soapHeader, rawRequest)
+        // result is a javascript object
+        // rawResponse is the raw xml response string
+        // soapHeader is the response soap header as a javascript object
+        // rawRequest is the raw xml request string
+
         console.log("Sync login result:", result);
+    });
+});
+
+// quick test for async call
+let client = soap.createClientAsync(localConfig.baseUrl);
+// client now should be a promise.
+console.log(client);
+client.then( (theClient) => {
+
+    let login = theClient.loginAsync(loginCred);
+    login.then((result) => {
+
+        // result is a javascript array containing
+        // result, rawResponse, soapheader, and rawRequest
+        console.log("Async login result:", result);
     });
 });
