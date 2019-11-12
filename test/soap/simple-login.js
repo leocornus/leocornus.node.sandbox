@@ -10,13 +10,16 @@ const localConfig = config.soap;
 // configure log4js
 log4js.configure(localConfig.log4jsConfig);
 
-soap.createClientAsync(localConfig.baseUrl)
-.then( (client) => {
+// quick test for sync login
+soap.createClient(localConfig.baseUrl, function(error, client) {
 
     //console.log(client);
-    client.login({"username": localConfig.username,
-                  "password": localConfig.password})
-})
-.then( (result) => {
-    console.log("login result:", result);
+
+    let loginCred = 
+        {"username": localConfig.username,
+         "password": localConfig.password};
+    return client.login(loginCred, function(err, result) {
+
+        console.log("Sync login result:", result);
+    });
 });
