@@ -36,8 +36,10 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
 
 // quick test for async call
 let client = soap.createClientAsync(localConfig.baseUrl);
-// client now should be a promise.
+
+// async client is a promise.
 console.log(client);
+// Promise has then, catch and finally prototype method.
 client.then( (theClient) => {
 
     let login = theClient.loginAsync(loginCred);
@@ -46,5 +48,12 @@ client.then( (theClient) => {
         // result is a javascript array containing
         // result, rawResponse, soapheader, and rawRequest
         console.log("Async login result:", result);
+    })
+    .catch( (loginError) => {
+        console.log("Login Error:", loginError);
     });
+})
+.catch( (error) => {
+
+    console.log(error);
 });
