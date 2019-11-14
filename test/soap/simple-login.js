@@ -45,12 +45,14 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
             // get listing data.
             client.getAllListings(context, function(allError, listingsXml) {
                 // listings are in xml format.
-                //console.log("Listings:", listings);
+                //console.log("Listings:", listingsXml["return"]);
                 parseXml(listingsXml['return'], function(parseErr, listings) {
                     if(parseErr) {
                         console.log("Parse Error:", parseErr);
                     } else {
-                        console.log("All listings:", listings);
+                        // data is in CSV format.
+                        console.log("Listings data", listings.Listings.Data[0]);
+                        console.log("listing total:", listings.Listings.Count[0]);
                     }
                 });
             });
