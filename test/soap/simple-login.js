@@ -4,6 +4,7 @@
 
 const soap = require('soap');
 const log4js = require('log4js');
+const parseXml = require('xml2js').parseString;
 
 const config = require('./../../src/config');
 const localConfig = config.soap;
@@ -42,9 +43,16 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
             console.log("Context:", context);
 
             // get listing data.
-            client.getAllListings(context, function(allError, listings) {
+            client.getAllListings(context, function(allError, listingsXml) {
                 // listings are in xml format.
-                console.log("Listings:", listings);
+                //console.log("Listings:", listings);
+                parseXml(listingsXml['return'], function(parseErr, listings) {
+                    if(parseErr) {
+                        console.log("Parse Error:", parseErr);
+                    } else {
+                        console.log("All listings:", listings);
+                    }
+                });
             });
         });
     });
