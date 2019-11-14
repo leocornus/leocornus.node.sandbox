@@ -31,6 +31,19 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
         // rawRequest is the raw xml request string
 
         console.log("Sync login result:", result);
+
+        // get ready the context.
+        let context = {context: result["return"]};
+        // call getBoards
+        client.getBoards(context, function(boardErr, boards) {
+
+            console.log("sync Available Boards:", boards);
+            context['boardID'] = boards["return"][0];
+            console.log("Context:", context);
+
+            // get listing data.
+
+        });
     });
 });
 
