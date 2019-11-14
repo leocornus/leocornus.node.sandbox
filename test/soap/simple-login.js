@@ -42,7 +42,10 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
             console.log("Context:", context);
 
             // get listing data.
-
+            client.getAllListings(context, function(allError, listings) {
+                // listings are in xml format.
+                console.log("Listings:", listings);
+            });
         });
     });
 });
