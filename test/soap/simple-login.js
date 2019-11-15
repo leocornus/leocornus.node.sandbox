@@ -5,6 +5,7 @@
 const soap = require('soap');
 const log4js = require('log4js');
 const parseXml = require('xml2js').parseString;
+const parseCsv = require('csv-parse');
 
 const config = require('./../../src/config');
 const localConfig = config.soap;
@@ -51,8 +52,18 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                         console.log("Parse Error:", parseErr);
                     } else {
                         // data is in CSV format.
-                        console.log("Listings data", listings.Listings.Data[0]);
+                        let listingsCSV = listings.Listings.Data[0];
+                        console.log("Listings data in CSV format: ", listingsCSV);
                         console.log("listing total:", listings.Listings.Count[0]);
+
+                        // parse CSV files.
+                        parseCsv( listingsCSV, {}, function(err, output) {
+
+                            if(err) {
+                                console.log('Parse CSV Error:', err);
+                            }
+                            console.log("First row:", output[0]);
+                        });
                     }
                 });
             });
