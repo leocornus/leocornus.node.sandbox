@@ -48,7 +48,6 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
             client.getHeaders(context, function(headerErr, headers) {
                 csvHeader = headers["return"].join(",");
                 console.log("Headers:", csvHeader);
-            });
 
             // get listing data.
             client.getAllListings(context, function(allError, listingsXml) {
@@ -59,20 +58,27 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                         console.log("Parse Error:", parseErr);
                     } else {
                         // data is in CSV format.
-                        let listingsCSV = listings.Listings.Data[0];
+                        // add headers to include columns' name.
+                        let listingsCSV = csvHeader + "\r\n" +
+                            listings.Listings.Data[0];
                         //console.log("Listings data in CSV format: ", listingsCSV);
                         console.log("listing total:", listings.Listings.Count[0]);
 
                         // parse CSV files.
-                        parseCsv( listingsCSV, {}, function(err, output) {
+                        parseCsv( listingsCSV, 
+                            // turn on the columns,
+                            // so the JSON output will be in Object format
+                            // with column name.
+                            {columns: true}, function(err, output) {
 
                             if(err) {
                                 console.log('Parse CSV Error:', err);
                             }
-                            //console.log("First row:", output[0]);
+                            console.log("First row:", output[0]);
                         });
                     }
                 });
+            });
             });
         });
     });
