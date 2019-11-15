@@ -43,6 +43,13 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
             context['boardID'] = boards["return"][0];
             console.log("Context:", context);
 
+            // the header for the CSV listings
+            let csvHeader = '';
+            client.getHeaders(context, function(headerErr, headers) {
+                csvHeader = headers["return"].join(",");
+                console.log("Headers:", csvHeader);
+            });
+
             // get listing data.
             client.getAllListings(context, function(allError, listingsXml) {
                 // listings are in xml format.
@@ -53,7 +60,7 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                     } else {
                         // data is in CSV format.
                         let listingsCSV = listings.Listings.Data[0];
-                        console.log("Listings data in CSV format: ", listingsCSV);
+                        //console.log("Listings data in CSV format: ", listingsCSV);
                         console.log("listing total:", listings.Listings.Count[0]);
 
                         // parse CSV files.
@@ -62,7 +69,7 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                             if(err) {
                                 console.log('Parse CSV Error:', err);
                             }
-                            console.log("First row:", output[0]);
+                            //console.log("First row:", output[0]);
                         });
                     }
                 });
