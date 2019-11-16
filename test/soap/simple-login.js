@@ -46,8 +46,10 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
             // the header for the CSV listings
             let csvHeader = '';
             client.getHeaders(context, function(headerErr, headers) {
-                csvHeader = headers["return"].join(",");
-                console.log("Headers:", csvHeader);
+                csvHeader = headers["return"];
+                // adding prefix for each header.
+                csvHeader = csvHeader.map( (header) => "i_" + header );
+                console.log("Headers:", csvHeader.join(","));
 
             // get listing data.
             client.getAllListings(context, function(allError, listingsXml) {
@@ -59,7 +61,7 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                     } else {
                         // data is in CSV format.
                         // add headers to include columns' name.
-                        let listingsCSV = csvHeader + "\r\n" +
+                        let listingsCSV = csvHeader.join(",") + "\r\n" +
                             listings.Listings.Data[0];
                         //console.log("Listings data in CSV format: ", listingsCSV);
                         console.log("listing total:", listings.Listings.Count[0]);
