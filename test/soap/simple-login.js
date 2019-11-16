@@ -6,11 +6,13 @@ const soap = require('soap');
 const log4js = require('log4js');
 const parseXml = require('xml2js').parseString;
 const parseCsv = require('csv-parse');
+const axios = require('axios');
 
 const config = require('./../../src/config');
 const localConfig = config.soap;
 // configure log4js
 log4js.configure(localConfig.log4jsConfig);
+const solrUpdate = localConfig.solrUrl + "update/json/docs?commit=true";
 
 // the login credential.
 let loginCred = {
@@ -77,6 +79,14 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                                 console.log('Parse CSV Error:', err);
                             }
                             console.log("First row:", output[0]);
+
+                            // store on Solr...
+                            axios.post(solrUpdate, output[0])
+                            .then(function(solrRes) {
+                                console.log("success");
+                            }).catch(function(solrErr) {
+                                console.log("Error:", solrErr);
+                            });
                         });
                     }
                 });
