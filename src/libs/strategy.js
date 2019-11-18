@@ -53,6 +53,41 @@ var strategy = {
     },
 
     /**
+     * this utility will perform like while loop.
+     */
+    waterfallWhile: function(whileDoneCondition, whileFunction, callback) {
+
+        // let this doneCount to track the progress.
+        // it starts from 0,
+        let doneCount = 0;
+
+        // the while function will report done.
+        whileFunction(doneCount, reportDone);
+
+        /**
+         * the report done function will check the while condition
+         * to decide complete the while loop or continue.
+         */
+        function reportDone(subTotal) {
+
+            // keep tracking the progress..
+            doneCount = doneCount + subTotal;
+
+            if( whileDoneCondition(doneCount, subTotal) ) {
+                // while loop complete.
+                if( callback ){
+                    callback();
+                }
+            } else {
+                // keep doing the whil function.
+                whileFunction(doneCount, reportDone);
+            }
+
+            return doneCount;
+        }
+    },
+
+    /**
      * Asynchronous iterate over a set of items.
      *
      * items is the collections of item we want to iterate over
