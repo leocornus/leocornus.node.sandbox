@@ -159,15 +159,32 @@ function processListingsData(listingsXml, csvHeader, reportDone) {
             }
 
             console.log("Total row:", output.length);
-            reportDone(output.length);
-            //console.log("First row:", output[0]);
-            // store on Solr...
-            //axios.post(solrUpdate, output[0])
-            //.then(function(solrRes) {
-            //    console.log("success");
-            //}).catch(function(solrErr) {
-            //    console.log("Error:", solrErr);
-            //});
+
+            // set the batch async iterator
+            let asyncPost = function(batchItems, reportPostDone) {
+                // tweak the docs to Solr.
+                let payload = localConfig.tweakDocs(batchItems);
+                axios.post(solrUpdate, payload)
+                .then(function(solrRes) {
+
+                    console.log("Batch post success");
+                    reportPostDone(batchItems.length);
+                }).catch(function(solrErr) {
+
+                    console.log("Batch post Failed:", solrErr);
+                    reportPostDone(batchItems.length);
+                });
+            };
+
+            // batch over outputs.
+            strategy.iterateOverBatch(output, localConfig.solrPostBatchSize,
+                asyncPost, 
+                function() {
+                    // all output are posted.
+                    console.log("Solr post complete!");
+                    reportDone(output.length);
+                }
+            );
         });
     });
 }
