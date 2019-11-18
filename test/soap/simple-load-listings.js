@@ -63,7 +63,7 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                         // error happen.
                         // consider as DONE!
                         return true;
-                    } else if(subTotal < 1000) {
+                    } else if(subTotal < localConfig.limitPerCall) {
                         // normal complete.
                         return true;
                     } else {
