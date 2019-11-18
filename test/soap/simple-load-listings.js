@@ -73,7 +73,7 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
 
                 // set the while function.
                 let batchFunction = function(index, reportBatch) {
-                    getBatchListings(client, context, csvHeader, reportBatch);
+                    getBatchListings(index, client, context, csvHeader, reportBatch);
                 };
 
                 strategy.waterfallWhile(doneCondition, batchFunction, function() {
@@ -88,60 +88,86 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
 /**
  * utility function to get a batch of listtings.
  */
-function getBatchListings(soapClient, context, csvHeader, reportDone) {
+function getBatchListings(index, soapClient, context, csvHeader, reportDone) {
 
-    // get listing data.
-    soapClient.getAllListings(context, function(allError, listingsXml) {
-        // check the error first.
-        if(allError) {
-            // report error.
-            console.log("Failed to call getAllListings:", allError);
-            reportDone(-1);
-        }
+    if( index === 0 ) {
 
-        // we should have response successfully
-
-        // listings are in xml format. parse it to JSON format.
-        //console.log("Listings:", listingsXml["return"]);
-        parseXml(listingsXml['return'], function(parseErr, listings) {
-
-            // check if we have parse error!
-            if(parseErr) {
-                // report the parse error.
-                console.log("XML Parse Error:", parseErr);
+        // get listing data.
+        soapClient.getAllListings(context, function(allError, listingsXml) {
+            // check the error first.
+            if(allError) {
+                // report error.
+                console.log("Failed to call getAllListings:", allError);
                 reportDone(-1);
             }
 
-            // data is in CSV format.
-            // add headers to include columns' name.
-            let listingsCSV = csvHeader.join(",") + "\r\n" +
-                listings.Listings.Data[0];
-            //console.log("Listings data in CSV format: ", listingsCSV);
-            console.log("listing total:", listings.Listings.Count[0]);
+            // we should have response successfully
+            // process the listing data.
+            processListingsData(listingsXml, csvHeader, reportDone);
+        });
+    } else {
 
-            // parse CSV files.
-            parseCsv( listingsCSV, 
-                // turn on the columns,
-                // so the JSON output will be in Object format
-                // with column name.
-                {columns: true}, function(err, output) {
+        // get listing data.
+        soapClient.getListingsSince(context, function(allError, listingsXml) {
+            // check the error first.
+            if(allError) {
+                // report error.
+                console.log("Failed to call getListingsSince:", allError);
+                reportDone(-1);
+            }
 
-                if(err) {
-                    console.log('Parse CSV Error:', err);
-                    reportDone(-1);
-                }
+            // we should have response successfully
+            // process the listing data.
+            processListingsData(listingsXml, csvHeader, reportDone);
+        });
+    }
+}
 
-                console.log("Total row:", output.length);
-                reportDone(output.length);
-                //console.log("First row:", output[0]);
-                // store on Solr...
-                //axios.post(solrUpdate, output[0])
-                //.then(function(solrRes) {
-                //    console.log("success");
-                //}).catch(function(solrErr) {
-                //    console.log("Error:", solrErr);
-                //});
-            });
+/**
+ * utility function to process listings data.
+ */
+function processListingsData(listingsXml, csvHeader, reportDone) {
+
+    // listings are in xml format. parse it to JSON format.
+    //console.log("Listings:", listingsXml["return"]);
+    parseXml(listingsXml['return'], function(parseErr, listings) {
+
+        // check if we have parse error!
+        if(parseErr) {
+            // report the parse error.
+            console.log("XML Parse Error:", parseErr);
+            reportDone(-1);
+        }
+
+        // data is in CSV format.
+        // add headers to include columns' name.
+        let listingsCSV = csvHeader.join(",") + "\r\n" +
+            listings.Listings.Data[0];
+        //console.log("Listings data in CSV format: ", listingsCSV);
+        console.log("listing total:", listings.Listings.Count[0]);
+
+        // parse CSV files.
+        parseCsv( listingsCSV,
+            // turn on the columns,
+            // so the JSON output will be in Object format
+            // with column name.
+            {columns: true}, function(err, output) {
+
+            if(err) {
+                console.log('Parse CSV Error:', err);
+                reportDone(-1);
+            }
+
+            console.log("Total row:", output.length);
+            reportDone(output.length);
+            //console.log("First row:", output[0]);
+            // store on Solr...
+            //axios.post(solrUpdate, output[0])
+            //.then(function(solrRes) {
+            //    console.log("success");
+            //}).catch(function(solrErr) {
+            //    console.log("Error:", solrErr);
+            //});
         });
     });
 }
