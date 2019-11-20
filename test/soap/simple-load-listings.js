@@ -4,6 +4,8 @@
 
 const soap = require('soap');
 const log4js = require('log4js');
+const prettyMs = require('pretty-ms');
+
 const parseXml = require('xml2js').parseString;
 const parseCsv = require('csv-parse');
 const axios = require('axios');
@@ -14,6 +16,9 @@ const localConfig = config.soap;
 // configure log4js
 log4js.configure(localConfig.log4jsConfig);
 const solrUpdate = localConfig.solrUrl + "update/json/docs?commit=true";
+
+// track how long it will take.
+const startTime = new Date();
 
 // the login credential.
 let loginCred = {
@@ -79,6 +84,8 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                 strategy.waterfallWhile(doneCondition, batchFunction, function() {
 
                     console.log("While loop complete!");
+                    let endTime = new Date();
+                    console.log("Running time:", prettyMs(endTime - startTime));
                 });
             });
         });
