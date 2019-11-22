@@ -160,7 +160,6 @@ function eventIterator(doc, report) {
 
         localConfig.setupStatus(doc, "MISSING_FILE");
         reportStatus(doc);
-
         // report async iteration.
         report();
         return;
@@ -179,6 +178,8 @@ function eventIterator(doc, report) {
             break;
         default:
             // do nothing here. Just report and iterate to next one.
+            localConfig.setupStatus(doc, "SKIP_TESTING_FILE");
+            reportStatus(doc);
             report();
             break;
     }
@@ -188,6 +189,12 @@ function eventIterator(doc, report) {
  * utility function to report status.
  */
 function reportStatus(doc) {
+
+    if(localConfig.dryRun) {
+
+        console.log("Report Status:", doc["process_status"]);
+        return;
+    }
 
     axios.post(sourceUpdate, doc
     ).then(function(suRes) {
@@ -240,12 +247,7 @@ function processOneFile(theFile, report) {
         axios.request(reqGetFile).then(function(fileRes) {
 
             meta = Object.assign(meta, spoConfig.extractContent(fileRes.data, striptags));
-            if(localConfig.dryRun) {
-                console.log("Text File:", meta[localConfig.idField]);
-                report();
-            } else {
-                postSolrDoc(targetUpdate, meta, report);
-            }
+            postSolrDoc(targetUpdate, meta, report);
         }).catch(function(fileErr) {
             // report status.
             console.log(now(), "Failed to get file content", reqGetFile);
@@ -265,6 +267,12 @@ function processOneFile(theFile, report) {
  */
 function postSolrDoc(updateEndpoint, solrDoc, report) {
 
+    if(localConfig.dryRun) {
+        console.log("POST File:", solrDoc[localConfig.idField]);
+        report();
+        return;
+    }
+
     // update Solr.
     axios.post( updateEndpoint, solrDoc,
         // default limit is 10MB, set to 1GB for now.
@@ -272,10 +280,14 @@ function postSolrDoc(updateEndpoint, solrDoc, report) {
     .then(function(postRes) {
         // update status .
         //console.log(postRes);
+        localConfig.setupStatus(doc, "TARGET_UPDATE_SUCCESS");
+        reportStatus(doc);
         report();
     }).catch(function(postErr) {
         console.log(now(), "Failed to post solr doc", solrDoc[localConfig.idField]);
         if(localConfig.debugMode) console.log(postErr);
+        localConfig.setupStatus(doc, "TARGET_UPDATE_FAIL");
+        reportStatus(doc);
         report();
     });
 }
@@ -425,13 +437,8 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
 
             } else {
 
-                if(localConfig.dryRun) {
-                    console.log("Binary File:", payload[localConfig.idField]);
-                    reportBinary();
-                } else {
-                    // post payload to target collection.
-                    postSolrDoc( targetUpdate, payload, reportBinary);
-                }
+                // post payload to target collection.
+                postSolrDoc( targetUpdate, payload, reportBinary);
             }
         } );
     } );
