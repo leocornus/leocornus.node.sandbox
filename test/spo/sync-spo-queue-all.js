@@ -252,12 +252,16 @@ function processOneFile(theFile, report) {
             // report status.
             console.log(now(), "Failed to get file content", reqGetFile);
             if(localConfig.debugMode) console.log(fileErr);
+            localConfig.setupStatus(doc, "DOWNLOAD_FIALED");
+            reportStatus(doc);
             report();
         });
     }).catch(function(propErr) {
         // report status.
         console.log(now(), "Failed to get file property", reqGetProp);
         if(localConfig.debugMode) console.log(propErr);
+        localConfig.setupStatus(doc, "GET_PROPERTY_FAILED");
+        reportStatus(doc);
         report();
     });
 }
@@ -360,12 +364,16 @@ function processOneBinaryFile(theFile, reportFile) {
         .catch(function(fileErr) {
             console.log("Failed to get file content:", theFile);
             if(localConfig.debugMode) console.log(fileErr);
+            localConfig.setupStatus(doc, "DOWNLOAD_FIALED");
+            reportStatus(doc);
             reportFile();
         });
     })
     .catch(function(propErr) {
         console.log("Failed to get file properties:", theFile);
         if(localConfig.debugMode) console.error(propErr);
+        localConfig.setupStatus(doc, "GET_PROPERTY_FAILED");
+        reportStatus(doc);
         reportFile();
     });
     // =======================================================================
@@ -398,7 +406,7 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
                 tikaMeta = JSON.parse( body );
             } catch(parseError) {
                 console.log('Failed to parse tikaMeta:', parseError, fileMeta);
-                //if(localConfig.debugMode) console.log(body);
+                if(localConfig.debugMode) console.log(body);
                 // catch the error and keep it going...
             }
         }
@@ -429,8 +437,8 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
             if( payload === null ) {
 
                 // this is an identical file, skip.
-                //localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
-                //reportStatus(eventDoc);
+                localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
+                reportStatus(eventDoc);
 
                 // report async iteration.
                 reportBinary();
