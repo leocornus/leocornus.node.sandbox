@@ -171,10 +171,10 @@ function eventIterator(doc, report) {
         case "TEXT":
             // pass the report to function, which will process one file.
             // report done once it is complete the process.
-            processOneFile(filePath, report);
+            processOneFile(doc, filePath, report);
             break;
         case "BINARY":
-            processOneBinaryFile(filePath, report);
+            processOneBinaryFile(doc, filePath, report);
             break;
         default:
             // do nothing here. Just report and iterate to next one.
@@ -210,7 +210,7 @@ function reportStatus(doc) {
  * utility function to process one file a time.
  * this is for a text format file stored in SharePoint Online site.
  */
-function processOneFile(theFile, report) {
+function processOneFile(eventDoc, theFile, report) {
 
     // process metadata from folder name.
     let meta = 
@@ -247,21 +247,21 @@ function processOneFile(theFile, report) {
         axios.request(reqGetFile).then(function(fileRes) {
 
             meta = Object.assign(meta, spoConfig.extractContent(fileRes.data, striptags));
-            postSolrDoc(targetUpdate, meta, report);
+            postSolrDoc(eventDoc, targetUpdate, meta, report);
         }).catch(function(fileErr) {
             // report status.
             console.log(now(), "Failed to get file content", reqGetFile);
             if(localConfig.debugMode) console.log(fileErr);
-            localConfig.setupStatus(doc, "DOWNLOAD_FIALED");
-            reportStatus(doc);
+            localConfig.setupStatus(eventDoc, "DOWNLOAD_FIALED");
+            reportStatus(eventDoc);
             report();
         });
     }).catch(function(propErr) {
         // report status.
         console.log(now(), "Failed to get file property", reqGetProp);
         if(localConfig.debugMode) console.log(propErr);
-        localConfig.setupStatus(doc, "GET_PROPERTY_FAILED");
-        reportStatus(doc);
+        localConfig.setupStatus(eventDoc, "GET_PROPERTY_FAILED");
+        reportStatus(eventDoc);
         report();
     });
 }
@@ -269,7 +269,7 @@ function processOneFile(theFile, report) {
 /**
  * send the solr doc to target update endpoint.
  */
-function postSolrDoc(updateEndpoint, solrDoc, report) {
+function postSolrDoc(eventDoc, updateEndpoint, solrDoc, report) {
 
     if(localConfig.dryRun) {
         console.log("POST File:", solrDoc[localConfig.idField]);
@@ -284,14 +284,14 @@ function postSolrDoc(updateEndpoint, solrDoc, report) {
     .then(function(postRes) {
         // update status .
         //console.log(postRes);
-        localConfig.setupStatus(doc, "TARGET_UPDATE_SUCCESS");
-        reportStatus(doc);
+        localConfig.setupStatus(eventDoc, "TARGET_UPDATE_SUCCESS");
+        reportStatus(eventDoc);
         report();
     }).catch(function(postErr) {
         console.log(now(), "Failed to post solr doc", solrDoc[localConfig.idField]);
         if(localConfig.debugMode) console.log(postErr);
-        localConfig.setupStatus(doc, "TARGET_UPDATE_FAIL");
-        reportStatus(doc);
+        localConfig.setupStatus(eventDoc, "TARGET_UPDATE_FAIL");
+        reportStatus(eventDoc);
         report();
     });
 }
@@ -299,7 +299,7 @@ function postSolrDoc(updateEndpoint, solrDoc, report) {
 /**
  * utitlity function to process one binary file.
  */
-function processOneBinaryFile(theFile, reportFile) {
+function processOneBinaryFile(eventDoc, theFile, reportFile) {
 
     // get metadata from the folder.
     let meta = spoConfig.extractFolderName(theFile.folder, theFile.file, theFile);
@@ -356,7 +356,7 @@ function processOneBinaryFile(theFile, reportFile) {
                 let fileHash = md5.digest('hex');
                 //console.log('Write to file', localFile, "file hash:", fileHash);
                 // index the finary file.
-                indexingOneBinaryFile(meta, theFile.localName, 
+                indexingOneBinaryFile(eventDoc, meta, theFile.localName, 
                     fileHash, fileSize, reportFile);
                 //reportFile();
             });
@@ -364,16 +364,16 @@ function processOneBinaryFile(theFile, reportFile) {
         .catch(function(fileErr) {
             console.log("Failed to get file content:", theFile);
             if(localConfig.debugMode) console.log(fileErr);
-            localConfig.setupStatus(doc, "DOWNLOAD_FIALED");
-            reportStatus(doc);
+            localConfig.setupStatus(eventDoc, "DOWNLOAD_FIALED");
+            reportStatus(eventDoc);
             reportFile();
         });
     })
     .catch(function(propErr) {
         console.log("Failed to get file properties:", theFile);
         if(localConfig.debugMode) console.error(propErr);
-        localConfig.setupStatus(doc, "GET_PROPERTY_FAILED");
-        reportStatus(doc);
+        localConfig.setupStatus(eventDoc, "GET_PROPERTY_FAILED");
+        reportStatus(eventDoc);
         reportFile();
     });
     // =======================================================================
@@ -382,7 +382,7 @@ function processOneBinaryFile(theFile, reportFile) {
 /**
  * untility function to process binary file indexing.
  */
-function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBinary) {
+function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize, reportBinary) {
 
     // the request to get metadata.
     let metaReq = {
@@ -446,7 +446,7 @@ function indexingOneBinaryFile(fileMeta, localPath, fileHash, fileSize, reportBi
             } else {
 
                 // post payload to target collection.
-                postSolrDoc( targetUpdate, payload, reportBinary);
+                postSolrDoc(eventDoc, targetUpdate, payload, reportBinary);
             }
         } );
     } );
