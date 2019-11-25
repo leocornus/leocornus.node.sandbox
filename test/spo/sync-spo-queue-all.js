@@ -409,6 +409,7 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
             localConfig.setupStatus(eventDoc, "TIKA_METADATA_FAILED");
             reportStatus(eventDoc);
             reportBinary();
+            return;
         } else {
             try {
                 tikaMeta = JSON.parse( body );
@@ -444,26 +445,27 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
                 localConfig.setupStatus(eventDoc, "TIKA_PARSE_FAILED");
                 reportStatus(eventDoc);
                 reportBinary();
-            }
-
-            //=========================================================
-            // get ready the payload for target collection.
-            let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body,
-                                                fileHash, fileSize );
-
-            if( payload === null ) {
-
-                // this is an identical file, skip.
-                localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
-                reportStatus(eventDoc);
-
-                // report async iteration.
-                reportBinary();
-
             } else {
 
-                // post payload to target collection.
-                postSolrDoc(eventDoc, payload, reportBinary);
+                //=========================================================
+                // get ready the payload for target collection.
+                let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body,
+                                                    fileHash, fileSize );
+
+                if( payload === null ) {
+
+                    // this is an identical file, skip.
+                    localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
+                    reportStatus(eventDoc);
+
+                    // report async iteration.
+                    reportBinary();
+
+                } else {
+
+                    // post payload to target collection.
+                    postSolrDoc(eventDoc, payload, reportBinary);
+                }
             }
         } );
     } );
