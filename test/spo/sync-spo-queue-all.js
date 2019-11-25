@@ -406,6 +406,8 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
             // delete local file.
             deleteLocalFile(localPath);
             //
+            localConfig.setupStatus(eventDoc, "TIKA_METADATA_FAILED");
+            reportStatus(eventDoc);
             reportBinary();
         } else {
             try {
@@ -439,6 +441,8 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
             //console.log("Size of body: " + body.length );
             if(err) {
                 console.error("Failed to parse file:", err);
+                localConfig.setupStatus(eventDoc, "TIKA_PARSE_FAILED");
+                reportStatus(eventDoc);
                 reportBinary();
             }
 
