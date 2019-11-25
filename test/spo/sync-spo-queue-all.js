@@ -473,9 +473,9 @@ function deleteLocalFile(localFile) {
     if(localConfig.deleteLocal) {
         fs.unlink(localFile, (err) => {
 
-            console.log("Delete local file: ", localFile);
+            if(localConfig.debugMode) console.log("Delete local file: ", localFile);
         });
     } else {
-        console.log("Delete local file is OFF!");
+        if(localConfig.debugMode) console.log("Delete local file is OFF!");
     }
 }
