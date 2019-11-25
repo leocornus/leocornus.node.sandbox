@@ -31,9 +31,8 @@ const spoConfig = localConfig.spo;
 const tikaConfig = config.tika;
 
 // solr endpoint.
-const sourceSelect = localConfig.baseUrl + "select";
-const sourceUpdate = localConfig.baseUrl + "update/json/docs?commit=true";
-const targetSelect = localConfig.targetBaseUrl + "select";
+const sourceSelect = localConfig.getSourceSelect();
+const sourceUpdate = localConfig.getSourceUpdate();
 const targetUpdate = localConfig.targetBaseUrl + "update/json/docs?commit=true";
 
 // set batch size.
@@ -247,7 +246,7 @@ function processOneFile(eventDoc, theFile, report) {
         axios.request(reqGetFile).then(function(fileRes) {
 
             meta = Object.assign(meta, spoConfig.extractContent(fileRes.data, striptags));
-            postSolrDoc(eventDoc, targetUpdate, meta, report);
+            postSolrDoc(eventDoc, meta, report);
         }).catch(function(fileErr) {
             // report status.
             console.log(now(), "Failed to get file content", reqGetFile);
@@ -269,16 +268,19 @@ function processOneFile(eventDoc, theFile, report) {
 /**
  * send the solr doc to target update endpoint.
  */
-function postSolrDoc(eventDoc, updateEndpoint, solrDoc, report) {
+function postSolrDoc(eventDoc, solrDoc, report) {
+
+    let target = localConfig.getTargetUpdate(solrDoc);
 
     if(localConfig.dryRun) {
-        console.log("POST File:", solrDoc[localConfig.idField]);
+        console.log("POST File:", solrDoc[localConfig.idField], 
+            "to", target);
         report();
         return;
     }
 
     // update Solr.
-    axios.post( updateEndpoint, solrDoc,
+    axios.post( target, solrDoc,
         // default limit is 10MB, set to 1GB for now.
         {maxContentLength: 1073741824} )
     .then(function(postRes) {
@@ -406,7 +408,7 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
                 tikaMeta = JSON.parse( body );
             } catch(parseError) {
                 console.log('Failed to parse tikaMeta:', parseError, fileMeta);
-                if(localConfig.debugMode) console.log(body);
+                if(localConfig.debugMode) console.log( body );
                 // catch the error and keep it going...
             }
         }
@@ -446,7 +448,7 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
             } else {
 
                 // post payload to target collection.
-                postSolrDoc(eventDoc, targetUpdate, payload, reportBinary);
+                postSolrDoc(eventDoc, payload, reportBinary);
             }
         } );
     } );
