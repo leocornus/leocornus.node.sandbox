@@ -409,7 +409,6 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
             localConfig.setupStatus(eventDoc, "TIKA_METADATA_FAILED");
             reportStatus(eventDoc);
             reportBinary();
-            return;
         } else {
             try {
                 tikaMeta = JSON.parse( body );
@@ -418,56 +417,56 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
                 if(localConfig.debugMode) console.log( body );
                 // catch the error and keep it going...
             }
-        }
 
-        // the request to get content text
-        let tikaReq = {
-            url: tikaConfig.baseUrl + 'tika/form',
-            headers: {
-                "Accept": "text/plain",
-                "Content-Type": "multipart/form-data"
-            },
-            // we could not reuse the same form data object.
-            // we have to create a new read stream.
-            formData: {file: fs.createReadStream( localPath )}
-        };
-        // form-data post to get content in text format.
-        request.post( tikaReq, function(err, res, body) {
+            // the request to get content text
+            let tikaReq = {
+                url: tikaConfig.baseUrl + 'tika/form',
+                headers: {
+                    "Accept": "text/plain",
+                    "Content-Type": "multipart/form-data"
+                },
+                // we could not reuse the same form data object.
+                // we have to create a new read stream.
+                formData: {file: fs.createReadStream( localPath )}
+            };
+            // form-data post to get content in text format.
+            request.post( tikaReq, function(err, res, body) {
 
-            // delete local file first!
-            deleteLocalFile(localPath);
+                // delete local file first!
+                deleteLocalFile(localPath);
 
-            //console.dir(body);
-            //console.log("type of body: " + typeof(body) );
-            //console.log("Size of body: " + body.length );
-            if(err) {
-                console.error("Failed to parse file:", err);
-                localConfig.setupStatus(eventDoc, "TIKA_PARSE_FAILED");
-                reportStatus(eventDoc);
-                reportBinary();
-            } else {
-
-                //=========================================================
-                // get ready the payload for target collection.
-                let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body,
-                                                    fileHash, fileSize );
-
-                if( payload === null ) {
-
-                    // this is an identical file, skip.
-                    localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
+                //console.dir(body);
+                //console.log("type of body: " + typeof(body) );
+                //console.log("Size of body: " + body.length );
+                if(err) {
+                    console.error("Failed to parse file:", err);
+                    localConfig.setupStatus(eventDoc, "TIKA_PARSE_FAILED");
                     reportStatus(eventDoc);
-
-                    // report async iteration.
                     reportBinary();
-
                 } else {
 
-                    // post payload to target collection.
-                    postSolrDoc(eventDoc, payload, reportBinary);
+                    //=========================================================
+                    // get ready the payload for target collection.
+                    let payload = localConfig.mergeDoc( fileMeta, tikaMeta, body,
+                                                        fileHash, fileSize );
+
+                    if( payload === null ) {
+
+                        // this is an identical file, skip.
+                        localConfig.setupStatus(eventDoc, "IDENTICAL_FILE");
+                        reportStatus(eventDoc);
+
+                        // report async iteration.
+                        reportBinary();
+
+                    } else {
+
+                        // post payload to target collection.
+                        postSolrDoc(eventDoc, payload, reportBinary);
+                    }
                 }
-            }
-        } );
+            } );
+        }
     } );
 }
 
