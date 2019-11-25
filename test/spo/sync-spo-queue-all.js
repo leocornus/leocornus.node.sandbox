@@ -403,6 +403,10 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
         let tikaMeta = {};
         if(metaErr) {
             console.log('Failed to get tika metadata:', metaErr);
+            // delete local file.
+            deleteLocalFile(localPath);
+            //
+            reportBinary();
         } else {
             try {
                 tikaMeta = JSON.parse( body );
@@ -427,9 +431,16 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
         // form-data post to get content in text format.
         request.post( tikaReq, function(err, res, body) {
 
+            // delete local file first!
+            deleteLocalFile(localPath);
+
             //console.dir(body);
             //console.log("type of body: " + typeof(body) );
             //console.log("Size of body: " + body.length );
+            if(err) {
+                console.error("Failed to parse file:", err);
+                reportBinary();
+            }
 
             //=========================================================
             // get ready the payload for target collection.
@@ -452,4 +463,19 @@ function indexingOneBinaryFile(eventDoc, fileMeta, localPath, fileHash, fileSize
             }
         } );
     } );
+}
+
+/**
+ * utility function to remove local temp file.
+ */
+function deleteLocalFile(localFile) {
+
+    if(localConfig.deleteLocal) {
+        fs.unlink(localFile, (err) => {
+
+            console.log("Delete local file: ", localFile);
+        });
+    } else {
+        console.log("Delete local file is OFF!");
+    }
 }
