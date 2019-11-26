@@ -112,7 +112,6 @@ spoAuth.getAuth(spoConfig.spoUrl,
  */
 function batchEventsIterator(start, reportDone) {
 
-    console.log(now(), "Start to process from", start, "to", start + batchSize);
     let batchQuery = {
       params: {
         q: localConfig.selectQuery,
@@ -131,6 +130,7 @@ function batchEventsIterator(start, reportDone) {
         //===========================================================
         // async call to iterate each doc / event
         let events = response.data.response.docs;
+        console.log(now(), "Start to process from", start, "to", start + events.length);
         strategy.iterateOver(events, eventIterator, function() {
             //===========================================================
             // End of interateOver
@@ -165,7 +165,7 @@ function eventIterator(doc, report) {
     }
 
     // process each file.
-    //console.log(filePath);
+    console.log("Processiong file:", filePath.file);
     switch(localConfig.getFileFormat(filePath)) {
         case "TEXT":
             // pass the report to function, which will process one file.
