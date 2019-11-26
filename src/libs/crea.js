@@ -212,7 +212,7 @@ Crea.prototype.calcDigestString = function(realm, nonce, qop, username, password
 };
 
 /**
- * utility class to get metadata.
+ * utility function to get metadata.
  */
 Crea.prototype.getMetadata = async function(params, callback) {
 
@@ -236,4 +236,14 @@ Crea.prototype.getMetadata = async function(params, callback) {
     }
 
     return promise;
-}
+};
+
+/**
+ * the search function.
+ */
+Crea.prototype.search = async function( queryParams, callback) {
+
+    let self = this;
+    await self._authorized;
+
+};
