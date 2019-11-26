@@ -119,7 +119,8 @@ function batchEventsIterator(start, reportDone) {
         // for each batch load.
         sort: localConfig.selectSort,
         rows: batchSize,
-        start: start
+        //start: start
+        start: 0
       }
     };
     axios.get(sourceSelect, batchQuery)
