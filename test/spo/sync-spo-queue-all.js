@@ -119,8 +119,8 @@ function batchEventsIterator(start, reportDone) {
         // for each batch load.
         sort: localConfig.selectSort,
         rows: batchSize,
-        //start: start
-        start: 0
+        start: start
+        //start: 0
       }
     };
     axios.get(sourceSelect, batchQuery)
@@ -145,7 +145,7 @@ function batchEventsIterator(start, reportDone) {
         if(localConfig.debugMode) console.dir(error);
         // report done, using the batch size.
         // this will keep the iteration going!
-        retportDone(batchSize);
+        reportDone(batchSize);
     });
 }
 
