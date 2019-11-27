@@ -174,7 +174,7 @@ function processListingsData(listingsXml, csvHeader, reportDone) {
                 axios.post(solrUpdate, payload)
                 .then(function(solrRes) {
 
-                    console.log("Batch post success");
+                    //console.log("Batch post success");
                     reportPostDone(batchItems.length);
                 }).catch(function(solrErr) {
 
