@@ -81,12 +81,16 @@ soap.createClient(localConfig.baseUrl, function(error, client) {
                             console.log("First row:", output[0]);
 
                             // store on Solr...
-                            axios.post(solrUpdate, output[0])
-                            .then(function(solrRes) {
-                                console.log("success");
-                            }).catch(function(solrErr) {
-                                console.log("Error:", solrErr);
-                            });
+                            if (localConfig.dryRun) {
+                                console.log("Post data to Solr...");
+                            } else {
+                                axios.post(solrUpdate, output[0])
+                                .then(function(solrRes) {
+                                    console.log("success");
+                                }).catch(function(solrErr) {
+                                    console.log("Error:", solrErr);
+                                });
+                            }
                         });
                     }
                 });
