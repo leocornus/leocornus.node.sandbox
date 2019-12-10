@@ -7,6 +7,7 @@
  */
 
 const ihf = require( './../../src/libs/ihf' );
+const localConfig = require('./../../src/config').soap;
 
 let startDate = new Date("2018-03-12T12:00:00.000");
 
@@ -16,6 +17,8 @@ for(i = 0; i < 40; i ++) {
     console.log(ihf.constructFolderPath( startDate ));
     startDate.setDate(startDate.getDate() + 1);
 }
+
+console.log(localConfig.ihfCsvHeader.join(","));
 
 function getFolderPath(oneDay) {
 
