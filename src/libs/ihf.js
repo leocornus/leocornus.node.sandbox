@@ -18,6 +18,7 @@ let ihf = {
 
         let self = this;
 
+        let startTime = new Date();
         console.log(theFolder);
         // get all files in the filder.
         let files = fs.readdirSync(theFolder);
@@ -32,6 +33,8 @@ let ihf = {
         strategy.waterfallOver(0, files.length, waterfallIterator, function() {
 
             console.log("Process all files for folder:", theFolder);
+            let totalTime = (new Date()) - startTime;
+            console.log("====Running time:", prettyMs(totalTime));
             reportOneFolderDone(1);
         });
     },
