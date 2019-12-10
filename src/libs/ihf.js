@@ -3,7 +3,16 @@
  */
 
 let ihf = {
-    
+
+    /**
+     * process all csv files in one folder.
+     */
+    processOneFolder: function(theFolder, reportOneFolderDone) {
+
+        console.log(theFolder);
+        reportOneFolderDone(1);
+    },
+
     /**
      * construct the folder path for the given date.
      */
