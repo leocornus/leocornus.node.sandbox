@@ -2,6 +2,9 @@
  * some utility functions for IHF rest APIs
  */
 
+const fs = require('fs');
+const strategy = require('./strategy');
+
 let ihf = {
 
     /**
@@ -9,8 +12,38 @@ let ihf = {
      */
     processOneFolder: function(theFolder, reportOneFolderDone) {
 
+        let self = this;
+
         console.log(theFolder);
-        reportOneFolderDone(1);
+        // get all files in the filder.
+        let files = fs.readdirSync(theFolder);
+        // set the waterfall iterator to process each file one after another.
+        let waterfallIterator = function(index, reportOneFile) {
+
+            let oneFile = files[index];
+            self.processOneFile(theFolder + "/" + oneFile, reportOneFile);
+        }
+        // waterfall iterate through all files.
+        strategy.waterfallOver(0, files.length, waterfallIterator, function() {
+
+            console.log("Process all files for folder:", theFolder);
+            reportOneFolderDone(1);
+        });
+    },
+
+    /**
+     * process one csv file a time.
+     */
+    processOneFile: function(theFile, reportOneFileDone) {
+
+        let self = this;
+
+        console.log("--", theFile);
+        // read the file content
+        // adding header.
+        // parse csv content
+        // async post to solr.
+        reportOneFileDone(1);
     },
 
     /**
