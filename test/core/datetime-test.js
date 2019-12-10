@@ -1,4 +1,5 @@
 /**
+ * some basic concept about datetime.
  */
 
 const prettyMs = require('pretty-ms');
