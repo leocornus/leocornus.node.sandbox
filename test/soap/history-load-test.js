@@ -25,7 +25,7 @@ for(i = 0; i < localConfig.histDays; i ++) {
 let waterfallIterator = function(index, reportOneFolder) {
 
     let oneFolder = histFolders[index];
-    ihf.processOneFolder(oneFolder, reportOneFolder);
+    ihf.processOneFolder(oneFolder, reportOneFolder, localConfig);
 };
 
 strategy.waterfallOver(0, histFolders.length, waterfallIterator, function() {
