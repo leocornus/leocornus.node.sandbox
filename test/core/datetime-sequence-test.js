@@ -5,6 +5,7 @@
  * for example:
  * 2019/01/2018-01-04
  */
+
 let startDate = new Date("2018-03-12T12:00:00.000");
 
 for(i = 0; i < 40; i ++) {
@@ -17,7 +18,8 @@ function getFolderPath(oneDay) {
 
     return oneDay.getFullYear() + "/" +
         pad(oneDay.getMonth() + 1, 2) + "/" +
-        pad(oneDay.getDate(), 2);
+        [oneDay.getFullYear(), pad(oneDay.getMonth() + 1, 2),
+         pad(oneDay.getDate(), 2)].join("-");
 }
 
 function pad(n, width, z) {
