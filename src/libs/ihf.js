@@ -3,6 +3,10 @@
  */
 
 const fs = require('fs');
+const parseCsv = require('csv-parse');
+const prettyMs = require('pretty-ms');
+const axios = require('axios');
+
 const strategy = require('./strategy');
 
 let ihf = {
@@ -10,7 +14,7 @@ let ihf = {
     /**
      * process all csv files in one folder.
      */
-    processOneFolder: function(theFolder, reportOneFolderDone) {
+    processOneFolder: function(theFolder, reportOneFolderDone, localConfig) {
 
         let self = this;
 
@@ -21,7 +25,8 @@ let ihf = {
         let waterfallIterator = function(index, reportOneFile) {
 
             let oneFile = files[index];
-            self.processOneFile(theFolder + "/" + oneFile, reportOneFile);
+            self.processOneFile(theFolder + "/" + oneFile, reportOneFile,
+                                localConfig);
         }
         // waterfall iterate through all files.
         strategy.waterfallOver(0, files.length, waterfallIterator, function() {
@@ -34,16 +39,56 @@ let ihf = {
     /**
      * process one csv file a time.
      */
-    processOneFile: function(theFile, reportOneFileDone) {
+    processOneFile: function(theFile, reportOneFileDone, localConfig) {
 
         let self = this;
 
         console.log("--", theFile);
         // read the file content
+        let listingsCSV = fs.readFileSync(theFile);
+
         // adding header.
+        listingsCSV = localConfig.ihfCsvHeader.join(",") + "\n" + listingsCSV;
         // parse csv content
-        // async post to solr.
-        reportOneFileDone(1);
+        parseCsv( listingsCSV,
+            // turn on the columns,
+            // so the JSON output will be in Object format
+            // with column name.
+            {columns: true}, function(err, output) {
+
+            if(err) {
+                console.log('Parse CSV Error:', err);
+                reportOneFileDone(1);
+            }
+
+            console.log("Total row:", output.length);
+
+            // set the batch async iterator
+            let asyncPost = function(batchItems, reportPostDone) {
+                // tweak the docs to Solr.
+                let payload = localConfig.tweakDocs(batchItems);
+                axios.post(localConfig.solrUpdate, payload)
+                .then(function(solrRes) {
+
+                    //console.log("Batch post success");
+                    reportPostDone(batchItems.length);
+                }).catch(function(solrErr) {
+
+                    console.log("Batch post Failed:", solrErr);
+                    reportPostDone(batchItems.length);
+                });
+            };
+
+            // batch over outputs.
+            strategy.iterateOverBatch(output, localConfig.solrPostBatchSize,
+                asyncPost, 
+                function() {
+                    // all output are posted.
+                    console.log("Solr post complete!");
+                    reportOneFileDone(1);
+                }
+            );
+        });
     },
 
     /**
