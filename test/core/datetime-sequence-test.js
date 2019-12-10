@@ -6,11 +6,14 @@
  * 2019/01/2018-01-04
  */
 
+const ihf = require( './../../src/libs/ihf' );
+
 let startDate = new Date("2018-03-12T12:00:00.000");
 
 for(i = 0; i < 40; i ++) {
 
-    console.log(i, "-",  getFolderPath(startDate));
+    //console.log(i, "-",  getFolderPath(startDate));
+    console.log(ihf.constructFolderPath( startDate ));
     startDate.setDate(startDate.getDate() + 1);
 }
 
