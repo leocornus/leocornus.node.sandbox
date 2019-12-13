@@ -69,7 +69,8 @@ let ihf = {
             // set the batch async iterator
             let asyncPost = function(batchItems, reportPostDone) {
                 // tweak the docs to Solr.
-                let payload = localConfig.tweakDocs(batchItems);
+                let payload = localConfig.tweakDocs(theFile, batchItems);
+                // TODO: query ihf hash to find identical docs. and skip them.
                 axios.post(localConfig.solrUpdate, payload)
                 .then(function(solrRes) {
 
