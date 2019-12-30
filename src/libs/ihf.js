@@ -3,6 +3,8 @@
  */
 
 const fs = require('fs');
+
+const parseXml = require('xml2js').parseString;
 const parseCsv = require('csv-parse');
 const prettyMs = require('pretty-ms');
 const axios = require('axios');
@@ -10,6 +12,116 @@ const axios = require('axios');
 const strategy = require('./strategy');
 
 let ihf = {
+
+    /**
+     * function to get a batch of listtings.
+     */
+    getBatchListings: function(index, soapClient, context, csvHeader,
+	                           reportBatchDone, localConfig) {
+
+	    let self = this;
+
+        if( index === 0 ) {
+
+            // get listing data.
+            soapClient.getAllListings(context, function(allError, listingsXml) {
+                // check the error first.
+                if(allError) {
+                    // report error.
+                    console.log("Failed to call getAllListings:", allError);
+                    reportBatchDone(-1);
+                }
+
+                // we should have response successfully
+                // process the listing data.
+                self.processListingsData(listingsXml, csvHeader, reportBatchDone, localConfig);
+            });
+        } else {
+
+            // get listing data.
+            soapClient.getListingsSince(context, function(allError, listingsXml) {
+                // check the error first.
+                if(allError) {
+                    // report error.
+                    console.log("Failed to call getListingsSince:", allError);
+                    reportBatchDone(-1);
+                }
+
+                // we should have response successfully
+                // process the listing data.
+                self.processListingsData(listingsXml, csvHeader, reportBatchDone, localConfig);
+            });
+        }
+    },
+
+    /**
+     * utility function to process listings data.
+     */
+    processListingsData: function(listingsXml, csvHeader, reportBatchDone, localConfig) {
+
+        // listings are in xml format. parse it to JSON format.
+        //console.log("Listings:", listingsXml["return"]);
+        parseXml(listingsXml['return'], function(parseErr, listings) {
+
+            // check if we have parse error!
+            if(parseErr) {
+                // report the parse error.
+                console.log("XML Parse Error:", parseErr);
+                reportBatchDone(-1);
+            }
+
+            // data is in CSV format.
+            // add headers to include columns' name.
+            let listingsCSV = csvHeader.join(",") + "\r\n" +
+                listings.Listings.Data[0];
+            //console.log("Listings data in CSV format: ", listingsCSV);
+            console.log("listing total:", listings.Listings.Count[0]);
+
+            // parse CSV files.
+            parseCsv( listingsCSV,
+                // turn on the columns,
+                // so the JSON output will be in Object format
+                // with column name.
+                {columns: true}, function(err, output) {
+
+                if(err) {
+                    console.log('Parse CSV Error:', err);
+                    reportBatchDone(-1);
+                }
+
+                console.log("Total row:", output.length);
+
+                // set the batch async iterator
+                let asyncPost = function(batchItems, reportPostDone) {
+
+                    // tweak the docs to Solr.
+                    let payload = localConfig.tweakDocs(batchItems);
+
+					// post to Solr
+                    axios.post(localConfig.solrUpdate, payload)
+                    .then(function(solrRes) {
+
+                        //console.log("Batch post success");
+                        reportPostDone(batchItems.length);
+                    }).catch(function(solrErr) {
+
+                        console.log("Batch post Failed:", solrErr);
+                        reportPostDone(batchItems.length);
+                    });
+                };
+
+                // batch over outputs.
+                strategy.iterateOverBatch(output, localConfig.solrPostBatchSize,
+                    asyncPost, function() {
+
+                        // all output are posted.
+                        console.log("Solr post complete!");
+                        reportBatchDone(output.length);
+                    }
+                );
+            });
+        });
+    },
 
     /**
      * process all csv files in one folder.
