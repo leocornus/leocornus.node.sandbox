@@ -16,6 +16,7 @@ function titleCase(str, separator) {
     return str.toLowerCase()
     // split the string to an array of strings.
               .split(separator)
+              .filter(word => word.length > 0)
               .map(word => {
 
                   if(word.includes('/')) {
