@@ -26,7 +26,11 @@ function titleCase(str, separator) {
                       word = titleCase(word, '-');
                   }
 
-                  return word.charAt(0).toUpperCase() + word.slice(1);
+                  if(word.startsWith('(')) {
+                      return "(" + word.charAt(1).toUpperCase() + word.slice(2);
+                  } else {
+                      return word.charAt(0).toUpperCase() + word.slice(1);
+                  }
               })
               .join(separator);
 }
@@ -37,7 +41,8 @@ let theStrings = [
     "the city name Alnwick/Haldimand",
     "another city name Whitchurch-Stouffville",
     "more interesting name Assiginack, Manitoulin Is",
-    "name with bracket Adelaide Metcalfe (Twp)"
+    "name with bracket Adelaide Metcalfe (Twp)",
+    "name with bracket Adelaide  Metcalfe ( Twp)"
 ];
 
 theStrings = theStrings.map(one => {
@@ -47,4 +52,5 @@ theStrings = theStrings.map(one => {
     };
 });
 
+// the table function will list the object in table format.
 console.table(theStrings);
