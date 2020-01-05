@@ -16,6 +16,7 @@ function titleCase(str, separator) {
     return str.toLowerCase()
     // split the string to an array of strings.
               .split(separator)
+    // using filter to remove empty string.
               .filter(word => word.length > 0)
               .map(word => {
 
