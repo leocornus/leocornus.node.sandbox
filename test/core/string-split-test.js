@@ -10,6 +10,7 @@ console.table(sourceStrings.map(word => {
 
     return {
         before: word,
-        after: word.split(' ')
+        after: word.split(' '),
+        afterFilter: word.split(' ').filter(one => one.length > 0)
     }
 }));
