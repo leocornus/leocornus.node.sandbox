@@ -30,6 +30,7 @@ console.log("Day on Market:", prettyMs(theDate - theDateOne));
 let dString3 = "Fri May 06 09:25:41 PDT 2016";
 let theDate3 = new Date(dString3);
 console.log(dString3, "to", theDate3, "ISO:", theDate3.toISOString());
+console.log("ISO Date:", theDate3.toISOString().split("T")[0]);
 
 console.log("Difference (ms):", (theDate - theDate3));
 console.log("Day on Market:", prettyMs(theDate - theDate3));
