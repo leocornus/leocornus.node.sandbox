@@ -1,5 +1,7 @@
 /**
  * test case to load data from csv file.
+ *
+ * This is using D3 to load data from CSV file.
  */
 
 const config = require('./../../src/config');
