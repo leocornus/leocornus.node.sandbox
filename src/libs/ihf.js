@@ -1,5 +1,7 @@
 /**
  * some utility functions for IHF rest APIs
+ *
+ * using csv-parse to parse CSV file
  */
 
 const fs = require('fs');
