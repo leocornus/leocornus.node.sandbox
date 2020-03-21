@@ -63,6 +63,8 @@ let csv = {
 
         console.log("-- Process file:", theFile);
 
+        // TODO: check file stats to process only updated files.
+
         let content = fs.readFileSync(theFile);
         // parse csv content
         parseCsv( content,
@@ -82,8 +84,23 @@ let csv = {
 
                 console.log("  -- Total row:", output.length);
                 // quick check the data structure.
-                console.table(output);
-                reportOneFileDone(1);
+                //console.table(output);
+
+                // we have max 300 rows for each file, we could process at once!
+
+                // get ready payload.
+                let payload = localConfig.tweakDocs(output, theFile);
+
+                axios.post(localConfig.solrUpdate, payload)
+                .then(function(solrRes) {
+
+                    console.log("  -- Batch post success");
+                    reportOneFileDone(1);
+                }).catch(function(solrErr) {
+
+                    console.log("  -- Batch post Failed:", solrErr);
+                    reportOneFileDone(1);
+                });
             }
         );
     }
