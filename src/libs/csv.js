@@ -98,7 +98,8 @@ let csv = {
                     reportOneFileDone(1);
                 }).catch(function(solrErr) {
 
-                    console.log("  -- Batch post Failed:", solrErr);
+                    //console.log("  -- Batch post Failed:", solrErr);
+                    console.log("  -- Batch post Failed:", theFile);
                     reportOneFileDone(1);
                 });
             }
