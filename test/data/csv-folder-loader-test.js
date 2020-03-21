@@ -2,13 +2,9 @@
  * load all csv files from the give folder.
  */
 
-const fs = require('fs');
-
-const strategy = require('./../../src/libs/strategy');
+const csv = require('./../../src/libs/csv');
 
 const config = require('./../../src/config');
 const localConfig = config.loadCsvFolder;
 
-// read all files:
-let csvFiles = fs.readdirSync(localConfig.folder);
-console.log(csvFiles);
+csv.processFolder(localConfig.folder, localConfig);
