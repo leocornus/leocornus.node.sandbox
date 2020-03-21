@@ -2,8 +2,6 @@
  * load history data from CSV file.
  */
 
-const fs = require('fs');
-
 const strategy = require('./../../src/libs/strategy');
 const ihf = require('./../../src/libs/ihf');
 
