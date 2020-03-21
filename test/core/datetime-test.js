@@ -34,3 +34,9 @@ console.log("ISO Date:", theDate3.toISOString().split("T")[0]);
 
 console.log("Difference (ms):", (theDate - theDate3));
 console.log("Day on Market:", prettyMs(theDate - theDate3));
+
+// testing another date time format.
+dString = "2/1/2020 11:53";
+console.log("For different date time string:", dString);
+theDate = new Date(dString);
+console.log(theDate);
