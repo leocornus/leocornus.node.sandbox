@@ -40,7 +40,7 @@ let csv = {
                 self.processOneFile(theFolder + "/" + oneFile, reportOneFile,
                                     localConfig);
             } else {
-                console.log("---- Skip file:", oneFile);
+                console.log("-- Skip file:", oneFile);
                 reportOneFile(1);
             }
         };
@@ -54,15 +54,38 @@ let csv = {
 
                 let totalTime = (new Date()) - startTime;
                 console.log("Complete processing all files!");
-                console.log("====Running time:", prettyMs(totalTime));
+                console.log("Running time:", prettyMs(totalTime));
             }
         );
     },
 
     processOneFile: function(theFile, reportOneFileDone, localConfig) {
 
-        console.log("---- Process file:", theFile);
-        reportOneFileDone(1);
+        console.log("-- Process file:", theFile);
+
+        let content = fs.readFileSync(theFile);
+        // parse csv content
+        parseCsv( content,
+            // turn on the columns,
+            // so the JSON output will be in Object format
+            // with column name.
+            {columns: true},
+            /**
+             * callback function after parse.
+             */
+            function(err, output) {
+
+                if(err) {
+                    console.log('  -- Parse CSV Error:', theFile, err);
+                    reportOneFileDone(1);
+                }
+
+                console.log("  -- Total row:", output.length);
+                // quick check the data structure.
+                console.table(output);
+                reportOneFileDone(1);
+            }
+        );
     }
 };
 
