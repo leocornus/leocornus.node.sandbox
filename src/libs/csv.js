@@ -16,6 +16,11 @@ const strategy = require('./strategy');
 let csv = {
 
     /**
+     * count the total.
+     */
+    totalRecords: 0,
+
+    /**
      * process the given folder.
      */
     processFolder: function(theFolder, localConfig) {
@@ -24,6 +29,9 @@ let csv = {
 
         let startTime = new Date();
         console.log("Start to process all files for folder:", theFolder);
+
+        // clear total to start.
+        self.totalRecords = 0;
 
         // read all files:
         let files = fs.readdirSync(theFolder);
@@ -53,13 +61,16 @@ let csv = {
             function() {
 
                 let totalTime = (new Date()) - startTime;
-                console.log("Complete processing all files!");
+                console.log("Complete processing all files! Processed", 
+                    self.totalRecords, "records in total.");
                 console.log("Running time:", prettyMs(totalTime));
             }
         );
     },
 
     processOneFile: function(theFile, reportOneFileDone, localConfig) {
+
+        let self = this;
 
         console.log("-- Process file:", theFile);
 
@@ -83,6 +94,7 @@ let csv = {
                 }
 
                 console.log("  -- Total row:", output.length);
+                self.totalRecords += output.length;
                 // quick check the data structure.
                 //console.table(output);
 
