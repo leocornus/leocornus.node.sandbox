@@ -21,12 +21,15 @@ parseCsv( fileContent, {columns: true},
         //console.table(output);
 
         console.log("hasOwnProperty: ", output[0].hasOwnProperty('Province/State'));
+        console.log('hasOwnProperty.call: ',
+            Object.prototype.hasOwnProperty.call(output[0], 'Province/State'));
         console.log("in: ", 'Province/State' in output[0]);
         console.log("Province/State: ", output[0]['Province/State']);
         //console.log("Country/Region: ", output[0]["Country/Region"]);
         //console.dir(Object.keys(output[0]));
         Object.keys(output[0]).forEach( key => {
             console.log(key, "=", output[0][key]);
+            console.log("===: ", key === 'Province/State');
         });
 
         //let payload = localConfig.tweakDocs(output, fileName);
