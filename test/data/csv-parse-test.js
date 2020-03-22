@@ -26,6 +26,7 @@ parseCsv( fileContent, {columns: true},
         console.log("in: ", 'Province/State' in output[0]);
         console.log("Province/State: ", output[0]['Province/State']);
         //console.log("Country/Region: ", output[0]["Country/Region"]);
+        console.log("values: ", Object.values(output[0]));
         //console.dir(Object.keys(output[0]));
         Object.keys(output[0]).forEach( key => {
             console.log(key, "=", output[0][key]);
