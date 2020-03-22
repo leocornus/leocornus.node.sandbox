@@ -2,6 +2,8 @@
  */
 
 const fs = require('fs');
+const util = require('util');
+
 const parseCsv = require('csv-parse');
 
 const config = require('./../../src/config');
@@ -14,16 +16,21 @@ let fileContent = fs.readFileSync(fileName);
 
 parseCsv( fileContent, {columns: true},
     function(err, output) {
-        console.dir(output);
-        console.table(output);
+        console.log(util.inspect(output[0]));
+        //console.dir(output);
+        //console.table(output);
 
         console.log("hasOwnProperty: ", output[0].hasOwnProperty('Province/State'));
-        console.log("Province/State: ", output[0]["Provicne/State"]);
-        console.log("Country/Region: ", output[0]["Country/Region"]);
-        console.dir(Object.keys(output[0]));
+        console.log("in: ", 'Province/State' in output[0]);
+        console.log("Province/State: ", output[0]['Province/State']);
+        //console.log("Country/Region: ", output[0]["Country/Region"]);
+        //console.dir(Object.keys(output[0]));
+        Object.keys(output[0]).forEach( key => {
+            console.log(key, "=", output[0][key]);
+        });
 
-        let payload = localConfig.tweakDocs(output, fileName);
+        //let payload = localConfig.tweakDocs(output, fileName);
 
-        console.table(payload);
+        //console.table(payload);
     }
 );
