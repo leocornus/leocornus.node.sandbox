@@ -159,12 +159,11 @@ let csv = {
             function(err, output) {
 
                 if(err) {
-                    console.log('  -- Parse CSV Error:', theFile, err);
-                    reportOneFileDone(1);
+                    console.log('  -- Parse CSV Error:', err);
+                    return;
                 }
 
                 console.log("  -- Total row:", output.length);
-                self.totalRecords += output.length;
                 // quick check the data structure.
                 //console.table(output);
 
@@ -172,7 +171,7 @@ let csv = {
                 // in batch mode.
 
                 // get ready payload.
-                let payload = localConfig.tweakLiveDocs(output);
+                let payload = localConfig.tweakDocs(output);
 
                 // define the batch async post iterator.
                 let asyncPost = function(batchItems, reportPostDone) {
@@ -183,7 +182,6 @@ let csv = {
                         reportPostDone(batchItems.length);
                     }).catch(function(solrErr) {
 
-                        console.log("  -- Batch post Failed:", theFile);
                         console.log("  -- Batch post Failed:", solrErr);
                         reportPostDone(batchItems.length);
                     });
@@ -192,8 +190,7 @@ let csv = {
                 // iterate over the payload.
                 strategy.iterateOverBatch(payload, localConfig.solrPostBatchSize,
                     asyncPost, function() {
-
-                        reportOneFileDone(1);
+                        console.log("Process complete!");
                     }
                 );
             }
