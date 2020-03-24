@@ -103,17 +103,28 @@ let csv = {
                 // get ready payload.
                 let payload = localConfig.tweakDocs(output, theFile);
 
-                axios.post(localConfig.solrUpdate, payload)
-                .then(function(solrRes) {
+                // define the batch async post iterator.
+                let asyncPost = function(batchItems, reportPostDone) {
+                    axios.post(localConfig.solrUpdate, batchItems)
+                    .then(function(solrRes) {
 
-                    console.log("  -- Batch post success");
-                    reportOneFileDone(1);
-                }).catch(function(solrErr) {
+                        console.log("  -- Batch post success");
+                        reportPostDone(batchItems.length);
+                    }).catch(function(solrErr) {
 
-                    //console.log("  -- Batch post Failed:", solrErr);
-                    console.log("  -- Batch post Failed:", theFile);
-                    reportOneFileDone(1);
-                });
+                        console.log("  -- Batch post Failed:", theFile);
+                        console.log("  -- Batch post Failed:", solrErr);
+                        reportPostDone(batchItems.length);
+                    });
+                };
+
+                // iterate over the payload.
+                strategy.iterateOverBatch(payload, localConfig.solrPostBatchSize,
+                    asyncPost, function() {
+
+                        reportOneFileDone(1);
+                    }
+                );
             }
         );
     }
