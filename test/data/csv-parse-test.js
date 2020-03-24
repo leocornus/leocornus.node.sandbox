@@ -10,8 +10,12 @@ const config = require('./../../src/config');
 const localConfig = config.loadCsvFolder;
 
 //let fileName = "/usr/leocorn/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/01-22-2020.csv";
-let fileName = "/usr/leocorn/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/03-23-2020.csv";
+//let fileName = "/usr/leocorn/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/03-23-2020.csv";
 //let fileName = '/usr/leocorn/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/03-13-2020.csv';
+//
+// the file have live data for cases.
+let fileName = '/usr/leocorn/COVID-19-web-data/data/cases.csv';
+
 let fileContent = fs.readFileSync(fileName);
 //console.log(fileContent);
 
@@ -38,7 +42,8 @@ parseCsv( fileContent, {columns: true},
         console.log("array includes:", Object.keys(output[0]).includes('Country_Region'));
 
         //let payload = localConfig.tweakDocs(output, fileName);
+        let payload = localConfig.tweakDocs(output);
 
-        //console.table(payload);
+        console.table(payload);
     }
 );
