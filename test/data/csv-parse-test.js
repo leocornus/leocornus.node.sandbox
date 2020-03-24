@@ -35,6 +35,8 @@ parseCsv( fileContent, {columns: true},
             console.log("Province_State ===: ", key === 'Province_State');
         });
 
+        console.log("array includes:", Object.keys(output[0]).includes('Country_Region'));
+
         //let payload = localConfig.tweakDocs(output, fileName);
 
         //console.table(payload);
