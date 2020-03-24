@@ -21,7 +21,8 @@ let csv = {
     totalRecords: 0,
 
     /**
-     * process the given folder.
+     * process the given folder, which will have many csv files.
+     *
      */
     processFolder: function(theFolder, localConfig) {
 
@@ -68,6 +69,10 @@ let csv = {
         );
     },
 
+    /**
+     * process one file in a folder.
+     * This function will ALWAYS work with processFolder
+     */
     processOneFile: function(theFile, reportOneFileDone, localConfig) {
 
         let self = this;
@@ -98,10 +103,76 @@ let csv = {
                 // quick check the data structure.
                 //console.table(output);
 
-                // we have max 300 rows for each file, we could process at once!
+                // most of files have 300 rows in total, we could process at once!
+                // some of the files have thousands of files in total,
+                // we will use the iterate over batch strategy to process them
+                // in batch mode.
 
                 // get ready payload.
                 let payload = localConfig.tweakDocs(output, theFile);
+
+                // define the batch async post iterator.
+                let asyncPost = function(batchItems, reportPostDone) {
+                    axios.post(localConfig.solrUpdate, batchItems)
+                    .then(function(solrRes) {
+
+                        console.log("  -- Batch post success");
+                        reportPostDone(batchItems.length);
+                    }).catch(function(solrErr) {
+
+                        console.log("  -- Batch post Failed:", theFile);
+                        console.log("  -- Batch post Failed:", solrErr);
+                        reportPostDone(batchItems.length);
+                    });
+                };
+
+                // iterate over the payload.
+                strategy.iterateOverBatch(payload, localConfig.solrPostBatchSize,
+                    asyncPost, function() {
+
+                        reportOneFileDone(1);
+                    }
+                );
+            }
+        );
+    },
+
+    /**
+     * process a single file.
+     */
+    processFile: function(filePath, localConfig) {
+
+        let self = this;
+
+        console.log("Process file: ", filePath);
+
+        let content = fs.readFileSync(filePath);
+        // parse csv content
+        parseCsv( content,
+            // turn on the columns,
+            // so the JSON output will be in Object format
+            // with column name.
+            {columns: true},
+            /**
+             * callback function after parse.
+             */
+            function(err, output) {
+
+                if(err) {
+                    console.log('  -- Parse CSV Error:', theFile, err);
+                    reportOneFileDone(1);
+                }
+
+                console.log("  -- Total row:", output.length);
+                self.totalRecords += output.length;
+                // quick check the data structure.
+                //console.table(output);
+
+                // we will use the iterate over batch strategy to process them
+                // in batch mode.
+
+                // get ready payload.
+                let payload = localConfig.tweakLiveDocs(output);
 
                 // define the batch async post iterator.
                 let asyncPost = function(batchItems, reportPostDone) {
