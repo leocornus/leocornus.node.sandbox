@@ -59,3 +59,12 @@ console.table({
     "new Date": (new Date(dString)).toISOString(),
     "new Date tailing UTC": (new Date(dString + " UTC")).toISOString()
 });
+
+today = new Date();
+yesterday = new Date((new Date()).setDate((new Date()).getDate() - 1));
+console.log("Yesterday:", yesterday.toISOString().split("T")[0]);
+
+console.table( {
+    today: (new Date()).toISOString().split("T")[0],
+    yesterday: new Date((new Date()).setDate((new Date()).getDate() - 1)).toISOString().split("T")[0]
+});
