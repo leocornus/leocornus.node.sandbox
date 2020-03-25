@@ -10,6 +10,8 @@ console.log("One Day (ms):", ONE_DAY);
 
 // some strings:
 let dString = "2019-11-19 15:50:14 063";
+let newDate = new Date(dString);
+console.log("new Date:", newDate)
 //let theDate = Date.parse(dString);
 let theDate = new Date(dString.replace(" ", "T").replace(" ", "."));
 console.log(dString, "to", theDate);
@@ -42,3 +44,18 @@ dString = "2/1/2020 11:53";
 console.log("For different date time string:", dString);
 theDate = new Date(dString);
 console.log(theDate);
+
+// test format with timezone
+dString = "2019-11-19 15:50:14";
+console.table({
+    "date string": dString,
+    "new Date": (new Date(dString)).toISOString(),
+    "new Date tailing UTC": (new Date(dString + " UTC")).toISOString()
+});
+
+dString = "2/1/2020 11:53";
+console.table({
+    "date string": dString,
+    "new Date": (new Date(dString)).toISOString(),
+    "new Date tailing UTC": (new Date(dString + " UTC")).toISOString()
+});
