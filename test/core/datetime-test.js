@@ -66,5 +66,6 @@ console.log("Yesterday:", yesterday.toISOString().split("T")[0]);
 
 console.table( {
     today: (new Date()).toISOString().split("T")[0],
-    yesterday: new Date((new Date()).setDate((new Date()).getDate() - 1)).toISOString().split("T")[0]
+    yesterday: new Date((new Date()).setDate((new Date()).getDate() - 1))
+               .toISOString().split("T")[0]
 });
