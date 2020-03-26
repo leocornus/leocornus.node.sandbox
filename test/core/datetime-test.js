@@ -69,3 +69,13 @@ console.table( {
     yesterday: new Date((new Date()).setDate((new Date()).getDate() - 1))
                .toISOString().split("T")[0]
 });
+
+// test date time formater.
+let options = {
+    year: 'numeric', month: 'long', day: 'numeric',
+    weekday: 'long',
+    hour: 'numeric', minute: 'numeric', second: 'numeric',
+    hour12: false,
+    timeZone: 'UTC', timeZoneName: "long"
+};
+console.log(new Intl.DateTimeFormat('en-US', options).format(today));
