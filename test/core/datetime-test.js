@@ -79,3 +79,11 @@ let options = {
     timeZone: 'UTC', timeZoneName: "long"
 };
 console.log(new Intl.DateTimeFormat('en-US', options).format(today));
+
+console.log("Testing local string");
+
+console.table( {
+    "ISO String": today.toISOString(),
+    "to String": today.toString(),
+    "Locale String": today.toLocaleString()
+});
