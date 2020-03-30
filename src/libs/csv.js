@@ -104,7 +104,7 @@ let csv = {
                 //console.table(output);
 
                 // most of files have 300 rows in total, we could process at once!
-                // some of the files have thousands of files in total,
+                // some of the files have thousands of rows in total,
                 // we will use the iterate over batch strategy to process them
                 // in batch mode.
 
@@ -175,15 +175,43 @@ let csv = {
 
                 // define the batch async post iterator.
                 let asyncPost = function(batchItems, reportPostDone) {
-                    axios.post(localConfig.solrUpdate, batchItems)
-                    .then(function(solrRes) {
 
-                        console.log("  -- Batch post success");
-                        reportPostDone(batchItems.length);
-                    }).catch(function(solrErr) {
+                    // query yesterday's number,
+                    let yQuery = localConfig.buildYesterdayQuery(batchItems);
+                    //console.log(yQuery);
+                    axios.post(localConfig.solrSearch, yQuery)
+                    .then(function(yRes) {
 
-                        console.log("  -- Batch post Failed:", solrErr);
-                        reportPostDone(batchItems.length);
+                        // merge the number before post them.
+                        let batchPayload = localConfig.mergeNumbers(batchItems,
+                            yRes.data.response.docs);
+
+                        //console.table(batchPayload);
+                        axios.post(localConfig.solrUpdate, batchPayload)
+                        .then(function(solrRes) {
+
+                            console.log("  -- Batch post success");
+                            reportPostDone(batchItems.length);
+                        }).catch(function(solrErr) {
+
+                            console.log("  -- Batch post Failed:", solrErr);
+                            reportPostDone(batchItems.length);
+                        });
+                    })
+                    .catch(function(yErr) {
+
+                        console.log("  -- Failed to query yesterday's data!", yErr);
+                        // just post the docs as it is.
+                        axios.post(localConfig.solrUpdate, batchItems)
+                        .then(function(solrRes) {
+
+                            console.log("  -- Batch post success");
+                            reportPostDone(batchItems.length);
+                        }).catch(function(solrErr) {
+
+                            console.log("  -- Batch post Failed:", solrErr);
+                            reportPostDone(batchItems.length);
+                        });
                     });
                 };
 
