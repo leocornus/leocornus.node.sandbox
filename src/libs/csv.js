@@ -173,54 +173,64 @@ let csv = {
                 // get ready payload.
                 let payload = localConfig.tweakDocs(output);
 
-                // define the batch async post iterator.
-                let asyncPost = function(batchItems, reportPostDone) {
+                self.solrPost(payload, localConfig);
+            }
+        );
+    },
 
-                    // query yesterday's number,
-                    let yQuery = localConfig.buildYesterdayQuery(batchItems);
-                    //console.log(yQuery);
-                    axios.post(localConfig.solrSearch, yQuery)
-                    .then(function(yRes) {
+    /**
+     * Post the payload to SolrCloud
+     */
+    solrPost: function(payload, localConfig, reportSolrPostDone) {
 
-                        // merge the number before post them.
-                        let batchPayload = localConfig.mergeNumbers(batchItems,
-                            yRes.data.response.docs);
+        // define the batch async post iterator.
+        let asyncPost = function(batchItems, reportPostDone) {
 
-                        //console.table(batchPayload);
-                        axios.post(localConfig.solrUpdate, batchPayload)
-                        .then(function(solrRes) {
+            // query yesterday's number,
+            let yQuery = localConfig.buildYesterdayQuery(batchItems);
+            //console.log(yQuery);
+            axios.post(localConfig.solrSearch, yQuery)
+            .then(function(yRes) {
 
-                            console.log("  -- Batch post success");
-                            reportPostDone(batchItems.length);
-                        }).catch(function(solrErr) {
+                // merge the number before post them.
+                let batchPayload = localConfig.mergeNumbers(batchItems,
+                    yRes.data.response.docs);
 
-                            console.log("  -- Batch post Failed:", solrErr);
-                            reportPostDone(batchItems.length);
-                        });
-                    })
-                    .catch(function(yErr) {
+                //console.table(batchPayload);
+                axios.post(localConfig.solrUpdate, batchPayload)
+                .then(function(solrRes) {
 
-                        console.log("  -- Failed to query yesterday's data!", yErr);
-                        // just post the docs as it is.
-                        axios.post(localConfig.solrUpdate, batchItems)
-                        .then(function(solrRes) {
+                    console.log("  -- Batch post success");
+                    reportPostDone(batchItems.length);
+                }).catch(function(solrErr) {
 
-                            console.log("  -- Batch post success");
-                            reportPostDone(batchItems.length);
-                        }).catch(function(solrErr) {
+                    console.log("  -- Batch post Failed:", solrErr);
+                    reportPostDone(batchItems.length);
+                });
+            })
+            .catch(function(yErr) {
 
-                            console.log("  -- Batch post Failed:", solrErr);
-                            reportPostDone(batchItems.length);
-                        });
-                    });
-                };
+                console.log("  -- Failed to query yesterday's data!", yErr);
+                // just post the docs as it is.
+                axios.post(localConfig.solrUpdate, batchItems)
+                .then(function(solrRes) {
 
-                // iterate over the payload.
-                strategy.iterateOverBatch(payload, localConfig.solrPostBatchSize,
-                    asyncPost, function() {
-                        console.log("Process complete!");
-                    }
-                );
+                    console.log("  -- Batch post success");
+                    reportPostDone(batchItems.length);
+                }).catch(function(solrErr) {
+
+                    console.log("  -- Batch post Failed:", solrErr);
+                    reportPostDone(batchItems.length);
+                });
+            });
+        };
+
+        // iterate over the payload.
+        strategy.iterateOverBatch(payload, localConfig.solrPostBatchSize,
+            asyncPost, function() {
+                console.log("Process complete!");
+                if(reportSolrPostDone)
+                    reportSolrPostDone(1);
             }
         );
     }
