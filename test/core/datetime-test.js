@@ -87,3 +87,13 @@ console.table( {
     "to String": today.toString(),
     "Locale String": today.toLocaleString()
 });
+
+// test how to get the date before the given date.
+dString = "2020-02-12";
+theDate = new Date(dString);
+let yDay = new Date(theDate.setDate(theDate.getDate() - 1));
+console.table( {
+    "Day String:": dString,
+    "The Day": theDate.toISOString(),
+    "The Day before": yDay.toISOString()
+});
