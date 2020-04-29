@@ -2,6 +2,9 @@
  * utility functions to handle CSV files.
  *
  * using csf-parse to parse CSV files.
+ *
+ * new cases will be calculated before solr post.
+ * Check the function solrPost for details.
  */
 
 const fs = require('fs');
@@ -159,6 +162,8 @@ let csv = {
 
     /**
      * Post the payload to SolrCloud
+     * Before posting the payload to Solr, we will query yesterday's data to
+     * calculate the new cases.
      */
     solrPost: function(payload, localConfig, reportSolrPostDone) {
 
