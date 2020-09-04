@@ -40,6 +40,7 @@
     "node-fetch": "^2.6.0",
     "node-fetch-polyfill": "^2.0.6",
     "node-sp-auth": "^2.5.7",
+    "nodemw": "^0.13.0",
     "pretty-ms": "^4.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
@@ -49,7 +50,7 @@
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
-    "http-proxy": "^1.17.0",
+    "http-proxy": "^1.18.1",
     "nodemailer": "^6.3.1"
   }
 }
