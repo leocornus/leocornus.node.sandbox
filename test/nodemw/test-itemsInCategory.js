@@ -53,7 +53,8 @@ function loginRequest(login_token) {
             return;
         }
         console.log(body);
-        getCsrfToken();
+        // getCsrfToken();
+        getCategoryItems('', rawParams[3] );
     });
 }
 
@@ -81,7 +82,7 @@ function getCategoryItems(token, category) {
         action: "query",
         list: "categorymembers",
         cmtitle: "Category:" + category,
-        cmlimit: "5",
+        cmlimit: "20",
         //token: token,
         format: "json"
     };
@@ -95,7 +96,15 @@ function getCategoryItems(token, category) {
         if(error) {
             console.log(error);
         }
+        //console.log(response);
+        console.log("==================================");
         console.log(body);
+
+        // NOTE:
+        // need parse body to JSON format.
+        JSON.parse(body).query.categorymembers.forEach( item => {
+            console.log( `${item.pageid}: ${item.title}` );
+        });
     });
 }
 
