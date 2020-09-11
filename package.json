@@ -37,7 +37,7 @@
     "jsforce": "^1.9.3",
     "log4js": "^4.1.0",
     "minimist": ">=1.2.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "node-fetch-polyfill": "^2.0.6",
     "node-sp-auth": "^2.5.7",
     "nodemw": "^0.13.0",
