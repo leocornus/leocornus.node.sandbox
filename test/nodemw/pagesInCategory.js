@@ -2,12 +2,9 @@
 
 const Bot = require('nodemw');
 const client = new Bot({
-    //server: 'en.wikipedia.org',
+    server: 'en.wikipedia.org',
     protocol: 'https',
-    server: 'demo.sites.leocorn.com',
     path: '/w',
-    username: 'demoadmin',
-    password: 'oassmorq',
     debug: true 
 });
 
