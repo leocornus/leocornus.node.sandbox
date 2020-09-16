@@ -34,6 +34,7 @@
     "express": "^4.16.4",
     "form-data": "^2.3.3",
     "googleapis": "^45.0.0",
+    "got": "^11.6.2",
     "jsforce": "^1.9.3",
     "log4js": "^4.1.0",
     "minimist": ">=1.2.2",
