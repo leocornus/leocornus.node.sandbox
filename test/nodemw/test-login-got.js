@@ -4,6 +4,7 @@
     update to use Got.
 */
 
+const querystring = require('querystring');
 const got = require('got');
 
 // we will execute the script by using nvm, for example:
@@ -24,10 +25,8 @@ function getLoginToken() {
         format: "json"
     };
 
-    let query = url + "?";
-    Object.keys(params_0).forEach( key => {
-        query += "&" + key + "=" + params_0[key];
-    });
+    let query = url + "?" + querystring.encode(params_0);
+    console.log(query);
 
     got(query).
         then(res => {
@@ -47,6 +46,7 @@ function getLoginToken() {
 // supported. Obtain credentials via Special:BotPasswords
 // (https://www.mediawiki.org/wiki/Special:BotPasswords) for lgname & lgpassword
 function loginRequest(login_token) {
+
     var params_1 = {
         action: "login",
         // we need use bot user account here.
