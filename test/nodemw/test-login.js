@@ -53,6 +53,7 @@ function loginRequest(login_token) {
             return;
         }
         console.log(body);
+        console.log(res);
     });
 }
 

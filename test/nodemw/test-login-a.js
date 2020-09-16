@@ -65,7 +65,8 @@ function loginRequest(login_token) {
             //console.table(Object.keys(res));
             //console.table(Object.keys(res.request));
             //console.table(res.config);
-            console.log(res.data);
+            console.log(res.config);
+            //console.log(res.data);
         }).
         catch(function(error) {
             console.log( error );
