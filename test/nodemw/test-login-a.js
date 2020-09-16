@@ -6,6 +6,16 @@
     MIT license
 */
 
+/**
+ * NOTE:
+ *
+ * I have try to using axios to do what request is doing.
+ * However, axios does NOT support cookie.
+ * It will be really hard to use axio to login MediaWiki.
+ *
+ * Swith to use Got.js
+ */
+
 const axios = require('axios');
 
 // we will execute the script by using nvm, for example:
