@@ -82,7 +82,7 @@ function getCategoryItems(token, category) {
         action: "query",
         list: "categorymembers",
         cmtitle: "Category:" + category,
-        cmlimit: "20",
+        cmlimit: "5",
         //token: token,
         format: "json"
     };
@@ -91,6 +91,7 @@ function getCategoryItems(token, category) {
     Object.keys(params_3).forEach( key => {
         query += "&" + key + "=" + params_3[key];
     });
+    console.log(query);
 
     request.get({url: url, qs: params_3}, (error, response, body) => {
         if(error) {
