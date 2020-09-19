@@ -2,6 +2,7 @@
     MediaWiki API Demos
     Demo of `Login` module: Sending post request to login
     update to use Got.
+    https://github.com/sindresorhus/got
 */
 
 const querystring = require('querystring');
@@ -31,8 +32,9 @@ function getLoginToken() {
     got(query).
         then(res => {
 
-            console.log(res.body);
-            //loginRequest(res.body.query.tokens.logintoken);
+            let data = JSON.parse(res.body);
+            console.log(data);
+            loginRequest(data.query.tokens.logintoken);
         }).
         catch(error => {
 
@@ -56,13 +58,13 @@ function loginRequest(login_token) {
         format: "json"
     };
 
-    request.post({ url: url, form: params_1 }, function (error, res, body) {
-        if (error) {
-            return;
-        }
-        console.log(body);
-        console.log(res);
-    });
+    got.post(url, {json: params_1}).
+        then( response => {
+            console.log(response.data);
+        }).
+        catch( error => {
+            console.log(error);
+        });
 }
 
 // Start From Step 1
