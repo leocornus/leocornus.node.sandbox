@@ -33,7 +33,7 @@ function sendMessageFile(auth) {
     console.log(message);
 
     // The body needs to be base64url encoded.
-    const encodedMessage = Buffer.from(message).toString('base64');
+    const encodedMessage = Buffer.from(message.replace('TO[RECEIVER]OT', cliParams[1])).toString('base64');
 
     gmail.users.messages.send( {
         userId: 'me',
