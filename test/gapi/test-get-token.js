@@ -10,7 +10,11 @@ const {google} = require('googleapis');
 const config = require('./../../src/config');
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
+// the full list of scope is list here: https://developers.google.com/gmail/api/auth/scopes
+// mismatch scope will end with error: insufficient permissions
+const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.send'
+];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
