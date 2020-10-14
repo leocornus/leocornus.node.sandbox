@@ -72,6 +72,11 @@ function listMessages(auth) {
         {userId: 'me', q: 'is:unread'},
         (err, res) => {
 
+            if(err) {
+                console.log(err);
+                return;
+            }
+
             //console.dir(res);
             const msgs = res.data.messages;
             msgs.forEach((msg) => {
@@ -89,11 +94,11 @@ function listMessages(auth) {
                                 console.log(`${header.name} = ${header.value}`);
                             }
                         });
-                        r.data.payload.parts.forEach((part) => {
-                            //console.dir(part);
-                            // Buffer class is for encode and decode, such as base64
-                            console.log(Buffer.from(part.body.data, 'base64').toString('ascii'));
-                        });
+                        //r.data.payload.parts.forEach((part) => {
+                        //    //console.dir(part);
+                        //    // Buffer class is for encode and decode, such as base64
+                        //    console.log(Buffer.from(part.body.data, 'base64').toString('ascii'));
+                        //});
 
                         // The entire email message in an RFC 2822 formatted
                         // and base64url encoded string
