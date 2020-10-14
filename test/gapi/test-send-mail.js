@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const readline = require('readline');
+
 const {google} = require('googleapis');
 
 const config = require('./../../src/config');
@@ -16,7 +17,38 @@ console.log(cliParams);
 // Load client secrets from the config file.
 // Authorize a client with credentials, then call the Gmail API.
 //authorize(config.googleapis.credentials, listLabels);
-authorize(config.googleapis.credentials, sendMessage);
+authorize(config.googleapis.credentials, sendMessageFile);
+
+/**
+ * quick test to send message from a file.
+ * it works as a callback for the authorizor.
+ */
+function sendMessageFile(auth) {
+
+    // the gmail client.
+    const gmail = google.gmail( { version: 'v1', auth } );
+
+    // read message from a file.
+    const message = fs.readFileSync( cliParams[0], 'utf8' );
+    console.log(message);
+
+    // The body needs to be base64url encoded.
+    const encodedMessage = Buffer.from(message).toString('base64');
+
+    gmail.users.messages.send( {
+        userId: 'me',
+        resource: {
+            raw: encodedMessage
+        }
+    }, (err, res) => {
+
+        if( err ) {
+            return console.log('Error:' + err);
+        }
+
+        console.log("Success: ", res);
+    });
+}
 
 /**
  * quick test to send message.,
