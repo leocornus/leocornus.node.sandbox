@@ -12,3 +12,14 @@ let j = schedule.scheduleJob('*/1 * * * *', function() {
 });
 
 console.log('Job started now...');
+
+let countSecond = 0;
+const job = {
+    end: new Date(Date.now() + 10000),
+    // execute job every second
+    rule: '*/1 * * * * *'
+};
+let s = schedule.scheduleJob(job, function() {
+    console.log("Second: " + countSecond);
+    countSecond ++;
+});
