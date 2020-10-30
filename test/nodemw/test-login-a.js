@@ -17,6 +17,8 @@
  */
 
 const axios = require('axios');
+const axiosCookieJarSupport = require('axios-cookiejar-support').default;
+const tough = require('tough-cookie');
 
 // we will execute the script by using nvm, for example:
 // $ nvm run node test-login.js
@@ -29,6 +31,10 @@ console.log(url);
 let mwclient = axios.create({
     baseURL: url
 });
+
+// set cookiejar support
+axiosCookieJarSupport(mwclient);
+mwclient.defaults.jar = new tough.CookieJar();
 
 // Step 1: GET Request to fetch login token
 function getLoginToken() {
@@ -76,7 +82,6 @@ function loginRequest(login_token) {
             //console.table(Object.keys(res.request));
             //console.table(res.config);
             console.log(res.config);
-            //console.log(res.data);
         }).
         catch(function(error) {
             console.log( error );
