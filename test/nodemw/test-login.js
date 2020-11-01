@@ -52,6 +52,7 @@ function loginRequest(login_token) {
 
     request.post({ url: url, form: params_1 }, function (error, res, body) {
         if (error) {
+            console.log(error);
             return;
         }
         console.log(body);
