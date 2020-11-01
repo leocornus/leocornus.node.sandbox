@@ -20,7 +20,7 @@ console.log(url);
 // set up a Got instance.
 const cookieJar = new toughCookie.CookieJar();
 const gotInstance = got.extend( {
-    //cookieJar
+    cookieJar
 } );
 
 // Step 1: GET Request to fetch login token
@@ -69,10 +69,12 @@ function loginRequest(login_token, auth_cookie) {
     };
 
     gotInstance.post(url, {
-        json: params_1,
-        headers: {
-            cookie: auth_cookie
-        }
+        //json: params_1,
+        // POST request need use form for the post data.
+        form: params_1,
+        //headers: {
+        //    cookie: auth_cookie
+        //}
     }).
         then( response => {
             console.log(response.body);
