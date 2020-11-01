@@ -78,8 +78,9 @@ function loginRequest(login_token, auth_cookie) {
     }).
         then( response => {
             console.log(response.body);
-            console.log(response.req.headers);
-            console.log(response.headers);
+            //console.log(response.req.headers);
+            //console.log(response.headers);
+            console.log(cookieJar);
             getCategoryItems(rawParams[3]);
         }).
         catch( error => {
@@ -105,12 +106,13 @@ function getCategoryItems(category) {
     gotInstance.get(query)
     .then( res => {
 
-        console.log(JSON.parse(res.body));
+        //console.log(JSON.parse(res.body));
         // NOTE:
         // need parse body to JSON format.
         JSON.parse(res.body).query.categorymembers.forEach( item => {
             console.log( `${item.pageid}: ${item.title}` );
         });
+        console.log(cookieJar);
 
     }).catch( error => {
         console.log(error);
