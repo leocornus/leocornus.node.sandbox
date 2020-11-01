@@ -80,10 +80,41 @@ function loginRequest(login_token, auth_cookie) {
             console.log(response.body);
             console.log(response.req.headers);
             console.log(response.headers);
+            getCategoryItems(rawParams[3]);
         }).
         catch( error => {
             console.log(error);
         });
+}
+
+
+function getCategoryItems(category) {
+
+    let params_3 = {
+        action: "query",
+        list: "categorymembers",
+        cmtitle: "Category:" + category,
+        cmlimit: "5",
+        //token: token,
+        format: "json"
+    };
+
+    let query = url + "?" + querystring.encode(params_3);
+    console.log(query);
+
+    gotInstance.get(query)
+    .then( res => {
+
+        console.log(JSON.parse(res.body));
+        // NOTE:
+        // need parse body to JSON format.
+        JSON.parse(res.body).query.categorymembers.forEach( item => {
+            console.log( `${item.pageid}: ${item.title}` );
+        });
+
+    }).catch( error => {
+        console.log(error);
+    });
 }
 
 // Start From Step 1
