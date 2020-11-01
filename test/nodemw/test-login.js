@@ -29,6 +29,7 @@ function getLoginToken() {
         if (error) {
             return;
         }
+        console.table(res.request.headers);
         var data = JSON.parse(body);
         loginRequest(data.query.tokens.logintoken);
     });
@@ -39,6 +40,7 @@ function getLoginToken() {
 // supported. Obtain credentials via Special:BotPasswords
 // (https://www.mediawiki.org/wiki/Special:BotPasswords) for lgname & lgpassword
 function loginRequest(login_token) {
+
     var params_1 = {
         action: "login",
         // we need use bot user account here.
@@ -53,7 +55,7 @@ function loginRequest(login_token) {
             return;
         }
         console.log(body);
-        console.log(res);
+        console.table(res.request.headers);
     });
 }
 

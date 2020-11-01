@@ -45,12 +45,16 @@ function getLoginToken() {
         format: "json"
     };
 
-    mwclient.get(url, {params: params_0 }).
+    mwclient.get(url, {
+        params: params_0,
+        withCredentials: true
+    }).
         then(function (response) {
 
             //console.log(response);
             console.log(response.data);
             loginRequest(response.data.query.tokens.logintoken);
+            console.table(mwclient.defaults.jar);
         }).
         catch(function(error) {
             console.log( error );
@@ -73,20 +77,55 @@ function loginRequest(login_token) {
         format: "json"
     };
 
-    mwclient.post(url, params_1).
+    mwclient.post(url, params_1, {withCredentials: true}).
         then(function(res) {
 
             //console.log(res.data);
-            console.log("Login success!");
+            //console.log("Login success!");
             //console.table(Object.keys(res));
             //console.table(Object.keys(res.request));
             //console.table(res.config);
-            console.log(res.config);
+            //console.log(res.config);
+            getCategoryItems(rawParams[3]);
         }).
         catch(function(error) {
             console.log( error );
             return;
         });
+}
+
+function getCategoryItems(category) {
+
+    let params_3 = {
+        action: "query",
+        list: "categorymembers",
+        cmtitle: "Category:" + category,
+        cmlimit: "5",
+        //token: token,
+        format: "json"
+    };
+
+    let query = url + "?origin=*";
+    Object.keys(params_3).forEach( key => {
+        query += "&" + key + "=" + params_3[key];
+    });
+    console.log(query);
+
+    mwclient.get(url, {
+        params: params_3,
+        withCredentials: true
+    }).then( res => {
+
+        console.log(res.data);
+        // NOTE:
+        // need parse body to JSON format.
+        //JSON.parse(body).query.categorymembers.forEach( item => {
+        //    console.log( `${item.pageid}: ${item.title}` );
+        //});
+
+    }).catch( error => {
+        console.log(error);
+    });
 }
 
 // Start From Step 1
