@@ -18,7 +18,9 @@ const gotInstance = got.extend( {
     cookieJar
 } );
 
-
+/**
+ * utility function to do login request.
+ */
 async function loginRequest() {
 
     // STEP 1: Get request to fetch login token
@@ -54,7 +56,53 @@ async function loginRequest() {
     } catch (error) {
 
         console.log( error );
+        throw new Error('Login Failed');
     }
 }
 
-loginRequest();
+//console.log('=================== Before login');
+//console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
+//
+//loginRequest();
+
+async function getCategoryItems(category) {
+
+    if( cookieJar.getCookiesSync('https://' + rawParams[0]) < 2 ) {
+
+        await loginRequest();
+        console.log('=================== After login');
+        console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
+    }
+
+    let params_3 = {
+        action: "query",
+        list: "categorymembers",
+        cmtitle: "Category:" + category,
+        cmlimit: "5",
+        //token: token,
+        format: "json"
+    };
+
+    let query = url + "?" + querystring.encode(params_3);
+    console.log(query);
+
+    try {
+
+        let queryRes = await gotInstance.get(query);
+
+        console.log(JSON.parse(queryRes.body));
+        // NOTE:
+        // need parse body to JSON format.
+        JSON.parse(queryRes.body).query.categorymembers.forEach( item => {
+            //console.table(item);
+            console.log( `${item.pageid}: ${item.title}` );
+        });
+        //console.log(cookieJar);
+        //console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
+    } catch( error ) {
+
+        console.log(error);
+    }
+}
+
+getCategoryItems(rawParams[3]);
