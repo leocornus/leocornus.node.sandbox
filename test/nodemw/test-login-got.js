@@ -1,9 +1,12 @@
-/*  
-    MediaWiki API Demos
-    Demo of `Login` module: Sending post request to login
-    update to use Got.
-    https://github.com/sindresorhus/got
-*/
+/**  
+ * MediaWiki API Demos
+ * Demo of `Login` module:
+ * - Sending post request to login
+ * - get items from a given category
+ * update to use Got.
+ * - https://github.com/sindresorhus/got
+ * - using the default Memory cookie store
+ */
 
 const querystring = require('querystring');
 const got = require('got');
@@ -43,7 +46,7 @@ function getLoginToken() {
 
             let data = JSON.parse(res.body);
             console.log(data);
-            console.log(res.headers);
+            //console.log(res.headers);
             console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
             loginRequest(data.query.tokens.logintoken,
                 res.headers['set-cookie'][0].split("; ")[0]
@@ -83,7 +86,8 @@ function loginRequest(login_token, auth_cookie) {
             console.log(response.body);
             //console.log(response.req.headers);
             //console.log(response.headers);
-            console.log(cookieJar);
+            //console.log(cookieJar);
+            console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
             getCategoryItems(rawParams[3]);
         }).
         catch( error => {
@@ -115,7 +119,8 @@ function getCategoryItems(category) {
         JSON.parse(res.body).query.categorymembers.forEach( item => {
             console.log( `${item.pageid}: ${item.title}` );
         });
-        console.log(cookieJar);
+        //console.log(cookieJar);
+        console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
 
     }).catch( error => {
         console.log(error);
