@@ -110,6 +110,9 @@ async function getCategoryItems(category, cmcontinue) {
             await getCategoryItems(category, res.continue.cmcontinue);
         } else {
             console.log('all items are loaded!');
+
+            console.table(cookieJar);
+            console.table(cookieJar.getCookiesSync('https://' + rawParams[0]));
         }
     } catch( error ) {
 
