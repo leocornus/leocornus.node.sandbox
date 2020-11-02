@@ -65,7 +65,7 @@ async function loginRequest() {
 //
 //loginRequest();
 
-async function getCategoryItems(category) {
+async function getCategoryItems(category, cmcontinue) {
 
     if( cookieJar.getCookiesSync('https://' + rawParams[0]) < 2 ) {
 
@@ -83,6 +83,10 @@ async function getCategoryItems(category) {
         format: "json"
     };
 
+    if( cmcontinue ) {
+        params_3.cmcontinue = cmcontinue;
+    }
+
     let query = url + "?" + querystring.encode(params_3);
     console.log(query);
 
@@ -90,15 +94,23 @@ async function getCategoryItems(category) {
 
         let queryRes = await gotInstance.get(query);
 
-        console.log(JSON.parse(queryRes.body));
         // NOTE:
         // need parse body to JSON format.
-        JSON.parse(queryRes.body).query.categorymembers.forEach( item => {
+        let res = JSON.parse(queryRes.body);
+        //console.log(res);
+        res.query.categorymembers.forEach( item => {
             //console.table(item);
             console.log( `${item.pageid}: ${item.title}` );
         });
         //console.log(cookieJar);
         //console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
+   
+        if(res.continue) {
+            console.log('Loading next 5 items ...');
+            await getCategoryItems(category, res.continue.cmcontinue);
+        } else {
+            console.log('all items are loaded!');
+        }
     } catch( error ) {
 
         console.log(error);
