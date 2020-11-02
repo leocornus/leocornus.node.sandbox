@@ -41,7 +41,10 @@ function getLoginToken() {
     let query = url + "?" + querystring.encode(params_0);
     console.log(query);
 
-    gotInstance(query).
+    // The default request method is GET,
+    // the following 2 lines are the same.
+    //gotInstance(query).
+    gotInstance.get(query).
         then(res => {
 
             let data = JSON.parse(res.body);
