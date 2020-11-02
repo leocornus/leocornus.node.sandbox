@@ -10,14 +10,15 @@ const got = require('got');
 const toughCookie = require('tough-cookie');
 
 // we will execute the script by using nvm, for example:
-// $ nvm run node test-login.js
+// $ nvm run node test-login-got.js
 const rawParams = process.argv.slice(2);
 console.log(rawParams);
 
 const url = "https://" + rawParams[0] + "/w/api.php";
 console.log(url);
 
-// set up a Got instance.
+// set up a Got instance with cookie jar.
+// Got will handle all cookie related work.
 const cookieJar = new toughCookie.CookieJar();
 const gotInstance = got.extend( {
     cookieJar
@@ -33,6 +34,7 @@ function getLoginToken() {
         format: "json"
     };
 
+    // use querystring to build the HTTP query string
     let query = url + "?" + querystring.encode(params_0);
     console.log(query);
 
@@ -40,7 +42,8 @@ function getLoginToken() {
         then(res => {
 
             let data = JSON.parse(res.body);
-            console.log(data); console.log(res.headers);
+            console.log(data);
+            console.log(res.headers);
             console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
             loginRequest(data.query.tokens.logintoken,
                 res.headers['set-cookie'][0].split("; ")[0]
