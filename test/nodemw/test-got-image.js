@@ -98,7 +98,10 @@ async function getImage(imageId) {
         console.log( queryRes );
         console.log( queryRes.query.pages[imageId].imageinfo );
 
-        // 
+        console.log( queryRes.query.pages[imageId].imageinfo[0].thumburl );
+        // get the thumb image binary as a buffer.
+        let imgBuffer = await gotInstance.get( queryRes.query.pages[imageId].imageinfo[0].thumburl ).buffer();
+        console.log(Buffer.from(String.fromCharCode(...new unit8Array(imageBuffer)), 'binary').toString('base64'));
     } catch( error ) {
         console.log(error);
     }
