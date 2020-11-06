@@ -67,7 +67,7 @@ async function loginRequest() {
 
 async function getCategoryItems(category, cmcontinue) {
 
-    if( cookieJar.getCookiesSync('https://' + rawParams[0]) < 2 ) {
+    if( cookieJar.getCookiesSync('https://' + rawParams[0]).length < 2 ) {
 
         await loginRequest();
         console.log('=================== After login');
@@ -107,6 +107,7 @@ async function getCategoryItems(category, cmcontinue) {
    
         if(res.continue) {
             console.log('Loading next 5 items ...');
+            cookieJar.removeAllCookiesSync();
             await getCategoryItems(category, res.continue.cmcontinue);
         } else {
             console.log('all items are loaded!');
