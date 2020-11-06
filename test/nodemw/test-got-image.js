@@ -89,13 +89,16 @@ async function getImage(imageId) {
 
     try {
 
-        let queryRes = await gotInstance.get(query);
+        // the json() method will return promise for the parsed body.
+        let queryRes = await gotInstance.get(query).json();
 
         // NOTE:
         // need parse body to JSON format.
-        let res = JSON.parse(queryRes.body);
-        console.log(res);
-        console.log( res.query.pages[imageId].imageinfo );
+        //let res = JSON.parse(queryRes.body);
+        console.log( queryRes );
+        console.log( queryRes.query.pages[imageId].imageinfo );
+
+        // 
     } catch( error ) {
         console.log(error);
     }
