@@ -81,10 +81,14 @@ async function addCategory(title, newCategory, comment) {
         let params_2 = {
             action: "query",
             meta: "tokens",
+            // the default type is csrf.
+            type: 'csrf',
             format: "json"
         };
 
         const csrfRes = await gotInstance.get( url + "?" + querystring.encode( params_2 ) );
+        console.log('=================== After query CSRF token');
+        console.log(cookieJar.getCookiesSync('https://' + rawParams[0]));
 
         let params_3 = {
             action: "edit",
