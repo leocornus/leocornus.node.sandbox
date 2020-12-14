@@ -76,6 +76,8 @@ async function addCategory(title, newCategory, comment) {
 
     try {
         // get csrf token.
+        // for any editing action in MediaWiki, an edit token is required.
+        // More details are here: https://www.mediawiki.org/wiki/Manual:Edit_token
         let params_2 = {
             action: "query",
             meta: "tokens",
