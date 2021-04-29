@@ -24,5 +24,7 @@ function showToday( today, zone ) {
         Year: today.year,
         Month: today.month,
         Day: today.day,
+        YYYYMMDD: [today.year, (today.month + '').padStart(2, '0'),
+            (today.day + '').padStart(2, '0')).join('')
     } );
 }
