@@ -11,7 +11,7 @@ console.log(rawParams);
 const url = "https://" + rawParams[0] + "/w/api.php";
 console.log(url);
 
-// set up a Got instance with cookie jar.
+// set up a Got instance with cookie jar, with default MemoryCookieStore
 // Got will handle all cookie related work.
 const cookieJar = new toughCookie.CookieJar();
 const gotInstance = got.extend( {
