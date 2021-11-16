@@ -23,7 +23,7 @@
   "homepage": "https://github.com/leocornus/leocornus-node-sandbox#readme",
   "dependencies": {
     "array.prototype.flat": "^1.2.2",
-    "aws-sdk": "^2.786.0",
+    "aws-sdk": "^2.814.0",
     "axios": "^0.21.1",
     "axios-cookiejar-support": "^1.0.1",
     "azure-storage": "^2.10.2",
